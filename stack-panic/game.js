@@ -47,10 +47,9 @@ const getBlockColors = (skin, idx) => {
 // ── Difficulté — courbe douce ────────────────────────
 // Vitesse démarre très lente, monte progressivement sur ~30 blocs
 const getSpeed = (blockCount) => {
-  const base = 1.2;
-  const max  = 5.5;
-  // Logarithmique : rapide au début, plateau ensuite
-  const t = Math.min(blockCount / 30, 1);
+  const base = 3.0;
+  const max  = 8.0;
+  const t = Math.min(blockCount / 25, 1);
   return base + (max - base) * (t * t);
 };
 
@@ -194,8 +193,8 @@ const startGame = () => {
   Object.assign(State, { score:0, height:0, combo:0, bestCombo:0, paused:false, running:true });
   blocks=[]; vfxParts=[]; cameraY=0; targetCameraY=0; shakeAmt=0; fallingBlock=null; perfectFlash=0;
 
-  // Plateforme de base large et visible
-  blocks.push({ x:canvas.width/2-BASE_W/2, y:canvas.height-100, w:BASE_W, h:BLOCK_H, isBase:true });
+  // Plateforme de base : positionnée aux 2/3 bas de l'écran
+  blocks.push({ x:canvas.width/2-BASE_W/2, y:canvas.height - Math.round(canvas.height * 0.22), w:BASE_W, h:BLOCK_H, isBase:true });
 
   updateHUD();
   showScreen('game');
