@@ -182,7 +182,7 @@ let animId=null, vfxParts=[], shakeAmt=0;
 let perfectFlash=0; // timer glow vert sur la zone centrale
 
 const resizeCanvas = () => {
-  canvas.width  = Math.min(innerWidth, 480);
+  canvas.width  = innerWidth;
   canvas.height = innerHeight;
 };
 resizeCanvas(); addEventListener('resize', resizeCanvas);
@@ -215,8 +215,9 @@ const spawnFalling = () => {
   const w   = top.w;
   const spd = getSpeed(blocks.length);
   const dir = Math.random()<.5 ? 1 : -1;
+  // Démarre juste hors du bord visible (pas loin)
   fallingBlock = {
-    x: dir>0 ? -w-10 : canvas.width+10,
+    x: dir>0 ? -w : canvas.width,
     y: top.y - BLOCK_H - 6,
     w, h: BLOCK_H,
     speed: spd * dir,
