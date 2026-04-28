@@ -171,10 +171,11 @@ const drawSkinPreview = (cv, skin) => {
 const canvas = $('game-canvas');
 const ctx    = canvas.getContext('2d');
 
-const BLOCK_H    = 32;   // blocs plus gros, plus facile à viser
+const BLOCK_H    = 32;
 const BASE_W     = 220;
-const PERFECT_TOL = 12;  // tolérance PERFECT (px chaque côté)
-const NICE_TOL    = 30;  // tolérance NICE
+const MISS_TOL    = 18;  // tolérance game-over : si overlap > ce seuil, ça compte quand même
+const PERFECT_TOL = 18;  // tolérance PERFECT
+const NICE_TOL    = 45;  // tolérance NICE
 
 let blocks=[], fallingBlock=null;
 let cameraY=0, targetCameraY=0;
@@ -239,18 +240,20 @@ const drop = () => {
   const overlapRight = Math.max(0, fb.x + fb.w - (top.x + top.w));
   const overlap = fb.w - overlapLeft - overlapRight;
 
-  // MISS = game over immédiat (clair et simple)
-  if (overlap <= 0) {
+  // MISS = game over (avec tolérance de MISS_TOL px pour éviter les faux positifs)
+  if (overlap <= -MISS_TOL) {
     shakeAmt = 16;
     spawnBreakFx(fb.x+fb.w/2, fb.y, fb.skin.colors||['#7c3aed'], 14);
     gameOver(); return;
   }
 
-  // Bloc posé : même largeur si overlap > 90% (tolérance visuelle)
-  // Sinon il se coupe légèrement mais reste jouable
+  // Si overlap est légèrement négatif mais dans la tolérance, on le traite comme 0
+  const safeOverlap = Math.max(1, overlap);
+
+  // Bloc posé : même largeur si overlap > 85% (tolérance visuelle)
   const newX = Math.max(fb.x, top.x);
-  const newW = overlap > fb.w * 0.9 ? fb.w : overlap; // si presque parfait → garde taille
-  const finalX = overlap > fb.w * 0.9 ? top.x + top.w/2 - newW/2 : newX;
+  const newW = safeOverlap > fb.w * 0.85 ? fb.w : safeOverlap;
+  const finalX = safeOverlap > fb.w * 0.85 ? top.x + top.w/2 - newW/2 : newX;
 
   const offCenter = Math.abs((finalX + newW/2) - (top.x + top.w/2));
 
