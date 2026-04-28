@@ -92,9 +92,23 @@
 
       <canvas id="game-canvas"></canvas>
 
-      <div class="game-controls">
-        <div class="ctrl-hint">TAP / CLICK / SPACE to drop</div>
+      <!-- Tutorial overlay (first play) -->
+      <div id="tutorial-overlay" style="display:none">
+        <div class="tuto-box">
+          <div class="tuto-anim">
+            <div class="tuto-block-moving" id="tuto-block"></div>
+            <div class="tuto-platform"></div>
+          </div>
+          <p class="tuto-text">Appuie quand le bloc est<br>au-dessus de la tour !</p>
+          <button class="btn-primary" id="btn-tuto-ok">J'AI COMPRIS ▶</button>
+        </div>
       </div>
+
+      <!-- Big drop button for mobile -->
+      <button class="btn-drop" id="btn-drop">
+        <span class="btn-drop-icon">▼</span>
+        <span class="btn-drop-label">POSER</span>
+      </button>
 
       <button class="btn-pause" id="btn-pause">⏸</button>
     </div>
