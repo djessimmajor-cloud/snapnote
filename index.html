@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Snapshot Note</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --paper: #f5f0e8;
+    --ink: #1a1a18;
+    --accent: #c8432b;
+    --accent2: #3d6b45;
+    --chrome: rgba(26,26,24,0.45);
+  }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'DM Mono', monospace;
+    height: 100vh;
+    overflow: hidden;
+    transition: background 0.4s;
+  }
+
+  /* ── SCREENS ── */
+  .screen { position: absolute; inset: 0; display: flex; flex-direction: column; }
+  .screen.hidden { display: none; }
+
+  /* ── EMPTY STATE ── */
+  #screen-empty {
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  #screen-empty .ellipsis {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: clamp(64px, 18vw, 140px);
+    color: var(--ink);
+    opacity: 0.18;
+    user-select: none;
+    letter-spacing: -4px;
+  }
+  #screen-empty .hint {
+    position: absolute;
+    bottom: 40px;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    opacity: 0.35;
+    text-transform: uppercase;
+  }
+
+  /* ── NOTE SCREEN ── */
+  #screen-note { justify-content: space-between; }
+
+  .note-header {
+    padding: 28px 32px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .note-date {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 13px;
+    opacity: 0.45;
+  }
+  .note-actions {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+  }
+  .icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    opacity: 0.4;
+    font-size: 16px;
+    padding: 4px;
+    transition: opacity 0.2s;
+    color: var(--ink);
+  }
+  .icon-btn:hover { opacity: 0.8; }
+
+  .note-body {
+    flex: 1;
+    padding: 32px 40px;
+    display: flex;
+    flex-direction: column;
+  }
+  #note-textarea {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    resize: none;
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 19px;
+    line-height: 1.7;
+    color: var(--ink);
+    caret-color: var(--accent);
+    width: 100%;
+  }
+  #note-textarea::placeholder { color: transparent; }
+
+  .note-footer {
+    padding: 0 0 0;
+  }
+  .timer-section {
+    padding: 0 32px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .timer-label {
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    opacity: 0.5;
+    white-space: nowrap;
+    min-width: 130px;
+  }
+  .timer-label span { color: var(--accent); opacity: 1; font-weight: 500; }
+
+  .ping-btn {
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    border-radius: 999px;
+    padding: 7px 18px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.2s;
+    letter-spacing: 0.04em;
+  }
+  .ping-btn:hover { opacity: 0.75; }
+  .ping-btn:disabled { opacity: 0.3; cursor: default; }
+
+  .timer-bar-wrap {
+    height: 3px;
+    background: rgba(26,26,24,0.1);
+    width: 100%;
+    overflow: hidden;
+  }
+  #timer-bar {
+    height: 3px;
+    width: 100%;
+    background: var(--accent2);
+    transform-origin: left;
+    transition: background 1s;
+  }
+
+  /* ── DESTRUCTION SCREEN ── */
+  #screen-destroy {
+    align-items: center;
+    justify-content: center;
+    background: var(--paper);
+  }
+  .destroy-text {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    opacity: 0;
+    animation: fadeDestroy 2s ease forwards;
+    text-transform: lowercase;
+  }
+  @keyframes fadeDestroy {
+    0%   { opacity: 0; transform: translateY(6px); }
+    30%  { opacity: 0.6; }
+    70%  { opacity: 0.6; }
+    100% { opacity: 0; transform: translateY(-4px); }
+  }
+
+  /* ── PRO PAYWALL ── */
+  #screen-pro {
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+  }
+  .pro-close {
+    position: absolute;
+    top: 24px; right: 28px;
+    background: none; border: none;
+    font-size: 20px; cursor: pointer;
+    opacity: 0.35; color: var(--ink);
+  }
+  .pro-close:hover { opacity: 0.7; }
+  .pro-title {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 28px;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+  .pro-sub {
+    font-size: 11px;
+    opacity: 0.4;
+    text-align: center;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 36px;
+  }
+  .pro-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    width: 100%;
+    max-width: 480px;
+  }
+  .pro-col {
+    border: 1px solid rgba(26,26,24,0.15);
+    border-radius: 12px;
+    padding: 20px 18px;
+  }
+  .pro-col.highlight {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .pro-col-title {
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    opacity: 0.6;
+  }
+  .pro-col.highlight .pro-col-title { opacity: 0.5; color: var(--paper); }
+  .pro-feature {
+    font-size: 12px;
+    line-height: 2;
+    opacity: 0.75;
+  }
+  .pro-col.highlight .pro-feature { opacity: 0.85; }
+  .pro-cta {
+    margin-top: 28px;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    border-radius: 999px;
+    padding: 12px 36px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: opacity 0.2s;
+  }
+  .pro-cta:hover { opacity: 0.75; }
+  .pro-price {
+    margin-top: 10px;
+    font-size: 11px;
+    opacity: 0.35;
+    letter-spacing: 0.06em;
+  }
+
+  /* ── LIST SCREEN ── */
+  #screen-list, #screen-vault { flex-direction: column; }
+  .list-header {
+    padding: 28px 28px 16px;
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid rgba(26,26,24,0.08);
+  }
+  .list-title {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic; font-size: 22px; opacity: 0.7;
+  }
+  #notes-list, #vault-list {
+    flex: 1; overflow-y: auto; padding: 12px 16px;
+  }
+  .note-item {
+    padding: 14px 16px; border-radius: 8px; cursor: pointer;
+    transition: background 0.15s; margin-bottom: 4px;
+    display: flex; justify-content: space-between; align-items: center;
+    border: 1px solid transparent;
+  }
+  .note-item:hover { background: rgba(26,26,24,0.06); }
+  .note-item.active { border-color: rgba(26,26,24,0.15); }
+  .note-item-preview { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 14px; opacity: 0.75; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .note-item-meta { font-size: 10px; opacity: 0.35; white-space: nowrap; margin-left: 12px; }
+  .note-item-del { opacity: 0; font-size: 14px; padding: 4px 8px; background: none; border: none; cursor: pointer; color: var(--accent); transition: opacity 0.15s; }
+  .note-item:hover .note-item-del { opacity: 0.6; }
+  .list-new-btn {
+    margin: 12px 16px 24px;
+    background: none; border: 1px solid rgba(26,26,24,0.2);
+    border-radius: 8px; padding: 12px; font-family: 'DM Mono', monospace;
+    font-size: 12px; cursor: pointer; color: var(--ink); opacity: 0.5;
+    transition: opacity 0.2s; letter-spacing: 0.05em;
+  }
+  .list-new-btn:hover { opacity: 0.9; }
+
+  /* ── WIDGET ── */
+  .widget-card {
+    width: 280px; background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border: 0.5px solid rgba(255,255,255,0.2);
+    border-radius: 16px; padding: 18px 20px 14px;
+    display: flex; flex-direction: column; gap: 10px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  .widget-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.85)} }
+  .widget-preview {
+    font-family: 'Instrument Serif', serif; font-style: italic;
+    font-size: 14px; color: rgba(255,255,255,0.85); line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .widget-time { font-size: 10px; color: rgba(255,255,255,0.35); letter-spacing: 0.08em; }
+
+  /* ── CURSOR BLINK ── */
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+  #note-textarea:focus { caret-color: var(--accent); }
+
+  /* ── PAPER TEXTURE overlay ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 999;
+  }
+</style>
+</head>
+<body>
+
+<!-- EMPTY STATE -->
+<div id="screen-empty" class="screen" onclick="openNote()">
+  <div class="ellipsis">...</div>
+  <div class="hint">appuyer pour écrire</div>
+</div>
+
+<!-- NOTE SCREEN -->
+<div id="screen-note" class="screen hidden">
+  <div class="note-header">
+    <div class="note-date" id="note-date"></div>
+    <div class="note-actions">
+      <button class="icon-btn" title="Coffre FaceID" onclick="showVault()">⬡</button>
+      <button class="icon-btn" title="Toutes les notes" onclick="showList()">≡</button>
+      <button class="icon-btn" title="Supprimer" onclick="destroyNote()">⌦</button>
+    </div>
+  </div>
+  <div class="note-body">
+    <textarea id="note-textarea" autofocus spellcheck="false"></textarea>
+  </div>
+  <div class="note-footer">
+    <div class="timer-section">
+      <div class="timer-label">expire dans <span id="timer-text">24h 00</span></div>
+      <button class="ping-btn" id="ping-btn" onclick="pingNote()">⌀ ping +24h</button>
+    </div>
+    <div class="timer-bar-wrap">
+      <div id="timer-bar"></div>
+    </div>
+  </div>
+</div>
+
+<!-- LIST SCREEN (pro: toutes les notes) -->
+<div id="screen-list" class="screen hidden">
+  <div class="list-header">
+    <div class="list-title">mes notes</div>
+    <button class="icon-btn" onclick="showNote(currentNoteId)" style="opacity:0.5;font-size:18px">×</button>
+  </div>
+  <div id="notes-list"></div>
+  <button class="list-new-btn" onclick="createNewNote()">+ nouvelle note</button>
+</div>
+
+<!-- VAULT SCREEN (pro: coffre FaceID simulé) -->
+<div id="screen-vault" class="screen hidden">
+  <div class="list-header">
+    <div class="list-title">coffre ⬡</div>
+    <button class="icon-btn" onclick="showNote(currentNoteId)" style="opacity:0.5;font-size:18px">×</button>
+  </div>
+  <div id="vault-unlock" style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:20px">
+    <div style="font-size:48px;opacity:0.2">⬡</div>
+    <div style="font-size:12px;opacity:0.4;letter-spacing:0.1em;text-transform:uppercase">notes verrouillées</div>
+    <button class="ping-btn" onclick="unlockVault()">⬡ déverrouiller</button>
+  </div>
+  <div id="vault-notes" style="display:none;flex-direction:column;flex:1;overflow:hidden">
+    <div id="vault-list"></div>
+    <div style="padding:16px 28px;display:flex;gap:12px">
+      <button class="ping-btn" onclick="addToVault()">+ ajouter cette note</button>
+      <button class="ping-btn" style="background:var(--accent)" onclick="lockVault()">verrouiller</button>
+    </div>
+  </div>
+</div>
+
+<!-- WIDGET PREVIEW (pro: aperçu widget écran veille) -->
+<div id="screen-widget" class="screen hidden" style="background:#111;align-items:center;justify-content:center">
+  <div class="widget-card" id="widget-card">
+    <div class="widget-dot"></div>
+    <div class="widget-preview" id="widget-preview"></div>
+    <div class="widget-time" id="widget-time"></div>
+  </div>
+  <button class="ping-btn" onclick="showNote(currentNoteId)" style="position:absolute;bottom:40px">fermer l'aperçu</button>
+</div>
+
+<!-- DESTRUCTION SCREEN -->
+<div id="screen-destroy" class="screen hidden">
+  <div class="destroy-text" id="destroy-text">note détruite</div>
+</div>
+
+<script>
+const DURATION = 24 * 60 * 60 * 1000;
+const STORAGE_KEY = 'snapshot_notes_v2';
+const VAULT_KEY = 'snapshot_vault_v2';
+
+let notes = [];        // [{id, content, createdAt, expiresAt, pingCount}]
+let currentNoteId = null;
+let timerInterval = null;
+let vaultUnlocked = false;
+
+// ── PERSISTENCE ──
+function loadNotes() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) { notes = []; return; }
+  notes = JSON.parse(raw).filter(n => Date.now() < n.expiresAt);
+  saveNotes();
+}
+function saveNotes() { localStorage.setItem(STORAGE_KEY, JSON.stringify(notes)); }
+function loadVaultIds() { return JSON.parse(localStorage.getItem(VAULT_KEY) || '[]'); }
+function saveVaultIds(ids) { localStorage.setItem(VAULT_KEY, JSON.stringify(ids)); }
+
+// ── HELPERS ──
+function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+function formatDate(ts) {
+  return new Date(ts).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+}
+function formatRemaining(ms) {
+  if (ms <= 0) return '0h 00';
+  const h = Math.floor(ms / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  return `${h}h ${String(m).padStart(2,'0')}`;
+}
+function getNote(id) { return notes.find(n => n.id === id); }
+
+// ── TIMER ──
+function updateTimerBar() {
+  const note = getNote(currentNoteId);
+  if (!note) return;
+  const now = Date.now();
+  const total = note.expiresAt - note.createdAt;
+  const remaining = note.expiresAt - now;
+  const pct = Math.max(0, Math.min(1, remaining / total));
+
+  const bar = document.getElementById('timer-bar');
+  bar.style.transform = `scaleX(${pct})`;
+  bar.style.background = pct < 0.2 ? 'var(--accent)' : 'var(--accent2)';
+  document.getElementById('timer-text').textContent = formatRemaining(remaining);
+
+  if (remaining <= 0) { clearInterval(timerInterval); runDestroy(currentNoteId, true); }
+}
+
+// ── SCREENS ──
+function show(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+  document.getElementById('screen-' + name).classList.remove('hidden');
+}
+
+// ── OPEN NOTE ──
+function showNote(id) {
+  const note = getNote(id);
+  if (!note) { show('empty'); return; }
+  currentNoteId = id;
+  document.getElementById('note-date').textContent = formatDate(note.createdAt);
+  document.getElementById('note-textarea').value = note.content;
+  document.getElementById('ping-btn').disabled = false; // pings illimités en pro
+  show('note');
+  setTimeout(() => document.getElementById('note-textarea').focus(), 50);
+  clearInterval(timerInterval);
+  updateTimerBar();
+  timerInterval = setInterval(updateTimerBar, 10000);
+}
+
+// ── CREATE NOTE ──
+function openNote() {
+  if (notes.length === 0) { createNewNote(); return; }
+  // purge expired
+  notes = notes.filter(n => Date.now() < n.expiresAt);
+  saveNotes();
+  if (notes.length === 0) { createNewNote(); return; }
+  showNote(notes[notes.length - 1].id);
+}
+
+function createNewNote() {
+  const note = {
+    id: genId(),
+    content: '',
+    createdAt: Date.now(),
+    expiresAt: Date.now() + DURATION,
+    pingCount: 0,
+  };
+  notes.push(note);
+  saveNotes();
+  showNote(note.id);
+}
+
+// ── PING ──
+function pingNote() {
+  const note = getNote(currentNoteId);
+  if (!note) return;
+  note.expiresAt += DURATION;
+  note.pingCount = (note.pingCount || 0) + 1;
+  saveNotes();
+  updateTimerBar();
+  // feedback visuel
+  const btn = document.getElementById('ping-btn');
+  btn.textContent = '✓ +24h';
+  setTimeout(() => { btn.textContent = '⌀ ping +24h'; }, 1200);
+}
+
+// ── DESTROY ──
+function destroyNote() { runDestroy(currentNoteId, false); }
+
+function runDestroy(id, auto) {
+  clearInterval(timerInterval);
+  notes = notes.filter(n => n.id !== id);
+  // remove from vault too
+  const vaultIds = loadVaultIds().filter(v => v !== id);
+  saveVaultIds(vaultIds);
+  saveNotes();
+
+  const msg = auto ? 'note expirée' : 'note détruite';
+  show('destroy');
+  document.getElementById('destroy-text').textContent = msg;
+  const el = document.getElementById('destroy-text');
+  el.style.animation = 'none';
+  requestAnimationFrame(() => { el.style.animation = 'fadeDestroy 2s ease forwards'; });
+
+  setTimeout(() => {
+    if (notes.length > 0) { showNote(notes[notes.length - 1].id); }
+    else { currentNoteId = null; show('empty'); }
+  }, 2200);
+}
+
+// ── LIST ──
+function showList() {
+  notes = notes.filter(n => Date.now() < n.expiresAt);
+  saveNotes();
+  const el = document.getElementById('notes-list');
+  if (notes.length === 0) {
+    el.innerHTML = '<div style="padding:40px 28px;opacity:0.3;font-size:12px;letter-spacing:0.08em">aucune note active</div>';
+  } else {
+    el.innerHTML = notes.map(n => `
+      <div class="note-item ${n.id === currentNoteId ? 'active' : ''}" onclick="showNote('${n.id}')">
+        <div class="note-item-preview">${n.content || '...'}</div>
+        <div class="note-item-meta">${formatRemaining(n.expiresAt - Date.now())}</div>
+        <button class="note-item-del" onclick="event.stopPropagation();runDestroy('${n.id}',false)">⌦</button>
+      </div>
+    `).reverse().join('');
+  }
+  show('list');
+}
+
+// ── VAULT ──
+function showVault() {
+  vaultUnlocked = false;
+  document.getElementById('vault-unlock').style.display = 'flex';
+  document.getElementById('vault-notes').style.display = 'none';
+  show('vault');
+}
+
+function unlockVault() {
+  // simulate FaceID: immediate success
+  vaultUnlocked = true;
+  document.getElementById('vault-unlock').style.display = 'none';
+  const vaultEl = document.getElementById('vault-notes');
+  vaultEl.style.display = 'flex';
+
+  const ids = loadVaultIds();
+  const vaultNotes = notes.filter(n => ids.includes(n.id));
+  const listEl = document.getElementById('vault-list');
+  if (vaultNotes.length === 0) {
+    listEl.innerHTML = '<div style="padding:40px 28px;opacity:0.3;font-size:12px;letter-spacing:0.08em">coffre vide — ajoutez des notes depuis l\'écran note</div>';
+  } else {
+    listEl.innerHTML = vaultNotes.map(n => `
+      <div class="note-item" onclick="showNote('${n.id}')">
+        <div class="note-item-preview">${n.content || '...'}</div>
+        <div class="note-item-meta">${formatRemaining(n.expiresAt - Date.now())}</div>
+      </div>
+    `).join('');
+  }
+}
+
+function lockVault() { showVault(); }
+
+function addToVault() {
+  if (!currentNoteId) return;
+  const ids = loadVaultIds();
+  if (!ids.includes(currentNoteId)) { ids.push(currentNoteId); saveVaultIds(ids); }
+  showNote(currentNoteId);
+  // feedback
+  setTimeout(() => {
+    const btn = document.querySelector('#vault-notes .ping-btn');
+    if (btn) { btn.textContent = '✓ ajoutée'; setTimeout(() => { btn.textContent = '+ ajouter cette note'; }, 1200); }
+  }, 10);
+}
+
+// ── WIDGET PREVIEW ──
+function showWidget() {
+  const note = getNote(currentNoteId);
+  const preview = note ? (note.content || '...') : '...';
+  document.getElementById('widget-preview').textContent = preview;
+  document.getElementById('widget-time').textContent = note
+    ? 'expire dans ' + formatRemaining(note.expiresAt - Date.now())
+    : '';
+  show('widget');
+}
+
+// ── EXPORT ──
+function exportNote(format) {
+  const note = getNote(currentNoteId);
+  if (!note) return;
+  const text = note.content;
+  if (format === 'notion') {
+    const blob = new Blob([text], { type: 'text/plain' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `snapshot-note-${new Date(note.createdAt).toISOString().slice(0,10)}.txt`;
+    a.click();
+  } else if (format === 'evernote') {
+    const enml = `<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd"><en-note>${text.replace(/\n/g,'<br/>')}</en-note>`;
+    const blob = new Blob([enml], { type: 'text/xml' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `snapshot-note-${new Date(note.createdAt).toISOString().slice(0,10)}.enml`;
+    a.click();
+  }
+}
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded', () => {
+  loadNotes();
+
+  document.getElementById('note-textarea').addEventListener('input', e => {
+    const note = getNote(currentNoteId);
+    if (note) { note.content = e.target.value; saveNotes(); }
+  });
+
+  // widget icon on note screen
+  const actions = document.querySelector('.note-actions');
+  const wBtn = document.createElement('button');
+  wBtn.className = 'icon-btn';
+  wBtn.title = 'Widget aperçu';
+  wBtn.textContent = '▣';
+  wBtn.onclick = showWidget;
+  actions.insertBefore(wBtn, actions.firstChild);
+
+  // export btn
+  const eBtn = document.createElement('button');
+  eBtn.className = 'icon-btn';
+  eBtn.title = 'Exporter';
+  eBtn.textContent = '⬆';
+  eBtn.onclick = () => {
+    const choice = confirm('Exporter en format Notion (.txt) ?\n\nAnnuler = format Evernote (.enml)');
+    exportNote(choice ? 'notion' : 'evernote');
+  };
+  actions.insertBefore(eBtn, actions.firstChild);
+
+  if (notes.length > 0) { openNote(); }
+  else { show('empty'); }
+});
+</script>
+</body>
+</html>
