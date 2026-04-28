@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stack Panic</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- PARTICLES BACKGROUND -->
+  <canvas id="bg-canvas"></canvas>
+
+  <!-- SCREENS -->
+  <div id="app">
+
+    <!-- HOME SCREEN -->
+    <div id="screen-home" class="screen active">
+      <div class="home-content">
+        <div class="logo-wrap">
+          <div class="logo-icon">
+            <div class="block b1"></div>
+            <div class="block b2"></div>
+            <div class="block b3"></div>
+          </div>
+          <h1 class="logo-text">STACK<span>PANIC</span></h1>
+          <p class="logo-sub">How high can you go?</p>
+        </div>
+
+        <div class="home-stats">
+          <div class="stat-card">
+            <span class="stat-val" id="best-score-home">0</span>
+            <span class="stat-lbl">Best Score</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-val" id="best-height-home">0</span>
+            <span class="stat-lbl">Max Height</span>
+          </div>
+        </div>
+
+        <div class="home-buttons">
+          <button class="btn-primary" id="btn-play">
+            <span class="btn-icon">▶</span>
+            PLAY
+          </button>
+          <button class="btn-secondary" id="btn-duel">
+            <span class="btn-icon">⚔</span>
+            DUEL 1v1
+          </button>
+          <button class="btn-ghost" id="btn-skins">
+            <span class="btn-icon">✦</span>
+            SKINS
+          </button>
+        </div>
+
+        <div class="streak-banner" id="streak-banner">
+          <span class="streak-fire">🔥</span>
+          <span id="streak-text">3 day streak!</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SKIN SELECTOR -->
+    <div id="screen-skins" class="screen">
+      <div class="panel">
+        <div class="panel-header">
+          <button class="btn-back" id="btn-back-skins">←</button>
+          <h2>BLOCK SKINS</h2>
+          <div class="coin-display"><span class="coin-icon">◆</span><span id="coin-count">0</span></div>
+        </div>
+        <div class="skins-grid" id="skins-grid"></div>
+      </div>
+    </div>
+
+    <!-- GAME SCREEN -->
+    <div id="screen-game" class="screen">
+      <div class="game-hud">
+        <div class="hud-left">
+          <div class="hud-score" id="hud-score">0</div>
+          <div class="hud-label">SCORE</div>
+        </div>
+        <div class="hud-center">
+          <div class="combo-display" id="combo-display"></div>
+        </div>
+        <div class="hud-right">
+          <div class="hud-score" id="hud-height">0</div>
+          <div class="hud-label">HEIGHT</div>
+        </div>
+      </div>
+
+      <canvas id="game-canvas"></canvas>
+
+      <div class="game-controls">
+        <div class="ctrl-hint">TAP / CLICK / SPACE to drop</div>
+      </div>
+
+      <button class="btn-pause" id="btn-pause">⏸</button>
+    </div>
+
+    <!-- PAUSE SCREEN -->
+    <div id="screen-pause" class="screen overlay">
+      <div class="modal">
+        <h2>PAUSED</h2>
+        <div class="modal-buttons">
+          <button class="btn-primary" id="btn-resume">▶ RESUME</button>
+          <button class="btn-secondary" id="btn-restart-pause">↺ RESTART</button>
+          <button class="btn-ghost" id="btn-home-pause">⌂ HOME</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- GAME OVER SCREEN -->
+    <div id="screen-gameover" class="screen overlay">
+      <div class="modal gameover-modal">
+        <div class="gameover-title">
+          <span class="go-emoji" id="go-emoji">💥</span>
+          <h2 id="go-title">STACK BROKEN!</h2>
+        </div>
+
+        <div class="go-stats">
+          <div class="go-stat">
+            <span class="go-val" id="go-score">0</span>
+            <span class="go-lbl">Score</span>
+          </div>
+          <div class="go-stat">
+            <span class="go-val" id="go-height">0</span>
+            <span class="go-lbl">Height</span>
+          </div>
+          <div class="go-stat">
+            <span class="go-val" id="go-combo">0</span>
+            <span class="go-lbl">Best Combo</span>
+          </div>
+        </div>
+
+        <div class="go-record" id="go-record" style="display:none">
+          <span>🏆 NEW RECORD!</span>
+        </div>
+
+        <div class="go-coins">
+          <span class="coin-icon">◆</span>
+          <span id="go-coins-earned">+0</span>
+          <span>coins earned</span>
+        </div>
+
+        <div class="modal-buttons">
+          <button class="btn-primary" id="btn-play-again">▶ PLAY AGAIN</button>
+          <button class="btn-ghost" id="btn-home-go">⌂ HOME</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DUEL SCREEN (simulated) -->
+    <div id="screen-duel" class="screen overlay">
+      <div class="modal">
+        <h2>⚔ DUEL MODE</h2>
+        <p class="modal-sub">Coming soon — challenge your friends!</p>
+        <div class="modal-buttons">
+          <button class="btn-ghost" id="btn-back-duel">← BACK</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
