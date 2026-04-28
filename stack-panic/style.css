@@ -287,37 +287,56 @@ html, body {
 
 .skins-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  padding: 20px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  padding: 16px 20px;
   overflow-y: auto;
 }
 .skin-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   background: var(--bg2);
   border: 2px solid var(--border);
-  border-radius: 16px;
-  padding: 16px 8px;
+  border-radius: 14px;
+  padding: 12px 6px;
   cursor: pointer;
-  transition: border-color 0.2s, transform 0.12s;
+  transition: border-color 0.2s, transform 0.12s, box-shadow 0.2s;
   position: relative;
+  overflow: hidden;
 }
-.skin-item:hover { transform: translateY(-2px); }
-.skin-item.selected { border-color: var(--accent2); box-shadow: var(--glow); }
-.skin-item.locked { opacity: 0.5; cursor: not-allowed; }
-.skin-preview { width: 48px; height: 24px; border-radius: 6px; }
+.skin-item::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.2s;
+  background: radial-gradient(ellipse at 50% 0%, rgba(168,85,247,0.12), transparent 70%);
+}
+.skin-item:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+.skin-item:hover::before { opacity: 1; }
+.skin-item.selected { border-color: var(--accent2); box-shadow: 0 0 16px rgba(168,85,247,0.5); }
+.skin-item.locked { opacity: 0.55; cursor: not-allowed; }
+.skin-item.special { border-color: rgba(250,204,21,0.4); }
+.skin-item.special.selected { border-color: #facc15; box-shadow: 0 0 20px rgba(250,204,21,0.4); }
+.skin-item.legendary { border-color: rgba(6,182,212,0.5); }
+.skin-item.legendary.selected { border-color: #06b6d4; box-shadow: 0 0 20px rgba(6,182,212,0.45); }
+.skin-preview {
+  width: 52px; height: 28px;
+  border-radius: 7px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.5);
+}
 .skin-name {
-  font-size: 0.65rem;
+  font-size: 0.58rem;
   color: var(--muted);
   text-align: center;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
+  line-height: 1.2;
 }
 .skin-cost {
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   color: var(--gold);
   display: flex;
   align-items: center;
@@ -325,17 +344,16 @@ html, body {
 }
 .skin-badge {
   position: absolute;
-  top: -6px; right: -6px;
-  background: var(--accent);
-  border-radius: 50%;
-  width: 18px; height: 18px;
-  font-size: 0.55rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-weight: 700;
+  top: 4px; right: 4px;
+  font-size: 0.5rem;
+  font-weight: 800;
+  padding: 2px 5px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
 }
+.skin-badge.epic    { background: linear-gradient(135deg,#7c3aed,#a855f7); color:#fff; }
+.skin-badge.legend  { background: linear-gradient(135deg,#0891b2,#22d3ee); color:#fff; }
+.skin-badge.free    { background: linear-gradient(135deg,#16a34a,#22c55e); color:#fff; }
 
 /* GAME */
 #screen-game {

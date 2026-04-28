@@ -24,22 +24,69 @@ const save = () => {
 
 // ── Skins ────────────────────────────────────────────
 const SKINS = [
-  { id:'default', name:'Violet',  cost:0,   colors:['#7c3aed','#a855f7','#c084fc'], glow:'#a855f7' },
-  { id:'fire',    name:'Fire',    cost:50,  colors:['#dc2626','#f97316','#fbbf24'], glow:'#f97316' },
-  { id:'ice',     name:'Ice',     cost:80,  colors:['#0ea5e9','#38bdf8','#bae6fd'], glow:'#38bdf8' },
-  { id:'neon',    name:'Neon',    cost:120, colors:['#10b981','#34d399','#6ee7b7'], glow:'#34d399' },
-  { id:'gold',    name:'Gold',    cost:200, colors:['#f59e0b','#fbbf24','#fde68a'], glow:'#fbbf24' },
-  { id:'dark',    name:'Dark',    cost:150, colors:['#374151','#6b7280','#9ca3af'], glow:'#6b7280' },
-  { id:'sakura',  name:'Sakura',  cost:180, colors:['#ec4899','#f472b6','#fbcfe8'], glow:'#f472b6' },
-  { id:'galaxy',  name:'Galaxy',  cost:300, colors:['#4c1d95','#7c3aed','#e879f9'], glow:'#e879f9', special:true },
-  { id:'rainbow', name:'Rainbow', cost:500, colors:null, glow:'#fff', special:true },
+  // ── GRATUITS ──
+  { id:'default',   name:'Violet',      cost:0,    colors:['#7c3aed','#a855f7','#c084fc'], glow:'#a855f7' },
+  { id:'slate',     name:'Slate',        cost:0,    colors:['#334155','#64748b','#94a3b8'], glow:'#64748b' },
+  { id:'crimson',   name:'Crimson',      cost:0,    colors:['#991b1b','#dc2626','#fca5a5'], glow:'#dc2626' },
+  // ── COMMUNS (50–150) ──
+  { id:'fire',      name:'🔥 Fire',      cost:50,   colors:['#dc2626','#f97316','#fbbf24'], glow:'#f97316' },
+  { id:'ice',       name:'❄️ Ice',        cost:60,   colors:['#0c4a6e','#0ea5e9','#bae6fd'], glow:'#38bdf8' },
+  { id:'neon',      name:'⚡ Neon',       cost:80,   colors:['#052e16','#16a34a','#86efac'], glow:'#22c55e' },
+  { id:'ocean',     name:'🌊 Ocean',      cost:80,   colors:['#0c4a6e','#0369a1','#38bdf8'], glow:'#0ea5e9' },
+  { id:'lava',      name:'🌋 Lava',       cost:90,   colors:['#7f1d1d','#b91c1c','#f97316'], glow:'#ef4444' },
+  { id:'mint',      name:'🌿 Mint',       cost:90,   colors:['#064e3b','#059669','#6ee7b7'], glow:'#10b981' },
+  { id:'rose',      name:'🌹 Rose',       cost:100,  colors:['#881337','#e11d48','#fda4af'], glow:'#fb7185' },
+  { id:'amber',     name:'🍯 Amber',      cost:100,  colors:['#78350f','#d97706','#fde68a'], glow:'#f59e0b' },
+  { id:'lime',      name:'🍋 Lime',       cost:110,  colors:['#365314','#65a30d','#d9f99d'], glow:'#a3e635' },
+  { id:'sky',       name:'☁️ Sky',        cost:120,  colors:['#0c4a6e','#0284c7','#7dd3fc'], glow:'#38bdf8' },
+  { id:'dusk',      name:'🌆 Dusk',       cost:130,  colors:['#312e81','#7c3aed','#f472b6'], glow:'#c084fc' },
+  { id:'rust',      name:'🦊 Rust',       cost:140,  colors:['#7c2d12','#c2410c','#fb923c'], glow:'#f97316' },
+  { id:'teal',      name:'💎 Teal',       cost:150,  colors:['#042f2e','#0d9488','#5eead4'], glow:'#2dd4bf' },
+  // ── RARES (160–300) ──
+  { id:'gold',      name:'✨ Gold',       cost:160,  colors:['#713f12','#ca8a04','#fef08a'], glow:'#facc15' },
+  { id:'sakura',    name:'🌸 Sakura',     cost:180,  colors:['#831843','#db2777','#fbcfe8'], glow:'#f472b6' },
+  { id:'dark',      name:'🖤 Shadow',     cost:180,  colors:['#0f0f0f','#374151','#6b7280'], glow:'#9ca3af' },
+  { id:'aurora',    name:'🌌 Aurora',     cost:200,  colors:['#064e3b','#0891b2','#818cf8'], glow:'#6ee7b7' },
+  { id:'magma',     name:'🔴 Magma',      cost:200,  colors:['#450a0a','#dc2626','#fb923c'], glow:'#ef4444' },
+  { id:'nordic',    name:'🏔️ Nordic',     cost:220,  colors:['#1e3a5f','#2563eb','#93c5fd'], glow:'#60a5fa' },
+  { id:'toxic',     name:'☢️ Toxic',      cost:220,  colors:['#1a2e05','#4d7c0f','#bef264'], glow:'#84cc16' },
+  { id:'infrared',  name:'🟠 Infrared',   cost:240,  colors:['#4a044e','#a21caf','#f0abfc'], glow:'#e879f9' },
+  { id:'blood',     name:'🩸 Blood',      cost:250,  colors:['#3b0000','#7f1d1d','#ef4444'], glow:'#dc2626' },
+  { id:'cyber',     name:'🤖 Cyber',      cost:260,  colors:['#0c0a09','#1c1917','#22d3ee'], glow:'#06b6d4' },
+  { id:'candy',     name:'🍭 Candy',      cost:280,  colors:['#831843','#ec4899','#fde68a'], glow:'#f9a8d4' },
+  { id:'jungle',    name:'🌴 Jungle',     cost:280,  colors:['#052e16','#166534','#bbf7d0'], glow:'#4ade80' },
+  { id:'storm',     name:'⛈️ Storm',      cost:300,  colors:['#1e293b','#475569','#e2e8f0'], glow:'#94a3b8' },
+  { id:'midnight',  name:'🌙 Midnight',   cost:300,  colors:['#020617','#1e3a5f','#818cf8'], glow:'#6366f1' },
+  // ── ÉPIQUES (320–500) ──
+  { id:'galaxy',    name:'🌌 Galaxy',     cost:320,  colors:['#2e1065','#6d28d9','#e879f9'], glow:'#a855f7', special:true },
+  { id:'obsidian',  name:'🪨 Obsidian',   cost:350,  colors:['#000000','#1c1917','#57534e'], glow:'#a8a29e', special:true },
+  { id:'phoenix',   name:'🦅 Phoenix',    cost:380,  colors:['#7f1d1d','#ea580c','#fbbf24'], glow:'#f97316', special:true },
+  { id:'crystal',   name:'💠 Crystal',    cost:400,  colors:['#ecfeff','#67e8f9','#a5f3fc'], glow:'#22d3ee', special:true },
+  { id:'void',      name:'🕳️ Void',       cost:420,  colors:['#000000','#1e1b4b','#4338ca'], glow:'#4f46e5', special:true },
+  { id:'solar',     name:'☀️ Solar',      cost:450,  colors:['#431407','#ea580c','#fef08a'], glow:'#fbbf24', special:true },
+  { id:'plasma',    name:'⚛️ Plasma',     cost:480,  colors:['#2e1065','#7c3aed','#22d3ee'], glow:'#818cf8', special:true },
+  { id:'mythic',    name:'👑 Mythic',     cost:500,  colors:['#78350f','#b45309','#fef9c3'], glow:'#fde047', special:true },
+  // ── LÉGENDAIRES (animés) ──
+  { id:'rainbow',   name:'🌈 Rainbow',    cost:600,  colors:null, glow:'#fff', special:true, animated:true },
+  { id:'hologram',  name:'🔮 Hologram',   cost:700,  colors:null, glow:'#06b6d4', special:true, animated:true },
+  { id:'inferno',   name:'💀 Inferno',    cost:800,  colors:null, glow:'#ef4444', special:true, animated:true },
 ];
 
 const getSkin = () => SKINS.find(s => s.id === State.selectedSkin) || SKINS[0];
 const getBlockColors = (skin, idx) => {
+  const t = Date.now();
   if (skin.id === 'rainbow') {
-    const h = (Date.now()/20 + idx*30) % 360;
-    return [`hsl(${h},90%,55%)`,`hsl(${h+15},85%,65%)`,`hsl(${h+30},95%,70%)`];
+    const h = (t/18 + idx*35) % 360;
+    return [`hsl(${h},95%,55%)`,`hsl(${(h+40)%360},90%,65%)`,`hsl(${(h+80)%360},95%,70%)`];
+  }
+  if (skin.id === 'hologram') {
+    const h = (t/10 + idx*20) % 360;
+    return [`hsl(${h},100%,70%)`,`hsl(${(h+120)%360},100%,80%)`,`hsl(${(h+240)%360},100%,75%)`];
+  }
+  if (skin.id === 'inferno') {
+    const pulse = Math.sin(t/200 + idx) * 0.5 + 0.5;
+    const l = Math.round(30 + pulse * 25);
+    return [`hsl(0,100%,${l}%)`,`hsl(20,100%,${l+10}%)`,`hsl(40,100%,${l+15}%)`];
   }
   return skin.colors;
 };
@@ -121,26 +168,50 @@ const buildSkinsGrid = () => {
   SKINS.forEach(skin => {
     const owned    = State.unlockedSkins.includes(skin.id);
     const selected = skin.id === State.selectedSkin;
+    const isLegend = skin.animated;
+    const isEpic   = skin.special && !skin.animated;
+    const isFree   = skin.cost === 0;
+
     const el = document.createElement('div');
-    el.className = `skin-item ${selected?'selected':''} ${!owned&&skin.cost>0?'locked':''}`;
+    const cls = ['skin-item'];
+    if (selected) cls.push('selected');
+    if (!owned && skin.cost > 0) cls.push('locked');
+    if (isLegend) cls.push('legendary');
+    else if (isEpic) cls.push('special');
+    el.className = cls.join(' ');
 
     const pv = document.createElement('canvas');
-    pv.className='skin-preview'; pv.width=48; pv.height=24;
+    pv.className='skin-preview'; pv.width=52; pv.height=28;
     drawSkinPreview(pv, skin);
 
     const nm = document.createElement('div');
     nm.className='skin-name'; nm.textContent=skin.name;
     el.appendChild(pv); el.appendChild(nm);
 
-    if (!owned) {
+    if (owned) {
+      if (selected) {
+        const eq = document.createElement('div');
+        eq.style.cssText='font-size:0.55rem;color:#a855f7;font-weight:700;letter-spacing:0.5px';
+        eq.textContent='ÉQUIPÉ';
+        el.appendChild(eq);
+      }
+    } else {
       const co = document.createElement('div');
       co.className='skin-cost'; co.innerHTML=`<span>◆</span>${skin.cost}`;
       el.appendChild(co);
-      if (skin.special) {
-        const b=document.createElement('div'); b.className='skin-badge'; b.textContent='★';
-        el.appendChild(b);
-      }
     }
+
+    if (isLegend) {
+      const b=document.createElement('div'); b.className='skin-badge legend'; b.textContent='LEG';
+      el.appendChild(b);
+    } else if (isEpic) {
+      const b=document.createElement('div'); b.className='skin-badge epic'; b.textContent='EPIC';
+      el.appendChild(b);
+    } else if (isFree) {
+      const b=document.createElement('div'); b.className='skin-badge free'; b.textContent='FREE';
+      el.appendChild(b);
+    }
+
     el.addEventListener('click', () => {
       if (owned) { State.selectedSkin=skin.id; save(); buildSkinsGrid(); }
       else if (State.coins >= skin.cost) {
@@ -157,24 +228,32 @@ const buildSkinsGrid = () => {
 
 const drawSkinPreview = (cv, skin) => {
   const c = cv.getContext('2d');
-  const cols = skin.id==='rainbow' ? ['#f87171','#34d399','#60a5fa'] : skin.colors;
+  let cols;
+  if (skin.id === 'rainbow')  cols = ['#f87171','#34d399','#60a5fa'];
+  else if (skin.id === 'hologram') cols = ['#f0abfc','#67e8f9','#a5f3fc'];
+  else if (skin.id === 'inferno')  cols = ['#7f1d1d','#dc2626','#fb923c'];
+  else cols = skin.colors;
   const w = cv.width/3;
   cols.forEach((col,i) => {
-    const g=c.createLinearGradient(i*w,0,i*w+w,24);
-    g.addColorStop(0,col); g.addColorStop(1,col+'99');
-    c.fillStyle=g; c.beginPath(); c.roundRect(i*w+1,1,w-2,22,4); c.fill();
+    const g=c.createLinearGradient(i*w,0,i*w+w,cv.height);
+    g.addColorStop(0,col); g.addColorStop(1,col+'88');
+    c.fillStyle=g; c.beginPath(); c.roundRect(i*w+1,1,w-2,cv.height-2,5); c.fill();
   });
+  // Reflet
+  c.fillStyle='rgba(255,255,255,0.15)';
+  c.beginPath(); c.roundRect(2,2,cv.width-4,8,[4,4,0,0]); c.fill();
 };
 
 // ── Canvas & constants ───────────────────────────────
 const canvas = $('game-canvas');
 const ctx    = canvas.getContext('2d');
 
-const BLOCK_H    = 32;
-const BASE_W     = 220;
-const MISS_TOL    = 18;  // tolérance game-over : si overlap > ce seuil, ça compte quand même
-const PERFECT_TOL = 18;  // tolérance PERFECT
-const NICE_TOL    = 45;  // tolérance NICE
+const BLOCK_H    = 48;   // blocs bien épais
+const BASE_W     = 280;  // largeur de départ généreuse
+const MISS_TOL    = 20;
+const PERFECT_TOL = 22;
+const NICE_TOL    = 50;
+const MIN_BLOCK_W = 80;  // largeur minimale, jamais en dessous
 
 let blocks=[], fallingBlock=null;
 let cameraY=0, targetCameraY=0;
@@ -251,13 +330,12 @@ const drop = () => {
     gameOver(); return;
   }
 
-  // Si overlap est légèrement négatif mais dans la tolérance, on le traite comme 0
-  const safeOverlap = Math.max(1, overlap);
+  const safeOverlap = Math.max(MIN_BLOCK_W, overlap);
 
-  // Bloc posé : même largeur si overlap > 85% (tolérance visuelle)
+  // Garde la taille si overlap > 80%, sinon rétrécit mais jamais sous MIN_BLOCK_W
   const newX = Math.max(fb.x, top.x);
-  const newW = safeOverlap > fb.w * 0.85 ? fb.w : safeOverlap;
-  const finalX = safeOverlap > fb.w * 0.85 ? top.x + top.w/2 - newW/2 : newX;
+  const newW = safeOverlap > fb.w * 0.80 ? fb.w : safeOverlap;
+  const finalX = safeOverlap > fb.w * 0.80 ? top.x + top.w/2 - newW/2 : newX;
 
   const offCenter = Math.abs((finalX + newW/2) - (top.x + top.w/2));
 
