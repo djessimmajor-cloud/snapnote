@@ -181,9 +181,13 @@ let cameraY=0, targetCameraY=0;
 let animId=null, vfxParts=[], shakeAmt=0;
 let perfectFlash=0; // timer glow vert sur la zone centrale
 
+const GAME_W = 420; // largeur fixe de la zone de jeu
+let gameOffX = 0;  // offset X pour centrer la zone de jeu dans le canvas
+
 const resizeCanvas = () => {
   canvas.width  = innerWidth;
   canvas.height = innerHeight;
+  gameOffX = Math.round((innerWidth - GAME_W) / 2);
 };
 resizeCanvas(); addEventListener('resize', resizeCanvas);
 
@@ -193,8 +197,8 @@ const startGame = () => {
   Object.assign(State, { score:0, height:0, combo:0, bestCombo:0, paused:false, running:true });
   blocks=[]; vfxParts=[]; cameraY=0; targetCameraY=0; shakeAmt=0; fallingBlock=null; perfectFlash=0;
 
-  // Plateforme de base : positionnée aux 2/3 bas de l'écran
-  blocks.push({ x:canvas.width/2-BASE_W/2, y:canvas.height - Math.round(canvas.height * 0.22), w:BASE_W, h:BLOCK_H, isBase:true });
+  // Plateforme de base centrée dans la zone de jeu
+  blocks.push({ x:gameOffX + GAME_W/2 - BASE_W/2, y:canvas.height - Math.round(canvas.height * 0.22), w:BASE_W, h:BLOCK_H, isBase:true });
 
   updateHUD();
   showScreen('game');
@@ -215,9 +219,9 @@ const spawnFalling = () => {
   const w   = top.w;
   const spd = getSpeed(blocks.length);
   const dir = Math.random()<.5 ? 1 : -1;
-  // Démarre juste hors du bord visible (pas loin)
+  // Démarre juste hors de la zone de jeu
   fallingBlock = {
-    x: dir>0 ? -w : canvas.width,
+    x: dir>0 ? gameOffX - w : gameOffX + GAME_W,
     y: top.y - BLOCK_H - 6,
     w, h: BLOCK_H,
     speed: spd * dir,
@@ -496,8 +500,8 @@ const loop = () => {
   // Bloc qui glisse
   if (fallingBlock && !fallingBlock.landed) {
     fallingBlock.x += fallingBlock.speed;
-    if (fallingBlock.x > canvas.width+20)       fallingBlock.speed = -Math.abs(fallingBlock.speed);
-    if (fallingBlock.x+fallingBlock.w < -20)     fallingBlock.speed =  Math.abs(fallingBlock.speed);
+    if (fallingBlock.x > gameOffX + GAME_W)                      fallingBlock.speed = -Math.abs(fallingBlock.speed);
+    if (fallingBlock.x + fallingBlock.w < gameOffX)              fallingBlock.speed =  Math.abs(fallingBlock.speed);
     drawFalling(cameraY);
   }
 
