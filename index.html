@@ -3,918 +3,924 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#0f0f14">
+  <meta name="theme-color" content="#f5f0eb">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>Snapshot Note</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
   <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
     :root {
-      --bg: #0f0f14;
-      --surface: #1a1a24;
-      --surface2: #23232f;
-      --accent: #7c5cfc;
-      --accent2: #a78bfa;
-      --text: #f0eeff;
-      --muted: #7c7a99;
-      --danger: #f87171;
-      --success: #4ade80;
-      --border: rgba(124,92,252,0.18);
-      --shadow: 0 8px 40px rgba(0,0,0,0.5);
+      --bg:      oklch(97% 0.008 60);
+      --bg2:     oklch(94% 0.012 60);
+      --surface: #ffffff;
+      --border:  oklch(90% 0.008 60);
+      --border2: oklch(82% 0.01 60);
+      --text:    oklch(18% 0.01 60);
+      --text2:   oklch(22% 0.01 60);
+      --muted:   oklch(62% 0.01 60);
+      --muted2:  oklch(50% 0.01 60);
+      --accent:  oklch(58% 0.18 38);
+      --accent-bg: oklch(58% 0.18 38 / 0.12);
+      --danger:  oklch(48% 0.15 20);
+      --danger-bg: oklch(95% 0.01 20);
+      --mono: 'DM Mono', monospace;
+      --sans: 'DM Sans', system-ui, sans-serif;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
-    body {
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      background: var(--bg);
+    html, body {
+      width: 100%; height: 100%;
+      background: var(--bg2);
+      font-family: var(--sans);
       color: var(--text);
-      min-height: 100dvh;
       overflow: hidden;
     }
 
+    .app-shell {
+      position: relative;
+      width: 100%; height: 100%;
+      background: var(--bg);
+      overflow: hidden;
+    }
+
+    @media (min-width: 600px) {
+      body { display: flex; align-items: center; justify-content: center; background: oklch(92% 0.015 60); }
+      .app-shell {
+        width: 390px;
+        height: min(844px, 96vh);
+        border-radius: 24px;
+        box-shadow: 0 24px 80px rgba(0,0,0,0.18), 0 4px 16px rgba(0,0,0,0.08);
+      }
+    }
+
     /* ── SCREENS ── */
-    .screen { position: fixed; inset: 0; display: flex; flex-direction: column; transition: opacity .25s, transform .25s; }
-    .screen.hidden { opacity: 0; pointer-events: none; transform: scale(.97); }
-
-    /* ── HOME SCREEN ── */
-    #home {
-      align-items: center;
-      justify-content: center;
-      gap: 0;
-      background: radial-gradient(ellipse at 50% 60%, #1e1535 0%, var(--bg) 70%);
-    }
-
-    .home-top {
+    .screen {
       position: absolute;
-      top: 0; left: 0; right: 0;
+      inset: 0;
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
+      background: var(--bg);
+      transition: opacity .2s, transform .2s;
+    }
+    .screen.hidden { opacity: 0; pointer-events: none; transform: scale(.98); }
+
+    /* ── COMMON HEADER ── */
+    .hd {
+      display: flex;
       align-items: center;
-      padding: 20px 24px;
+      padding: 12px 16px 8px;
+      gap: 8px;
+      flex-shrink: 0;
     }
+    .hd-title { font-weight: 500; font-size: 15px; color: var(--text2); }
 
-    .logo-text {
-      font-size: 15px;
-      font-weight: 700;
-      letter-spacing: .08em;
-      color: var(--accent2);
-      text-transform: uppercase;
-    }
-
-    .btn-menu {
+    /* ── BUTTONS ── */
+    .btn-icon {
       background: none;
       border: none;
       cursor: pointer;
-      padding: 8px;
-      border-radius: 12px;
-      transition: background .2s;
+      color: var(--muted2);
+      padding: 4px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background .15s;
     }
-    .btn-menu:hover { background: var(--surface2); }
+    .btn-icon:hover { background: var(--bg2); }
 
-    .big-btn {
-      width: min(320px, 82vw);
-      aspect-ratio: 1;
-      border-radius: 50%;
-      background: radial-gradient(circle at 38% 35%, #3d2b8a 0%, #1e1535 55%, #0f0f14 100%);
-      border: 1.5px solid var(--border);
-      box-shadow: 0 0 60px rgba(124,92,252,.25), var(--shadow);
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 8px 18px;
+      font-size: 13px;
+      font-weight: 500;
+      font-family: var(--sans);
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+    .btn-primary:disabled { background: oklch(88% 0.01 60); color: var(--muted); cursor: default; }
+    .btn-primary:not(:disabled):hover { opacity: .88; }
+
+    /* ── HOME ── */
+    #home {
+      background: var(--bg);
+    }
+
+    .home-header {
+      padding: 16px 20px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .logo-wordmark {
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--muted);
+      letter-spacing: .04em;
+    }
+
+    .ping-chip {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: oklch(91% 0.008 60);
+      border: none;
+      border-radius: 20px;
+      padding: 5px 12px;
+      cursor: pointer;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted2);
+      transition: background .15s, color .15s;
+      letter-spacing: .03em;
+    }
+    .ping-chip.notif-on {
+      background: var(--accent-bg);
+      color: var(--accent);
+    }
+
+    .home-ping-row {
+      padding: 12px 20px 0;
+      display: flex;
+      justify-content: flex-end;
+      flex-shrink: 0;
+    }
+
+    .home-center {
+      flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 12px;
-      cursor: pointer;
-      transition: transform .18s, box-shadow .18s;
-      user-select: none;
-      position: relative;
+      gap: 16px;
     }
-    .big-btn:active { transform: scale(.96); box-shadow: 0 0 30px rgba(124,92,252,.15); }
-    .big-btn .ring {
-      position: absolute;
-      inset: -12px;
+
+    .btn-new-note {
+      width: 80px;
+      height: 80px;
       border-radius: 50%;
-      border: 1px solid rgba(124,92,252,.12);
-      animation: pulse 3s ease-in-out infinite;
-    }
-    .big-btn .ring2 {
-      inset: -26px;
-      animation-delay: 1s;
-      border-color: rgba(124,92,252,.06);
-    }
-    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.02)} }
-
-    .big-btn-label {
-      font-size: 17px;
-      font-weight: 600;
-      color: var(--text);
-      letter-spacing: .04em;
-    }
-    .big-btn-sub {
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    .last-note-preview {
-      margin-top: 32px;
-      width: min(360px, 90vw);
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 16px 20px;
+      background: var(--accent);
+      border: none;
       cursor: pointer;
-      transition: background .2s;
-    }
-    .last-note-preview:hover { background: var(--surface2); }
-    .last-note-preview .lnp-header {
       display: flex;
       align-items: center;
-      gap: 8px;
-      margin-bottom: 8px;
-      color: var(--muted);
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: .08em;
+      justify-content: center;
+      color: white;
+      box-shadow: 0 8px 32px oklch(58% 0.18 38 / 0.35);
+      transition: transform .15s, box-shadow .15s;
     }
-    .last-note-preview .lnp-text {
-      font-size: 15px;
-      line-height: 1.5;
-      color: var(--text);
+    .btn-new-note:hover { transform: scale(1.07); }
+    .btn-new-note:active { transform: scale(.96); box-shadow: 0 4px 16px oklch(58% 0.18 38 / 0.2); }
+
+    .home-cta-label {
+      font-size: 13px;
+      color: var(--muted);
+      letter-spacing: .02em;
+    }
+
+    .last-note-wrap {
+      padding: 0 20px 32px;
+      flex-shrink: 0;
+    }
+
+    .last-note-card {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px 18px;
+      text-align: left;
+      cursor: pointer;
+      transition: border-color .15s;
+    }
+    .last-note-card:hover { border-color: var(--accent); }
+
+    .last-note-meta {
+      font-size: 11px;
+      font-family: var(--mono);
+      color: var(--muted);
+      margin-bottom: 8px;
+      letter-spacing: .03em;
+    }
+
+    .last-note-text {
+      font-size: 14px;
+      color: oklch(25% 0.01 60);
+      line-height: 1.55;
+      font-weight: 300;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
-    .last-note-preview .lnp-empty {
-      font-size: 14px;
-      color: var(--muted);
-      font-style: italic;
-    }
 
-    /* ping dot */
-    .ping-badge {
-      position: absolute;
-      top: 18px; right: 18px;
+    .last-note-empty {
+      width: 100%;
+      background: oklch(95% 0.007 60);
+      border: 1px dashed oklch(85% 0.008 60);
+      border-radius: 16px;
+      padding: 20px 18px;
+      text-align: center;
+    }
+    .last-note-empty span { font-size: 13px; color: var(--muted); }
+
+    /* ── WRITE ── */
+    #write {}
+
+    .write-hd {
       display: flex;
       align-items: center;
-      gap: 6px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 5px 11px 5px 8px;
-      font-size: 12px;
-      color: var(--muted);
-      cursor: pointer;
+      padding: 12px 16px;
+      gap: 8px;
+      flex-shrink: 0;
     }
-    .ping-dot {
-      width: 7px; height: 7px;
-      border-radius: 50%;
-      background: var(--accent);
-      animation: blink 2s ease-in-out infinite;
-    }
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
-
-    /* ── WRITE SCREEN ── */
-    #write {
-      background: var(--bg);
-    }
-    .write-header {
-      display: flex;
-      align-items: center;
-      padding: 16px 20px;
-      gap: 12px;
-      border-bottom: 1px solid var(--border);
-    }
-    .btn-back {
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 6px;
-      border-radius: 10px;
-      transition: background .2s;
-      color: var(--text);
-    }
-    .btn-back:hover { background: var(--surface2); }
-    .write-title {
-      flex: 1;
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--muted);
-      letter-spacing: .04em;
-    }
-    .write-time {
+    .write-charcount {
+      font-family: var(--mono);
       font-size: 12px;
       color: var(--muted);
     }
 
     #note-area {
       flex: 1;
-      background: transparent;
       border: none;
       outline: none;
-      padding: 28px 24px;
-      font-size: 17px;
+      resize: none;
+      background: transparent;
+      padding: 12px 22px 24px;
+      font-size: 15px;
       line-height: 1.7;
       color: var(--text);
-      resize: none;
-      font-family: inherit;
+      font-family: var(--sans);
+      font-weight: 300;
     }
     #note-area::placeholder { color: var(--muted); }
 
-    .write-footer {
+    /* ── LIST ── */
+    #list {}
+
+    .list-stats {
+      padding: 2px 20px 12px;
+      display: flex;
+      gap: 20px;
+      flex-shrink: 0;
+    }
+    .stat-col { display: flex; flex-direction: column; gap: 1px; }
+    .stat-val { font-family: var(--mono); font-size: 18px; font-weight: 300; color: var(--accent); }
+    .stat-lbl { font-size: 11px; color: var(--muted); letter-spacing: .03em; }
+
+    .search-wrap {
+      padding: 0 20px 14px;
+      flex-shrink: 0;
+    }
+    .search-inner {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      padding: 14px 20px;
-      border-top: 1px solid var(--border);
-      gap: 12px;
-    }
-    .char-count { font-size: 12px; color: var(--muted); }
-
-    .btn-save {
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      border-radius: 14px;
-      padding: 12px 28px;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: opacity .18s, transform .15s;
-    }
-    .btn-save:hover { opacity: .88; }
-    .btn-save:active { transform: scale(.97); }
-
-    /* ── LIST SCREEN ── */
-    #list {
-      background: var(--bg);
-    }
-    .list-header {
-      display: flex;
-      align-items: center;
-      padding: 16px 20px;
-      gap: 12px;
-      border-bottom: 1px solid var(--border);
-    }
-    .list-title {
-      flex: 1;
-      font-size: 17px;
-      font-weight: 700;
-    }
-    .note-count {
-      font-size: 12px;
-      background: var(--surface2);
-      border-radius: 20px;
-      padding: 3px 10px;
-      color: var(--muted);
-    }
-
-    .search-bar {
-      margin: 12px 20px;
-      display: flex;
-      align-items: center;
+      gap: 8px;
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 10px 16px;
-      gap: 10px;
+      border-radius: 12px;
+      padding: 9px 14px;
     }
-    .search-bar input {
+    .search-inner input {
       flex: 1;
-      background: none;
       border: none;
       outline: none;
-      color: var(--text);
-      font-size: 15px;
-      font-family: inherit;
+      background: transparent;
+      font-size: 14px;
+      color: var(--text2);
+      font-family: var(--sans);
     }
-    .search-bar input::placeholder { color: var(--muted); }
+    .search-inner input::placeholder { color: var(--muted); }
+    .btn-search-clear {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      padding: 0;
+      line-height: 1;
+      display: flex;
+    }
 
     .notes-list {
       flex: 1;
       overflow-y: auto;
-      padding: 8px 20px 24px;
+      padding: 0 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
-    .notes-list::-webkit-scrollbar { width: 4px; }
-    .notes-list::-webkit-scrollbar-track { background: transparent; }
-    .notes-list::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 4px; }
+    .notes-list::-webkit-scrollbar { width: 3px; }
+    .notes-list::-webkit-scrollbar-thumb { background: oklch(85% 0.01 60); border-radius: 4px; }
 
-    .note-item {
+    .note-row { position: relative; }
+
+    .note-card {
+      width: 100%;
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 16px;
-      margin-bottom: 10px;
+      border-radius: 12px;
+      padding: 13px 16px;
+      text-align: left;
       cursor: pointer;
-      transition: background .15s, transform .12s;
-      position: relative;
+      transition: border-color .15s;
     }
-    .note-item:hover { background: var(--surface2); }
-    .note-item:active { transform: scale(.99); }
-    .note-item .ni-date {
-      font-size: 11px;
-      color: var(--muted);
-      margin-bottom: 6px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .note-item .ni-text {
-      font-size: 14px;
-      line-height: 1.5;
-      color: var(--text);
-      display: -webkit-box;
-      -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-    .note-item .ni-delete {
-      position: absolute;
-      top: 12px; right: 12px;
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 6px;
-      border-radius: 8px;
-      opacity: 0;
-      transition: opacity .2s, background .2s;
-      color: var(--danger);
-    }
-    .note-item:hover .ni-delete { opacity: 1; }
-    .note-item .ni-delete:hover { background: rgba(248,113,113,.12); }
+    .note-card:hover { border-color: var(--border2); }
 
-    .empty-list {
+    .note-card-date {
+      font-size: 11px;
+      font-family: var(--mono);
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+    .note-card-text {
+      font-size: 13.5px;
+      color: var(--text2);
+      line-height: 1.55;
+      font-weight: 300;
+    }
+
+    .note-del-btn {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--danger-bg);
+      border: none;
+      border-radius: 8px;
+      width: 32px;
+      height: 32px;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 14px;
-      padding: 60px 0;
-      color: var(--muted);
-    }
-
-    /* ── MENU (SIDE DRAWER) ── */
-    #menu-overlay {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,.55);
-      backdrop-filter: blur(4px);
-      z-index: 100;
+      cursor: pointer;
+      color: var(--danger);
       opacity: 0;
-      pointer-events: none;
-      transition: opacity .28s;
+      transition: opacity .15s;
     }
-    #menu-overlay.open { opacity: 1; pointer-events: all; }
+    .note-row:hover .note-del-btn { opacity: 1; }
 
-    #menu-drawer {
-      position: fixed;
-      top: 0; right: 0; bottom: 0;
-      width: min(320px, 88vw);
-      background: var(--surface);
-      border-left: 1px solid var(--border);
-      z-index: 101;
-      display: flex;
-      flex-direction: column;
-      transform: translateX(100%);
-      transition: transform .28s cubic-bezier(.22,.68,0,1.2);
-      padding: 0 0 32px;
+    .list-empty {
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      padding: 40px 0;
     }
-    #menu-drawer.open { transform: translateX(0); }
 
-    .menu-header {
+    /* ── VIEW ── */
+    #view-screen {}
+
+    .view-hd {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      padding: 24px 24px 20px;
-      border-bottom: 1px solid var(--border);
+      padding: 12px 16px 8px;
+      gap: 8px;
+      flex-shrink: 0;
     }
-    .menu-logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .menu-logo-text {
-      font-size: 17px;
-      font-weight: 700;
-      color: var(--text);
-    }
-    .btn-close {
-      background: none;
+
+    .btn-delete-note {
+      background: var(--danger-bg);
       border: none;
-      cursor: pointer;
-      padding: 8px;
       border-radius: 10px;
-      color: var(--muted);
-      transition: background .2s;
-    }
-    .btn-close:hover { background: var(--surface2); color: var(--text); }
-
-    .menu-section {
-      padding: 20px 24px 0;
-    }
-    .menu-section-label {
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: .1em;
-      color: var(--muted);
-      margin-bottom: 10px;
-    }
-
-    .menu-item {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 13px 14px;
-      border-radius: 14px;
+      padding: 7px 12px;
       cursor: pointer;
-      transition: background .15s;
-      border: none;
-      background: none;
-      width: 100%;
-      text-align: left;
-      color: var(--text);
-      font-size: 15px;
-      font-family: inherit;
-    }
-    .menu-item:hover { background: var(--surface2); }
-    .menu-item svg { flex-shrink: 0; }
-    .menu-item .mi-label { flex: 1; }
-    .menu-item .mi-badge {
-      font-size: 12px;
-      color: var(--muted);
-      background: var(--bg);
-      border-radius: 8px;
-      padding: 2px 8px;
-    }
-
-    .menu-divider {
-      height: 1px;
-      background: var(--border);
-      margin: 14px 24px;
-    }
-
-    /* ── PING SETTINGS ── */
-    #ping-screen {
-      background: var(--bg);
-    }
-    .ping-header {
+      color: var(--danger);
       display: flex;
       align-items: center;
-      padding: 16px 20px;
-      gap: 12px;
-      border-bottom: 1px solid var(--border);
+      gap: 5px;
+      font-size: 12px;
+      font-family: var(--sans);
+      transition: background .15s;
     }
-    .ping-title { flex: 1; font-size: 17px; font-weight: 700; }
+    .btn-delete-note:hover { background: oklch(92% 0.015 20); }
+
+    .view-meta {
+      padding: 8px 22px 4px;
+      flex-shrink: 0;
+    }
+    .view-date {
+      font-size: 11px;
+      font-family: var(--mono);
+      color: var(--muted);
+      letter-spacing: .03em;
+    }
+
+    .view-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 22px 32px;
+      font-size: 15px;
+      line-height: 1.75;
+      color: var(--text);
+      font-weight: 300;
+      white-space: pre-wrap;
+    }
+
+    /* ── PING ── */
+    #ping-screen {}
 
     .ping-body {
       flex: 1;
       overflow-y: auto;
-      padding: 24px 20px;
+      padding: 8px 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
     }
 
-    .ping-current {
+    .ping-current-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 20px;
-      margin-bottom: 24px;
-      text-align: center;
-    }
-    .ping-current .pc-label { font-size: 12px; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .08em; }
-    .ping-current .pc-value { font-size: 28px; font-weight: 700; color: var(--accent2); }
-    .ping-current .pc-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
-
-    .ping-section-label {
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: .08em;
-      color: var(--muted);
-      margin-bottom: 12px;
-    }
-
-    .ping-presets {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-bottom: 24px;
-    }
-    .ping-preset {
-      background: var(--surface);
-      border: 1.5px solid var(--border);
       border-radius: 14px;
-      padding: 12px 8px;
-      cursor: pointer;
-      text-align: center;
-      transition: background .15s, border-color .15s;
-      font-family: inherit;
-      color: var(--text);
+      padding: 14px 16px;
     }
-    .ping-preset:hover { background: var(--surface2); }
-    .ping-preset.active { border-color: var(--accent); background: rgba(124,92,252,.12); }
-    .ping-preset .pp-val { font-size: 16px; font-weight: 700; color: var(--accent2); }
-    .ping-preset .pp-unit { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .ping-current-lbl {
+      font-size: 10px;
+      font-family: var(--mono);
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 6px;
+    }
+    .ping-current-val {
+      font-size: 26px;
+      font-family: var(--mono);
+      font-weight: 300;
+      color: var(--accent);
+    }
 
-    .ping-custom {
+    .ping-section-lbl {
+      font-size: 11px;
+      font-family: var(--mono);
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 10px;
+    }
+
+    .presets-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 7px;
+    }
+    .preset-btn {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 20px;
-      margin-bottom: 24px;
+      border-radius: 10px;
+      padding: 9px 4px;
+      font-size: 12px;
+      font-family: var(--mono);
+      color: oklch(30% 0.01 60);
+      cursor: pointer;
+      transition: all .15s;
     }
+    .preset-btn:hover { border-color: var(--border2); }
+    .preset-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+
+    .ping-custom-section {}
     .ping-custom-row {
       display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-top: 14px;
+      gap: 8px;
+      margin-top: 0;
     }
     .ping-custom-row input[type=number] {
       flex: 1;
-      background: var(--surface2);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 10px 14px;
-      color: var(--text);
-      font-size: 16px;
-      font-family: inherit;
+      border-radius: 10px;
+      padding: 9px 12px;
+      font-size: 14px;
+      font-family: var(--sans);
+      background: var(--surface);
+      color: var(--text2);
       outline: none;
     }
     .ping-custom-row select {
-      background: var(--surface2);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 10px 14px;
-      color: var(--text);
-      font-size: 14px;
-      font-family: inherit;
+      border-radius: 10px;
+      padding: 9px 10px;
+      font-size: 13px;
+      font-family: var(--sans);
+      background: var(--surface);
+      color: var(--text2);
       outline: none;
       cursor: pointer;
     }
+    .btn-ok {
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 9px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: var(--sans);
+    }
 
-    .ping-toggle {
+    .notif-toggle-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 18px 20px;
-      margin-bottom: 24px;
     }
-    .ping-toggle .pt-left { display: flex; flex-direction: column; gap: 3px; }
-    .ping-toggle .pt-label { font-size: 15px; font-weight: 600; }
-    .ping-toggle .pt-sub { font-size: 12px; color: var(--muted); }
+    .nt-left {}
+    .nt-label { font-size: 14px; font-weight: 400; color: var(--text2); }
+    .nt-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
 
     .toggle-switch {
-      width: 50px; height: 28px;
-      background: var(--surface2);
-      border-radius: 14px;
-      position: relative;
+      width: 44px;
+      height: 24px;
+      border-radius: 12px;
+      background: oklch(82% 0.01 60);
+      border: none;
       cursor: pointer;
+      position: relative;
       transition: background .2s;
       flex-shrink: 0;
-      border: none;
     }
     .toggle-switch.on { background: var(--accent); }
     .toggle-switch::after {
       content: '';
       position: absolute;
-      width: 22px; height: 22px;
+      top: 3px;
+      left: 3px;
+      width: 18px;
+      height: 18px;
       border-radius: 50%;
-      background: #fff;
-      top: 3px; left: 3px;
-      transition: transform .2s;
+      background: white;
+      transition: left .2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,.2);
     }
-    .toggle-switch.on::after { transform: translateX(22px); }
+    .toggle-switch.on::after { left: 23px; }
 
-    .btn-apply {
+    .btn-apply-ping {
       width: 100%;
       background: var(--accent);
-      color: #fff;
+      color: white;
       border: none;
-      border-radius: 16px;
-      padding: 15px;
-      font-size: 15px;
-      font-weight: 600;
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 14px;
+      font-weight: 500;
       cursor: pointer;
-      transition: opacity .18s;
-      font-family: inherit;
+      font-family: var(--sans);
+      box-shadow: 0 4px 16px oklch(58% 0.18 38 / 0.3);
+      transition: opacity .15s;
     }
-    .btn-apply:hover { opacity: .88; }
+    .btn-apply-ping:hover { opacity: .88; }
 
-    /* ── NOTE VIEW ── */
-    #view-screen {
-      background: var(--bg);
+    /* ── MENU DRAWER ── */
+    #menu-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,.25);
+      backdrop-filter: blur(2px);
+      z-index: 50;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s;
     }
-    .view-header {
+    #menu-overlay.open { opacity: 1; pointer-events: all; }
+
+    #menu-drawer {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 78%;
+      background: oklch(97.5% 0.008 60);
+      z-index: 51;
+      display: flex;
+      flex-direction: column;
+      box-shadow: -8px 0 40px rgba(0,0,0,.12);
+      transform: translateX(100%);
+      transition: transform .25s cubic-bezier(.22,.68,0,1.2);
+    }
+    #menu-drawer.open { transform: translateX(0); }
+
+    .menu-top {
+      padding: 20px 20px 12px;
       display: flex;
       align-items: center;
-      padding: 16px 20px;
-      gap: 12px;
-      border-bottom: 1px solid var(--border);
+      justify-content: space-between;
+      flex-shrink: 0;
     }
-    .view-date { flex: 1; font-size: 13px; color: var(--muted); }
-    .btn-delete-note {
+    .menu-wordmark {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: .06em;
+    }
+
+    .menu-badges {
+      padding: 0 20px 16px;
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .menu-badge {
+      background: var(--accent-bg);
+      border-radius: 20px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-family: var(--mono);
+      color: var(--accent);
+    }
+    .menu-badge-muted {
+      background: oklch(91% 0.008 60);
+      border-radius: 20px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-family: var(--mono);
+      color: var(--muted2);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .menu-divider { height: 1px; background: var(--border); margin: 0 20px 8px; flex-shrink: 0; }
+
+    .menu-nav { flex: 1; overflow-y: auto; padding: 8px 12px; }
+    .menu-nav-btn {
+      width: 100%;
       background: none;
       border: none;
-      cursor: pointer;
-      padding: 8px;
       border-radius: 10px;
-      color: var(--danger);
-      transition: background .2s;
+      padding: 13px 12px;
+      text-align: left;
+      cursor: pointer;
+      font-size: 15px;
+      color: var(--text2);
+      font-family: var(--sans);
+      transition: background .12s;
+      display: block;
     }
-    .btn-delete-note:hover { background: rgba(248,113,113,.1); }
+    .menu-nav-btn:hover { background: oklch(92% 0.008 60); }
 
-    .view-body {
+    .menu-actions { padding: 8px 12px 32px; display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
+    .menu-action-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      background: none;
+      border: none;
+      border-radius: 10px;
+      padding: 13px 12px;
+      text-align: left;
+      cursor: pointer;
+      font-size: 14px;
+      color: oklch(35% 0.01 60);
+      font-family: var(--sans);
+      transition: background .12s;
+    }
+    .menu-action-btn:hover { background: oklch(92% 0.008 60); }
+    .menu-action-btn.danger { color: var(--danger); }
+    .menu-action-btn.danger:hover { background: var(--danger-bg); }
+
+    .confirm-clear {
+      padding: 8px 12px;
+      background: var(--danger-bg);
+      border-radius: 10px;
+    }
+    .confirm-clear-msg { font-size: 13px; color: oklch(35% 0.12 20); margin-bottom: 8px; }
+    .confirm-clear-row { display: flex; gap: 8px; }
+    .btn-cancel-clear {
       flex: 1;
-      overflow-y: auto;
-      padding: 28px 24px;
-      font-size: 17px;
-      line-height: 1.7;
-      color: var(--text);
-      white-space: pre-wrap;
+      background: white;
+      border: 1px solid oklch(88% 0.01 60);
+      border-radius: 8px;
+      padding: 7px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: var(--sans);
+    }
+    .btn-confirm-clear {
+      flex: 1;
+      background: oklch(48% 0.15 20);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 7px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: var(--sans);
     }
 
-    /* toast */
+    /* ── TOAST ── */
     #toast {
       position: fixed;
-      bottom: 32px; left: 50%;
+      bottom: 32px;
+      left: 50%;
       transform: translateX(-50%) translateY(20px);
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 12px 22px;
-      font-size: 14px;
-      color: var(--text);
+      background: var(--text);
+      color: var(--bg);
+      border-radius: 20px;
+      padding: 10px 20px;
+      font-size: 13px;
       z-index: 200;
       opacity: 0;
-      transition: opacity .25s, transform .25s;
+      transition: opacity .22s, transform .22s;
       pointer-events: none;
       white-space: nowrap;
     }
     #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-    /* stats chips */
-    .stats-row {
-      display: flex;
-      gap: 10px;
-      padding: 0 20px 16px;
-      flex-wrap: wrap;
-    }
-    .stat-chip {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 6px 14px;
-      font-size: 12px;
-      color: var(--muted);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .stat-chip strong { color: var(--accent2); }
   </style>
 </head>
 <body>
+<div class="app-shell" id="app-shell">
 
-<!-- HOME -->
-<div class="screen" id="home">
-  <div class="home-top">
-    <span class="logo-text">Snapshot</span>
-    <button class="btn-menu" id="btn-open-menu" aria-label="Menu">
-      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-        <rect x="2" y="5" width="18" height="2" rx="1" fill="#a78bfa"/>
-        <rect x="2" y="10" width="12" height="2" rx="1" fill="#a78bfa"/>
-        <rect x="2" y="15" width="16" height="2" rx="1" fill="#a78bfa"/>
-      </svg>
-    </button>
-  </div>
-
-  <button class="big-btn" id="btn-write">
-    <div class="ring"></div>
-    <div class="ring ring2"></div>
-    <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
-      <circle cx="26" cy="26" r="25" stroke="rgba(167,139,250,0.25)" stroke-width="1"/>
-      <path d="M14 38 L16 30 L34 12 Q37 9 40 12 Q43 15 40 18 L22 36 Z" fill="none" stroke="#a78bfa" stroke-width="1.8" stroke-linejoin="round"/>
-      <path d="M16 30 L22 36" stroke="#a78bfa" stroke-width="1.8"/>
-      <path d="M30 16 L36 22" stroke="#a78bfa" stroke-width="1.8"/>
-      <circle cx="16" cy="37" r="1.5" fill="#7c5cfc"/>
-    </svg>
-    <span class="big-btn-label">Nouvelle note</span>
-    <span class="big-btn-sub">Appuie pour capturer l'instant</span>
-  </button>
-
-  <div class="last-note-preview" id="last-note-preview">
-    <div class="lnp-header">
-      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-        <circle cx="6" cy="6" r="5" stroke="#7c7a99" stroke-width="1.2"/>
-        <path d="M6 3.5V6.5L8 8" stroke="#7c7a99" stroke-width="1.2" stroke-linecap="round"/>
-      </svg>
-      Dernière note
+  <!-- HOME -->
+  <div class="screen" id="home">
+    <div class="home-header">
+      <span class="logo-wordmark">NOTE</span>
+      <button class="btn-icon" id="btn-open-menu" aria-label="Menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
     </div>
-    <div id="lnp-content"><span class="lnp-empty">Aucune note encore...</span></div>
-  </div>
-
-  <div class="ping-badge" id="ping-badge" title="Intervalle de rappel">
-    <div class="ping-dot"></div>
-    <span id="ping-label-home">1 min</span>
-  </div>
-</div>
-
-<!-- WRITE -->
-<div class="screen hidden" id="write">
-  <div class="write-header">
-    <button class="btn-back" id="btn-back-write" aria-label="Retour">
-      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-        <path d="M14 5L7 11L14 17" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </button>
-    <span class="write-title">Nouvelle note</span>
-    <span class="write-time" id="write-time"></span>
-  </div>
-  <textarea id="note-area" placeholder="Écris quelque chose..." autocomplete="off" spellcheck="false"></textarea>
-  <div class="write-footer">
-    <span class="char-count" id="char-count">0 car.</span>
-    <button class="btn-save" id="btn-save">Enregistrer</button>
-  </div>
-</div>
-
-<!-- LIST -->
-<div class="screen hidden" id="list">
-  <div class="list-header">
-    <button class="btn-back" id="btn-back-list" aria-label="Retour">
-      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-        <path d="M14 5L7 11L14 17" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </button>
-    <span class="list-title">Mes notes</span>
-    <span class="note-count" id="note-count">0</span>
-  </div>
-  <div class="stats-row" id="stats-row"></div>
-  <div class="search-bar">
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <circle cx="7" cy="7" r="5.5" stroke="#7c7a99" stroke-width="1.4"/>
-      <path d="M11 11L14 14" stroke="#7c7a99" stroke-width="1.4" stroke-linecap="round"/>
-    </svg>
-    <input type="text" id="search-input" placeholder="Rechercher...">
-  </div>
-  <div class="notes-list" id="notes-list"></div>
-</div>
-
-<!-- VIEW NOTE -->
-<div class="screen hidden" id="view-screen">
-  <div class="view-header">
-    <button class="btn-back" id="btn-back-view" aria-label="Retour">
-      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-        <path d="M14 5L7 11L14 17" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </button>
-    <span class="view-date" id="view-date"></span>
-    <button class="btn-delete-note" id="btn-delete-note" aria-label="Supprimer">
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <path d="M5 7H15L14 17H6L5 7Z" stroke="#f87171" stroke-width="1.4" stroke-linejoin="round"/>
-        <path d="M3 7H17M8 7V5H12V7" stroke="#f87171" stroke-width="1.4" stroke-linecap="round"/>
-      </svg>
-    </button>
-  </div>
-  <div class="view-body" id="view-body"></div>
-</div>
-
-<!-- PING SETTINGS -->
-<div class="screen hidden" id="ping-screen">
-  <div class="ping-header">
-    <button class="btn-back" id="btn-back-ping" aria-label="Retour">
-      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-        <path d="M14 5L7 11L14 17" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </button>
-    <span class="ping-title">Intervalle de rappel</span>
-  </div>
-  <div class="ping-body">
-    <div class="ping-current">
-      <div class="pc-label">Intervalle actuel</div>
-      <div class="pc-value" id="pc-value">—</div>
-      <div class="pc-sub" id="pc-sub"></div>
+    <div class="home-ping-row">
+      <button class="ping-chip" id="ping-chip">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        <span id="ping-chip-label">1h</span>
+      </button>
     </div>
-
-    <div class="ping-toggle">
-      <div class="pt-left">
-        <span class="pt-label">Notifications actives</span>
-        <span class="pt-sub">Recevoir un rappel selon l'intervalle</span>
-      </div>
-      <button class="toggle-switch" id="notif-toggle" aria-label="Toggle notifications"></button>
+    <div class="home-center">
+      <button class="btn-new-note" id="btn-write" aria-label="Nouvelle note">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+      </button>
+      <span class="home-cta-label">nouvelle note</span>
     </div>
+    <div class="last-note-wrap">
+      <div id="last-note-preview"></div>
+    </div>
+  </div>
 
-    <div class="ping-section-label">Préréglages rapides</div>
-    <div class="ping-presets" id="ping-presets"></div>
+  <!-- WRITE -->
+  <div class="screen hidden" id="write">
+    <div class="write-hd">
+      <button class="btn-icon btn-back" id="btn-back-write" aria-label="Retour"></button>
+      <span style="flex:1"></span>
+      <span class="write-charcount" id="char-count">0</span>
+      <button class="btn-primary" id="btn-save" disabled>Enregistrer</button>
+    </div>
+    <textarea id="note-area" placeholder="Commence à écrire…" autocomplete="off" spellcheck="false"></textarea>
+  </div>
 
-    <div class="ping-custom">
-      <div class="ping-section-label">Valeur personnalisée</div>
-      <div class="ping-custom-row">
-        <input type="number" id="custom-val" min="1" max="999" value="5" placeholder="5">
-        <select id="custom-unit">
-          <option value="min">Minutes</option>
-          <option value="h">Heures</option>
-          <option value="d">Jours</option>
-          <option value="w">Semaines</option>
-          <option value="mo">Mois</option>
-          <option value="y">Années</option>
-        </select>
+  <!-- LIST -->
+  <div class="screen hidden" id="list">
+    <div class="hd">
+      <button class="btn-icon btn-back" id="btn-back-list" aria-label="Retour"></button>
+      <span class="hd-title">Notes</span>
+    </div>
+    <div class="list-stats" id="list-stats"></div>
+    <div class="search-wrap">
+      <div class="search-inner">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text" id="search-input" placeholder="Rechercher…">
+        <button class="btn-search-clear" id="btn-search-clear" style="display:none">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
       </div>
     </div>
-
-    <button class="btn-apply" id="btn-apply-ping">Appliquer l'intervalle</button>
+    <div class="notes-list" id="notes-list"></div>
   </div>
-</div>
 
-<!-- MENU OVERLAY -->
-<div id="menu-overlay"></div>
-<div id="menu-drawer">
-  <div class="menu-header">
-    <div class="menu-logo">
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-        <rect width="28" height="28" rx="8" fill="rgba(124,92,252,0.18)"/>
-        <path d="M7 21 L8.5 15.5 L19 5 Q21 3 23 5 Q25 7 23 9 L12.5 19.5 Z" fill="none" stroke="#a78bfa" stroke-width="1.6" stroke-linejoin="round"/>
-        <path d="M8.5 15.5 L12.5 19.5" stroke="#a78bfa" stroke-width="1.6"/>
-        <circle cx="8" cy="21" r="1.2" fill="#7c5cfc"/>
-      </svg>
-      <span class="menu-logo-text">Snapshot Note</span>
+  <!-- VIEW -->
+  <div class="screen hidden" id="view-screen">
+    <div class="view-hd">
+      <button class="btn-icon btn-back" id="btn-back-view" aria-label="Retour"></button>
+      <span style="flex:1"></span>
+      <button class="btn-delete-note" id="btn-delete-note">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+        </svg>
+        Supprimer
+      </button>
     </div>
-    <button class="btn-close" id="btn-close-menu" aria-label="Fermer">
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-      </svg>
-    </button>
+    <div class="view-meta"><div class="view-date" id="view-date"></div></div>
+    <div class="view-body" id="view-body"></div>
   </div>
 
-  <div class="menu-section">
-    <div class="menu-section-label">Navigation</div>
-    <button class="menu-item" id="menu-home">
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <path d="M3 10L10 3L17 10V18H13V13H7V18H3V10Z" stroke="#a78bfa" stroke-width="1.5" stroke-linejoin="round"/>
-      </svg>
-      <span class="mi-label">Accueil</span>
-    </button>
-    <button class="menu-item" id="menu-new-note">
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <circle cx="10" cy="10" r="8" stroke="#a78bfa" stroke-width="1.5"/>
-        <path d="M10 6V14M6 10H14" stroke="#a78bfa" stroke-width="1.5" stroke-linecap="round"/>
-      </svg>
-      <span class="mi-label">Nouvelle note</span>
-    </button>
-    <button class="menu-item" id="menu-all-notes">
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <rect x="3" y="3" width="14" height="14" rx="3" stroke="#a78bfa" stroke-width="1.5"/>
-        <path d="M7 8H13M7 12H11" stroke="#a78bfa" stroke-width="1.4" stroke-linecap="round"/>
-      </svg>
-      <span class="mi-label">Toutes les notes</span>
-      <span class="mi-badge" id="menu-badge">0</span>
-    </button>
-  </div>
+  <!-- PING -->
+  <div class="screen hidden" id="ping-screen">
+    <div class="hd">
+      <button class="btn-icon btn-back" id="btn-back-ping" aria-label="Retour"></button>
+      <span class="hd-title">Rappel</span>
+    </div>
+    <div class="ping-body">
+      <div class="ping-current-card">
+        <div class="ping-current-lbl">intervalle actuel</div>
+        <div class="ping-current-val" id="pc-value">—</div>
+      </div>
 
-  <div class="menu-divider"></div>
+      <div>
+        <div class="ping-section-lbl">Préréglages</div>
+        <div class="presets-grid" id="ping-presets"></div>
+      </div>
 
-  <div class="menu-section">
-    <div class="menu-section-label">Paramètres</div>
-    <button class="menu-item" id="menu-ping">
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <circle cx="10" cy="10" r="3" stroke="#a78bfa" stroke-width="1.5"/>
-        <path d="M10 2V4M10 16V18M2 10H4M16 10H18" stroke="#a78bfa" stroke-width="1.5" stroke-linecap="round"/>
-        <path d="M4.22 4.22L5.64 5.64M14.36 14.36L15.78 15.78M4.22 15.78L5.64 14.36M14.36 5.64L15.78 4.22" stroke="#a78bfa" stroke-width="1.4" stroke-linecap="round"/>
-      </svg>
-      <span class="mi-label">Intervalle de rappel</span>
-      <span class="mi-badge" id="menu-ping-badge">1 min</span>
-    </button>
-    <button class="menu-item" id="menu-export">
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <path d="M10 3V13M7 10L10 13L13 10" stroke="#a78bfa" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M4 15H16" stroke="#a78bfa" stroke-width="1.5" stroke-linecap="round"/>
-      </svg>
-      <span class="mi-label">Exporter (.txt)</span>
-    </button>
-    <button class="menu-item" id="menu-clear">
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <path d="M5 8H15L14 17H6L5 8Z" stroke="#f87171" stroke-width="1.4" stroke-linejoin="round"/>
-        <path d="M3 8H17M9 8V5H11V8" stroke="#f87171" stroke-width="1.4" stroke-linecap="round"/>
-      </svg>
-      <span class="mi-label" style="color:var(--danger)">Tout effacer</span>
-    </button>
-  </div>
+      <div class="ping-custom-section">
+        <div class="ping-section-lbl">Personnalisé</div>
+        <div class="ping-custom-row">
+          <input type="number" id="custom-val" min="1" max="999" placeholder="ex. 3">
+          <select id="custom-unit">
+            <option value="min">minutes</option>
+            <option value="h">heures</option>
+            <option value="d">jours</option>
+            <option value="w">semaines</option>
+            <option value="mo">mois</option>
+            <option value="y">années</option>
+          </select>
+          <button class="btn-ok" id="btn-custom-ok">OK</button>
+        </div>
+      </div>
 
-  <div class="menu-divider"></div>
+      <div class="notif-toggle-card">
+        <div class="nt-left">
+          <div class="nt-label">Notifications système</div>
+          <div class="nt-sub">Recevoir des rappels</div>
+        </div>
+        <button class="toggle-switch" id="notif-toggle" aria-label="Toggle notifications"></button>
+      </div>
 
-  <div style="padding: 0 24px; margin-top: auto;">
-    <div style="font-size: 11px; color: var(--muted); text-align: center; line-height: 1.6;">
-      Snapshot Note — PWA<br>
-      <span id="install-hint" style="color:var(--accent2); cursor:pointer; display:none;">Installer l'app ↓</span>
+      <button class="btn-apply-ping" id="btn-apply-ping">Enregistrer</button>
     </div>
   </div>
-</div>
 
-<!-- TOAST -->
+  <!-- MENU OVERLAY + DRAWER -->
+  <div id="menu-overlay"></div>
+  <div id="menu-drawer">
+    <div class="menu-top">
+      <span class="menu-wordmark">MENU</span>
+      <button class="btn-icon" id="btn-close-menu" aria-label="Fermer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="menu-badges">
+      <span class="menu-badge" id="menu-note-count">0 note</span>
+      <span class="menu-badge-muted" id="menu-ping-badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        <span id="menu-ping-label">1h</span>
+      </span>
+    </div>
+    <div class="menu-divider"></div>
+    <div class="menu-nav">
+      <button class="menu-nav-btn" id="menu-home">Accueil</button>
+      <button class="menu-nav-btn" id="menu-new-note">Nouvelle note</button>
+      <button class="menu-nav-btn" id="menu-all-notes">Toutes les notes</button>
+      <button class="menu-nav-btn" id="menu-ping">Rappel</button>
+    </div>
+    <div class="menu-divider"></div>
+    <div class="menu-actions">
+      <button class="menu-action-btn" id="menu-export">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Exporter en .txt
+      </button>
+      <div id="clear-zone">
+        <button class="menu-action-btn danger" id="menu-clear">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+          </svg>
+          Tout effacer
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /app-shell -->
+
 <div id="toast"></div>
 
 <script>
-// ── STORAGE ──
 const NOTES_KEY = 'sn_notes';
 const PING_KEY  = 'sn_ping';
 
@@ -923,195 +929,193 @@ function loadNotes() {
 }
 function saveNotes(n) { localStorage.setItem(NOTES_KEY, JSON.stringify(n)); }
 function loadPing() {
-  try { return JSON.parse(localStorage.getItem(PING_KEY)) || { ms: 60000, label: '1 min', enabled: false }; } catch { return { ms: 60000, label: '1 min', enabled: false }; }
+  try { return JSON.parse(localStorage.getItem(PING_KEY)) || { ms: 3600000, label: '1h', enabled: false }; }
+  catch { return { ms: 3600000, label: '1h', enabled: false }; }
 }
 function savePing(p) { localStorage.setItem(PING_KEY, JSON.stringify(p)); }
 
-// ── STATE ──
 let notes = loadNotes();
 let pingState = loadPing();
 let pingTimer = null;
-let viewingNoteId = null;
-let deferredInstall = null;
+let previousScreen = 'home';
+let confirmingClear = false;
 
-// ── SCREENS ──
-const screens = { home: document.getElementById('home'), write: document.getElementById('write'), list: document.getElementById('list'), view: document.getElementById('view-screen'), ping: document.getElementById('ping-screen') };
+const screens = {
+  home:  document.getElementById('home'),
+  write: document.getElementById('write'),
+  list:  document.getElementById('list'),
+  view:  document.getElementById('view-screen'),
+  ping:  document.getElementById('ping-screen'),
+};
+
+// Cached refs
+const toastEl       = document.getElementById('toast');
+const elPingChip    = document.getElementById('ping-chip');
+const elPingChipLbl = document.getElementById('ping-chip-label');
+const elMenuPingLbl = document.getElementById('menu-ping-label');
+const elMenuNoteCnt = document.getElementById('menu-note-count');
+const elNotesList   = document.getElementById('notes-list');
+const elListStats   = document.getElementById('list-stats');
+const elPcValue     = document.getElementById('pc-value');
+const elNotifToggle = document.getElementById('notif-toggle');
+const elPingPresets = document.getElementById('ping-presets');
+const menuOverlay   = document.getElementById('menu-overlay');
+const menuDrawer    = document.getElementById('menu-drawer');
+
+// Inject back SVG into all back buttons
+const BACK_SVG = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`;
+document.querySelectorAll('.btn-back').forEach(b => { b.innerHTML = BACK_SVG; });
 
 function show(name) {
   Object.values(screens).forEach(s => s.classList.add('hidden'));
   screens[name].classList.remove('hidden');
 }
 
-// ── TOAST ──
 let toastTimer;
 function toast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+  toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2200);
 }
 
-// ── FORMAT ──
 function fmtDate(ts) {
   const d = new Date(ts);
-  return d.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+    + ' · ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 }
 
 function msToLabel(ms) {
-  const m = ms / 60000;
-  if (m < 60) return `${Math.round(m)} min`;
-  const h = m / 60;
-  if (h < 24) return `${Math.round(h)} h`;
-  const d = h / 24;
-  if (d < 7) return `${Math.round(d)} j`;
-  const w = d / 7;
-  if (w < 4.5) return `${Math.round(w)} sem`;
-  const mo = d / 30.44;
-  if (mo < 12) return `${Math.round(mo)} mois`;
-  return `${Math.round(d / 365.25)} an`;
+  const s = ms / 1000;
+  if (s < 60) return `${Math.round(s)}s`;
+  if (s < 3600) return `${Math.round(s/60)}min`;
+  if (s < 86400) return `${Math.round(s/3600)}h`;
+  if (s < 604800) return `${Math.round(s/86400)}j`;
+  if (s < 2592000) return `${Math.round(s/604800)}sem`;
+  if (s < 31536000) return `${Math.round(s/2592000)}mois`;
+  return `${Math.round(s/31536000)}an`;
 }
 
-// ── PING PRESETS ──
 const PRESETS = [
-  { val: 1,   unit: 'min', ms: 60000 },
-  { val: 5,   unit: 'min', ms: 300000 },
-  { val: 15,  unit: 'min', ms: 900000 },
-  { val: 30,  unit: 'min', ms: 1800000 },
-  { val: 1,   unit: 'h',   ms: 3600000 },
-  { val: 3,   unit: 'h',   ms: 10800000 },
-  { val: 6,   unit: 'h',   ms: 21600000 },
-  { val: 12,  unit: 'h',   ms: 43200000 },
-  { val: 1,   unit: 'j',   ms: 86400000 },
-  { val: 3,   unit: 'j',   ms: 259200000 },
-  { val: 1,   unit: 'sem', ms: 604800000 },
-  { val: 1,   unit: 'mois',ms: 2629800000 },
-  { val: 6,   unit: 'mois',ms: 15778800000 },
-  { val: 1,   unit: 'an',  ms: 31557600000 },
+  { label: '1 min',  ms: 60000 },      { label: '5 min',  ms: 300000 },
+  { label: '15 min', ms: 900000 },     { label: '30 min', ms: 1800000 },
+  { label: '1 h',    ms: 3600000 },    { label: '2 h',    ms: 7200000 },
+  { label: '4 h',    ms: 14400000 },   { label: '8 h',    ms: 28800000 },
+  { label: '1 j',    ms: 86400000 },   { label: '2 j',    ms: 172800000 },
+  { label: '1 sem',  ms: 604800000 },  { label: '1 mois', ms: 2592000000 },
+  { label: '6 mois', ms: 15552000000 },{ label: '1 an',   ms: 31536000000 },
 ];
 
-function unitToMs(val, unit) {
-  const v = Number(val);
-  switch(unit) {
-    case 'min': return v * 60000;
-    case 'h':   return v * 3600000;
-    case 'd':   return v * 86400000;
-    case 'w':   return v * 604800000;
-    case 'mo':  return v * 2629800000;
-    case 'y':   return v * 31557600000;
-  }
-  return v * 60000;
-}
+const UNIT_MAP = { min: 60000, h: 3600000, d: 86400000, w: 604800000, mo: 2629800000, y: 31557600000 };
 
 // ── HOME ──
 function updateHome() {
-  const last = notes[notes.length - 1];
-  const el = document.getElementById('lnp-content');
+  const last = notes[0];
+  const preview = document.getElementById('last-note-preview');
   if (last) {
-    el.innerHTML = `<div class="lnp-text">${last.text.replace(/</g,'&lt;')}</div>`;
+    preview.innerHTML = `<button class="last-note-card" id="last-note-btn">
+      <div class="last-note-meta">dernière note · ${fmtDate(last.ts)}</div>
+      <div class="last-note-text">${last.text.replace(/</g,'&lt;')}</div>
+    </button>`;
+    document.getElementById('last-note-btn').addEventListener('click', () => openViewNote(last.id, 'home'));
   } else {
-    el.innerHTML = `<span class="lnp-empty">Aucune note encore...</span>`;
+    preview.innerHTML = `<div class="last-note-empty"><span>aucune note pour l'instant</span></div>`;
   }
-  document.getElementById('ping-label-home').textContent = pingState.label;
-  document.getElementById('menu-ping-badge').textContent = pingState.label;
-  document.getElementById('menu-badge').textContent = notes.length;
+  const lbl = msToLabel(pingState.ms);
+  elPingChipLbl.textContent = lbl;
+  elMenuPingLbl.textContent = lbl;
+  elMenuNoteCnt.textContent = `${notes.length} note${notes.length !== 1 ? 's' : ''}`;
+  elPingChip.classList.toggle('notif-on', pingState.enabled);
 }
 
-document.getElementById('last-note-preview').addEventListener('click', () => {
-  const last = notes[notes.length - 1];
-  if (last) openViewNote(last.id);
-});
-
-document.getElementById('ping-badge').addEventListener('click', () => { openMenu(); /* non, show ping */ closeMenu(); show('ping'); renderPingScreen(); });
+document.getElementById('ping-chip').addEventListener('click', () => { show('ping'); syncPingScreen(); });
+document.getElementById('btn-write').addEventListener('click', openWrite);
+document.getElementById('btn-back-write').addEventListener('click', () => show('home'));
 
 // ── WRITE ──
-document.getElementById('btn-write').addEventListener('click', openWrite);
-
 function openWrite() {
-  document.getElementById('note-area').value = '';
-  document.getElementById('char-count').textContent = '0 car.';
-  const now = new Date();
-  document.getElementById('write-time').textContent = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  const ta = document.getElementById('note-area');
+  ta.value = '';
+  document.getElementById('char-count').textContent = '0';
+  document.getElementById('btn-save').disabled = true;
   show('write');
-  setTimeout(() => document.getElementById('note-area').focus(), 300);
+  setTimeout(() => ta.focus(), 80);
 }
 
 document.getElementById('note-area').addEventListener('input', function() {
-  document.getElementById('char-count').textContent = this.value.length + ' car.';
+  const len = this.value.length;
+  document.getElementById('char-count').textContent = len;
+  document.getElementById('btn-save').disabled = !this.value.trim();
 });
 
-document.getElementById('btn-save').addEventListener('click', saveNote);
-
-function saveNote() {
+document.getElementById('btn-save').addEventListener('click', () => {
   const text = document.getElementById('note-area').value.trim();
-  if (!text) { toast('Écris quelque chose d\'abord !'); return; }
-  const note = { id: Date.now(), ts: Date.now(), text };
-  notes.push(note);
+  if (!text) return;
+  notes.unshift({ id: Date.now(), ts: Date.now(), text });
   saveNotes(notes);
   updateHome();
-  toast('Note sauvegardée ✓');
+  toast('Note enregistrée');
   show('home');
-}
-
-document.getElementById('btn-back-write').addEventListener('click', () => show('home'));
+});
 
 // ── LIST ──
 function openList() {
-  renderList(notes);
-  updateStats();
+  refreshList(notes);
   show('list');
 }
 
-function updateStats() {
-  const total = notes.length;
+function refreshList(list = notes) {
+  renderList(list);
   const chars = notes.reduce((a, n) => a + n.text.length, 0);
-  const row = document.getElementById('stats-row');
-  row.innerHTML = `
-    <div class="stat-chip"><strong>${total}</strong> note${total>1?'s':''}</div>
-    <div class="stat-chip"><strong>${chars}</strong> caractères</div>
-  `;
-  document.getElementById('note-count').textContent = total;
+  elListStats.innerHTML = `<div class="stat-col"><span class="stat-val">${notes.length}</span><span class="stat-lbl">notes</span></div>
+    <div class="stat-col"><span class="stat-val">${chars.toLocaleString('fr')}</span><span class="stat-lbl">caractères</span></div>`;
 }
 
 function renderList(list) {
-  const el = document.getElementById('notes-list');
   if (!list.length) {
-    el.innerHTML = `<div class="empty-list">
-      <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-        <rect x="8" y="8" width="32" height="32" rx="8" stroke="rgba(124,92,252,0.3)" stroke-width="1.5"/>
-        <path d="M16 20H32M16 26H26" stroke="rgba(124,92,252,0.3)" stroke-width="1.5" stroke-linecap="round"/>
-      </svg>
-      <span>Aucune note</span>
-    </div>`;
+    const q = document.getElementById('search-input').value;
+    elNotesList.innerHTML = `<div class="list-empty">${q ? 'Aucun résultat' : 'Aucune note'}</div>`;
     return;
   }
-  el.innerHTML = list.slice().reverse().map(n => `
-    <div class="note-item" data-id="${n.id}">
-      <div class="ni-date">
-        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" stroke="#7c7a99" stroke-width="1.2"/><path d="M5 2.5V5.5L7 7" stroke="#7c7a99" stroke-width="1.2" stroke-linecap="round"/></svg>
-        ${fmtDate(n.ts)}
-      </div>
-      <div class="ni-text">${n.text.replace(/</g,'&lt;')}</div>
-      <button class="ni-delete" data-del="${n.id}" aria-label="Supprimer">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 4H11L10.3 11H3.7L3 4Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M2 4H12M5 4V3H9V4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+  const items = [];
+  for (let i = 0; i < list.length; i++) {
+    const n = list[i];
+    const excerpt = n.text.length > 80 ? n.text.slice(0, 80).trimEnd() + '…' : n.text;
+    items.push(`<div class="note-row" data-id="${n.id}">
+      <button class="note-card" data-id="${n.id}">
+        <div class="note-card-date">${fmtDate(n.ts)}</div>
+        <div class="note-card-text">${excerpt.replace(/</g,'&lt;')}</div>
       </button>
-    </div>
-  `).join('');
+      <button class="note-del-btn" data-del="${n.id}" aria-label="Supprimer">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+        </svg>
+      </button>
+    </div>`);
+  }
+  elNotesList.innerHTML = items.join('');
 
-  el.querySelectorAll('.note-item').forEach(item => {
-    item.addEventListener('click', (e) => {
-      if (e.target.closest('.ni-delete')) return;
-      openViewNote(Number(item.dataset.id));
-    });
+  elNotesList.querySelectorAll('.note-card').forEach(card => {
+    card.addEventListener('click', () => openViewNote(Number(card.dataset.id), 'list'));
   });
-  el.querySelectorAll('.ni-delete').forEach(btn => {
+  elNotesList.querySelectorAll('.note-del-btn').forEach(btn => {
     btn.addEventListener('click', (e) => { e.stopPropagation(); deleteNote(Number(btn.dataset.del)); });
   });
 }
 
-document.getElementById('search-input').addEventListener('input', function() {
+let searchDebounce;
+const elSearchInput = document.getElementById('search-input');
+const elSearchClear = document.getElementById('btn-search-clear');
+elSearchInput.addEventListener('input', function() {
+  clearTimeout(searchDebounce);
+  elSearchClear.style.display = this.value ? 'flex' : 'none';
   const q = this.value.toLowerCase();
-  renderList(q ? notes.filter(n => n.text.toLowerCase().includes(q)) : notes);
+  searchDebounce = setTimeout(() => renderList(q ? notes.filter(n => n.text.toLowerCase().includes(q)) : notes), 150);
+});
+elSearchClear.addEventListener('click', () => {
+  elSearchInput.value = '';
+  elSearchClear.style.display = 'none';
+  renderList(notes);
 });
 
 document.getElementById('btn-back-list').addEventListener('click', () => show('home'));
@@ -1120,121 +1124,159 @@ function deleteNote(id) {
   notes = notes.filter(n => n.id !== id);
   saveNotes(notes);
   updateHome();
-  renderList(notes);
-  updateStats();
+  if (!screens.list.classList.contains('hidden')) refreshList(notes);
   toast('Note supprimée');
 }
 
 // ── VIEW ──
-function openViewNote(id) {
+function openViewNote(id, from) {
   const note = notes.find(n => n.id === id);
   if (!note) return;
-  viewingNoteId = id;
+  previousScreen = from;
   document.getElementById('view-date').textContent = fmtDate(note.ts);
   document.getElementById('view-body').textContent = note.text;
+  document.getElementById('btn-delete-note').dataset.id = id;
   show('view');
 }
 
 document.getElementById('btn-back-view').addEventListener('click', () => {
-  if (document.getElementById('list').classList.contains('hidden')) show('home'); else show('list');
+  if (previousScreen === 'list') openList(); else show('home');
 });
 
-document.getElementById('btn-delete-note').addEventListener('click', () => {
-  if (!viewingNoteId) return;
-  deleteNote(viewingNoteId);
-  viewingNoteId = null;
-  show('list');
-  openList();
+document.getElementById('btn-delete-note').addEventListener('click', function() {
+  const id = Number(this.dataset.id);
+  if (!id) return;
+  deleteNote(id);
+  if (previousScreen === 'list') openList(); else show('home');
 });
 
 // ── MENU ──
-const menuOverlay = document.getElementById('menu-overlay');
-const menuDrawer  = document.getElementById('menu-drawer');
+function setMenu(open) {
+  menuOverlay.classList.toggle('open', open);
+  menuDrawer.classList.toggle('open', open);
+}
 
-function openMenu() { menuOverlay.classList.add('open'); menuDrawer.classList.add('open'); }
-function closeMenu() { menuOverlay.classList.remove('open'); menuDrawer.classList.remove('open'); }
+document.getElementById('btn-open-menu').addEventListener('click', () => setMenu(true));
+document.getElementById('btn-close-menu').addEventListener('click', () => setMenu(false));
+menuOverlay.addEventListener('click', () => setMenu(false));
 
-document.getElementById('btn-open-menu').addEventListener('click', openMenu);
-document.getElementById('btn-close-menu').addEventListener('click', closeMenu);
-menuOverlay.addEventListener('click', closeMenu);
-
-document.getElementById('menu-home').addEventListener('click', () => { closeMenu(); show('home'); });
-document.getElementById('menu-new-note').addEventListener('click', () => { closeMenu(); openWrite(); });
-document.getElementById('menu-all-notes').addEventListener('click', () => { closeMenu(); openList(); });
-document.getElementById('menu-ping').addEventListener('click', () => { closeMenu(); show('ping'); renderPingScreen(); });
+document.getElementById('menu-home').addEventListener('click',      () => { setMenu(false); show('home'); });
+document.getElementById('menu-new-note').addEventListener('click',  () => { setMenu(false); openWrite(); });
+document.getElementById('menu-all-notes').addEventListener('click', () => { setMenu(false); openList(); });
+document.getElementById('menu-ping').addEventListener('click',      () => { setMenu(false); show('ping'); syncPingScreen(); });
 
 document.getElementById('menu-export').addEventListener('click', () => {
-  closeMenu();
+  setMenu(false);
   if (!notes.length) { toast('Aucune note à exporter'); return; }
-  const txt = notes.slice().reverse().map(n => `[${fmtDate(n.ts)}]\n${n.text}`).join('\n\n---\n\n');
-  const blob = new Blob([txt], { type: 'text/plain' });
+  const lines = notes.map(n => `[${fmtDate(n.ts)}]\n${n.text}`);
+  const blob = new Blob([lines.join('\n\n---\n\n')], { type: 'text/plain' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `snapshot-notes-${new Date().toISOString().slice(0,10)}.txt`;
+  a.download = `notes-${new Date().toISOString().slice(0,10)}.txt`;
   a.click();
   toast('Notes exportées !');
 });
 
 document.getElementById('menu-clear').addEventListener('click', () => {
-  closeMenu();
-  if (!notes.length) { toast('Aucune note'); return; }
-  if (confirm(`Supprimer les ${notes.length} note(s) ? Cette action est irréversible.`)) {
+  if (confirmingClear) return;
+  confirmingClear = true;
+  const zone = document.getElementById('clear-zone');
+  zone.innerHTML = `<div class="confirm-clear">
+    <div class="confirm-clear-msg">Effacer toutes les notes ?</div>
+    <div class="confirm-clear-row">
+      <button class="btn-cancel-clear" id="btn-cancel-clear">Annuler</button>
+      <button class="btn-confirm-clear" id="btn-confirm-clear">Confirmer</button>
+    </div>
+  </div>`;
+  document.getElementById('btn-cancel-clear').addEventListener('click', () => {
+    confirmingClear = false;
+    zone.innerHTML = `<button class="menu-action-btn danger" id="menu-clear">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+      </svg>
+      Tout effacer
+    </button>`;
+    document.getElementById('menu-clear').addEventListener('click', arguments.callee.caller);
+    // re-bind
+    bindMenuClear();
+  });
+  document.getElementById('btn-confirm-clear').addEventListener('click', () => {
     notes = [];
     saveNotes(notes);
     updateHome();
+    setMenu(false);
+    confirmingClear = false;
     toast('Toutes les notes effacées');
-  }
+    zone.innerHTML = `<button class="menu-action-btn danger" id="menu-clear">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+      </svg>
+      Tout effacer
+    </button>`;
+    bindMenuClear();
+  });
 });
 
-// ── PING SCREEN ──
-function renderPingScreen() {
-  document.getElementById('pc-value').textContent = pingState.label;
-  const sub = pingState.enabled ? 'Notifications activées' : 'Notifications désactivées';
-  document.getElementById('pc-sub').textContent = sub;
-
-  const toggle = document.getElementById('notif-toggle');
-  toggle.classList.toggle('on', pingState.enabled);
-
-  const container = document.getElementById('ping-presets');
-  container.innerHTML = PRESETS.map((p, i) => `
-    <button class="ping-preset${pingState.ms === p.ms ? ' active' : ''}" data-i="${i}">
-      <div class="pp-val">${p.val}</div>
-      <div class="pp-unit">${p.unit}</div>
-    </button>
-  `).join('');
-
-  container.querySelectorAll('.ping-preset').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const p = PRESETS[Number(btn.dataset.i)];
-      pingState.ms = p.ms;
-      pingState.label = `${p.val} ${p.unit}`;
-      container.querySelectorAll('.ping-preset').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      document.getElementById('pc-value').textContent = pingState.label;
-    });
+function bindMenuClear() {
+  const btn = document.getElementById('menu-clear');
+  if (!btn) return;
+  btn.addEventListener('click', () => {
+    if (confirmingClear) return;
+    document.getElementById('menu-clear').click();
   });
 }
 
-document.getElementById('notif-toggle').addEventListener('click', function() {
+// ── PING ──
+elPingPresets.innerHTML = PRESETS.map((p, i) =>
+  `<button class="preset-btn" data-i="${i}" data-ms="${p.ms}">${p.label}</button>`
+).join('');
+
+elPingPresets.querySelectorAll('.preset-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const p = PRESETS[Number(btn.dataset.i)];
+    pingState.ms = p.ms;
+    pingState.label = p.label;
+    syncPresetsActive();
+    elPcValue.textContent = msToLabel(pingState.ms);
+  });
+});
+
+function syncPresetsActive() {
+  elPingPresets.querySelectorAll('.preset-btn').forEach(b =>
+    b.classList.toggle('active', Number(b.dataset.ms) === pingState.ms)
+  );
+}
+
+function syncPingScreen() {
+  elPcValue.textContent = msToLabel(pingState.ms);
+  elNotifToggle.classList.toggle('on', pingState.enabled);
+  syncPresetsActive();
+}
+
+document.getElementById('btn-custom-ok').addEventListener('click', () => {
+  const val = document.getElementById('custom-val').value;
+  const unit = document.getElementById('custom-unit').value;
+  const n = Number(val);
+  if (!n || n <= 0) return;
+  pingState.ms = n * (UNIT_MAP[unit] || 60000);
+  pingState.label = msToLabel(pingState.ms);
+  syncPresetsActive();
+  elPcValue.textContent = msToLabel(pingState.ms);
+  document.getElementById('custom-val').value = '';
+});
+
+elNotifToggle.addEventListener('click', function() {
   this.classList.toggle('on');
   pingState.enabled = this.classList.contains('on');
-  document.getElementById('pc-sub').textContent = pingState.enabled ? 'Notifications activées' : 'Notifications désactivées';
   if (pingState.enabled) requestNotifPermission();
 });
 
 document.getElementById('btn-apply-ping').addEventListener('click', () => {
-  const val  = document.getElementById('custom-val').value;
-  const unit = document.getElementById('custom-unit').value;
-  if (val && Number(val) > 0) {
-    pingState.ms = unitToMs(val, unit);
-    pingState.label = msToLabel(pingState.ms);
-  }
   savePing(pingState);
   updateHome();
   startPing();
-  toast('Intervalle mis à jour : ' + pingState.label);
-  document.getElementById('pc-value').textContent = pingState.label;
-  renderPingScreen();
+  toast('Rappel mis à jour : ' + msToLabel(pingState.ms));
+  show('home');
 });
 
 document.getElementById('btn-back-ping').addEventListener('click', () => show('home'));
@@ -1252,40 +1294,24 @@ function sendNotif() {
     new Notification('Snapshot Note', {
       body: 'C\'est le moment de capturer ta pensée !',
       icon: 'icons/icon-192.png',
-      badge: 'icons/icon-192.png',
     });
   }
 }
 
 function startPing() {
   if (pingTimer) clearInterval(pingTimer);
-  if (pingState.enabled && pingState.ms) {
-    pingTimer = setInterval(sendNotif, pingState.ms);
-  }
+  if (pingState.enabled && pingState.ms) pingTimer = setInterval(sendNotif, pingState.ms);
 }
 
-// ── PWA INSTALL ──
+// ── PWA ──
+let deferredInstall = null;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredInstall = e;
-  document.getElementById('install-hint').style.display = 'inline';
 });
 
-document.getElementById('install-hint').addEventListener('click', async () => {
-  if (deferredInstall) {
-    deferredInstall.prompt();
-    const res = await deferredInstall.userChoice;
-    if (res.outcome === 'accepted') toast('App installée !');
-    deferredInstall = null;
-  }
-});
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 
-// ── SERVICE WORKER ──
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
-}
-
-// ── INIT ──
 updateHome();
 startPing();
 </script>

@@ -4,8 +4,8 @@
   "description": "Capture tes pensées en un instant",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0f0f14",
-  "theme_color": "#0f0f14",
+  "background_color": "#f5f0eb",
+  "theme_color": "#f5f0eb",
   "orientation": "portrait-primary",
   "icons": [
     { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
