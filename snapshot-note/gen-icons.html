@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head><title>Icon Generator</title></head>
+<body>
+<canvas id="c192" width="192" height="192"></canvas>
+<canvas id="c512" width="512" height="512"></canvas>
+<a id="dl192" download="icon-192.png">Download 192</a><br>
+<a id="dl512" download="icon-512.png">Download 512</a>
+<script>
+function draw(canvas) {
+  const s = canvas.width;
+  const ctx = canvas.getContext('2d');
+  const r = s * 0.22;
+
+  // bg warm off-white
+  ctx.fillStyle = '#f5f0eb';
+  ctx.beginPath();
+  ctx.roundRect(0, 0, s, s, r);
+  ctx.fill();
+
+  // subtle warm gradient overlay
+  const grad = ctx.createRadialGradient(s*.38, s*.35, 0, s*.5, s*.5, s*.55);
+  grad.addColorStop(0, 'rgba(180,90,60,0.10)');
+  grad.addColorStop(1, 'rgba(180,90,60,0)');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.arc(s*.5, s*.5, s*.55, 0, Math.PI*2);
+  ctx.fill();
+
+  // pen icon — terracotta accent
+  const sc = s / 100;
+  const accent = '#b45a3c'; // oklch(58% 0.18 38) approx
+  ctx.strokeStyle = accent;
+  ctx.lineWidth = sc * 3.8;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  // pen body
+  ctx.beginPath();
+  ctx.moveTo(26*sc, 80*sc);
+  ctx.lineTo(28*sc, 58*sc);
+  ctx.lineTo(62*sc, 22*sc);
+  ctx.quadraticCurveTo(71*sc, 14*sc, 80*sc, 23*sc);
+  ctx.quadraticCurveTo(88*sc, 32*sc, 79*sc, 41*sc);
+  ctx.lineTo(45*sc, 76*sc);
+  ctx.closePath();
+  ctx.stroke();
+
+  // diagonal line inside pen
+  ctx.beginPath();
+  ctx.moveTo(28*sc, 58*sc);
+  ctx.lineTo(45*sc, 76*sc);
+  ctx.stroke();
+
+  // ink dot
+  ctx.fillStyle = accent;
+  ctx.beginPath();
+  ctx.arc(26*sc, 80*sc, sc*3, 0, Math.PI*2);
+  ctx.fill();
+}
+
+['c192','c512'].forEach(id => draw(document.getElementById(id)));
+
+document.getElementById('dl192').href = document.getElementById('c192').toDataURL();
+document.getElementById('dl512').href = document.getElementById('c512').toDataURL();
+</script>
+</body>
+</html>

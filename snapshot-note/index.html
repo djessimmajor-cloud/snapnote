@@ -1,0 +1,1529 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#f5f0eb">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Snapshot Note</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    :root {
+      --bg:      oklch(97% 0.008 60);
+      --bg2:     oklch(94% 0.012 60);
+      --surface: #ffffff;
+      --border:  oklch(90% 0.008 60);
+      --border2: oklch(82% 0.01 60);
+      --text:    oklch(18% 0.01 60);
+      --text2:   oklch(22% 0.01 60);
+      --muted:   oklch(62% 0.01 60);
+      --muted2:  oklch(50% 0.01 60);
+      --accent:  oklch(58% 0.18 38);
+      --accent-bg: oklch(58% 0.18 38 / 0.12);
+      --danger:  oklch(48% 0.15 20);
+      --danger-bg: oklch(95% 0.01 20);
+      --mono: 'DM Mono', monospace;
+      --sans: 'DM Sans', system-ui, sans-serif;
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      background: var(--bg2);
+      font-family: var(--sans);
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    .app-shell {
+      position: relative;
+      width: 100%; height: 100%;
+      background: var(--bg);
+      overflow: hidden;
+    }
+
+    @media (min-width: 600px) {
+      body { display: flex; align-items: center; justify-content: center; background: oklch(92% 0.015 60); }
+      .app-shell {
+        width: 390px;
+        height: min(844px, 96vh);
+        border-radius: 24px;
+        box-shadow: 0 24px 80px rgba(0,0,0,0.18), 0 4px 16px rgba(0,0,0,0.08);
+      }
+    }
+
+    /* ── SCREENS ── */
+    .screen {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+      transition: opacity .2s, transform .2s;
+    }
+    .screen.hidden { opacity: 0; pointer-events: none; transform: scale(.98); }
+
+    /* ── COMMON HEADER ── */
+    .hd {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px 8px;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .hd-title { font-weight: 500; font-size: 15px; color: var(--text2); }
+
+    /* ── BUTTONS ── */
+    .btn-icon {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted2);
+      padding: 4px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background .15s;
+    }
+    .btn-icon:hover { background: var(--bg2); }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 8px 18px;
+      font-size: 13px;
+      font-weight: 500;
+      font-family: var(--sans);
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+    .btn-primary:disabled { background: oklch(88% 0.01 60); color: var(--muted); cursor: default; }
+    .btn-primary:not(:disabled):hover { opacity: .88; }
+
+    /* ── HOME ── */
+    #home {
+      background: var(--bg);
+    }
+
+    .home-header {
+      padding: 16px 20px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .logo-wordmark {
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--muted);
+      letter-spacing: .04em;
+    }
+
+    .ping-chip {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: oklch(91% 0.008 60);
+      border: none;
+      border-radius: 20px;
+      padding: 5px 12px;
+      cursor: pointer;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted2);
+      transition: background .15s, color .15s;
+      letter-spacing: .03em;
+    }
+    .ping-chip.notif-on {
+      background: var(--accent-bg);
+      color: var(--accent);
+    }
+
+    .home-ping-row {
+      padding: 12px 20px 0;
+      display: flex;
+      justify-content: flex-end;
+      flex-shrink: 0;
+    }
+
+    .home-center {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .btn-new-note {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      box-shadow: 0 8px 32px oklch(58% 0.18 38 / 0.35);
+      transition: transform .15s, box-shadow .15s;
+    }
+    .btn-new-note:hover { transform: scale(1.07); }
+    .btn-new-note:active { transform: scale(.96); box-shadow: 0 4px 16px oklch(58% 0.18 38 / 0.2); }
+
+    .home-cta-label {
+      font-size: 13px;
+      color: var(--muted);
+      letter-spacing: .02em;
+    }
+
+    .last-note-wrap {
+      padding: 0 20px 32px;
+      flex-shrink: 0;
+    }
+
+    .last-note-card {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px 18px;
+      text-align: left;
+      cursor: pointer;
+      transition: border-color .15s;
+    }
+    .last-note-card:hover { border-color: var(--accent); }
+
+    .last-note-meta {
+      font-size: 11px;
+      font-family: var(--mono);
+      color: var(--muted);
+      margin-bottom: 8px;
+      letter-spacing: .03em;
+    }
+
+    .last-note-text {
+      font-size: 14px;
+      color: oklch(25% 0.01 60);
+      line-height: 1.55;
+      font-weight: 300;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .last-note-empty {
+      width: 100%;
+      background: oklch(95% 0.007 60);
+      border: 1px dashed oklch(85% 0.008 60);
+      border-radius: 16px;
+      padding: 20px 18px;
+      text-align: center;
+    }
+    .last-note-empty span { font-size: 13px; color: var(--muted); }
+
+    /* ── WRITE ── */
+    #write {}
+
+    .write-hd {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .write-charcount {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    #note-area {
+      flex: 1;
+      border: none;
+      outline: none;
+      resize: none;
+      background: transparent;
+      padding: 12px 22px 24px;
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--text);
+      font-family: var(--sans);
+      font-weight: 300;
+    }
+    #note-area::placeholder { color: var(--muted); }
+
+    /* ── LIST ── */
+    #list {}
+
+    .list-stats {
+      padding: 2px 20px 12px;
+      display: flex;
+      gap: 20px;
+      flex-shrink: 0;
+    }
+    .stat-col { display: flex; flex-direction: column; gap: 1px; }
+    .stat-val { font-family: var(--mono); font-size: 18px; font-weight: 300; color: var(--accent); }
+    .stat-lbl { font-size: 11px; color: var(--muted); letter-spacing: .03em; }
+
+    .search-wrap {
+      padding: 0 20px 14px;
+      flex-shrink: 0;
+    }
+    .search-inner {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 9px 14px;
+    }
+    .search-inner input {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 14px;
+      color: var(--text2);
+      font-family: var(--sans);
+    }
+    .search-inner input::placeholder { color: var(--muted); }
+    .btn-search-clear {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      padding: 0;
+      line-height: 1;
+      display: flex;
+    }
+
+    .notes-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .notes-list::-webkit-scrollbar { width: 3px; }
+    .notes-list::-webkit-scrollbar-thumb { background: oklch(85% 0.01 60); border-radius: 4px; }
+
+    .note-row { position: relative; }
+
+    .note-card {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 13px 16px;
+      text-align: left;
+      cursor: pointer;
+      transition: border-color .15s;
+    }
+    .note-card:hover { border-color: var(--border2); }
+
+    .note-card-date {
+      font-size: 11px;
+      font-family: var(--mono);
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+    .note-card-text {
+      font-size: 13.5px;
+      color: var(--text2);
+      line-height: 1.55;
+      font-weight: 300;
+    }
+
+    .note-del-btn {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--danger-bg);
+      border: none;
+      border-radius: 8px;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--danger);
+      opacity: 0;
+      transition: opacity .15s;
+    }
+    .note-row:hover .note-del-btn { opacity: 1; }
+
+    .list-empty {
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      padding: 40px 0;
+    }
+
+    /* ── VIEW ── */
+    #view-screen {}
+
+    .view-hd {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px 8px;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .btn-delete-note {
+      background: var(--danger-bg);
+      border: none;
+      border-radius: 10px;
+      padding: 7px 12px;
+      cursor: pointer;
+      color: var(--danger);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      font-family: var(--sans);
+      transition: background .15s;
+    }
+    .btn-delete-note:hover { background: oklch(92% 0.015 20); }
+
+    .btn-dl-note {
+      background: var(--accent-bg);
+      border: none;
+      border-radius: 10px;
+      padding: 7px 12px;
+      cursor: pointer;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      font-family: var(--sans);
+      transition: background .15s;
+    }
+    .btn-dl-note:hover { background: oklch(92% 0.015 38); }
+
+    .view-meta {
+      padding: 8px 22px 4px;
+      flex-shrink: 0;
+    }
+    .view-date {
+      font-size: 11px;
+      font-family: var(--mono);
+      color: var(--muted);
+      letter-spacing: .03em;
+    }
+
+    .view-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 22px 32px;
+      font-size: 15px;
+      line-height: 1.75;
+      color: var(--text);
+      font-weight: 300;
+      white-space: pre-wrap;
+    }
+
+    /* ── NOTE PING ── */
+    .note-ping-card {
+      margin: 0 20px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      flex-shrink: 0;
+    }
+    .note-ping-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .note-ping-lbl {
+      font-size: 10px;
+      font-family: var(--mono);
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+    .note-ping-val {
+      font-size: 15px;
+      font-family: var(--mono);
+      font-weight: 300;
+      color: var(--accent);
+    }
+    .note-ping-row {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+    .note-ping-preset {
+      background: oklch(95% 0.008 60);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 11px;
+      font-family: var(--mono);
+      color: oklch(35% 0.01 60);
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .note-ping-preset:hover { border-color: var(--accent); color: var(--accent); }
+    .note-ping-preset.active { background: var(--accent); border-color: var(--accent); color: white; }
+
+    .note-ping-after-row {
+      display: flex;
+      gap: 7px;
+      margin-top: 10px;
+    }
+    .note-ping-after-btn {
+      flex: 1;
+      background: oklch(95% 0.008 60);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 6px;
+      font-size: 11px;
+      font-family: var(--sans);
+      color: oklch(35% 0.01 60);
+      cursor: pointer;
+      transition: all .15s;
+      text-align: center;
+    }
+    .note-ping-after-btn.active { background: var(--accent-bg); border-color: var(--accent); color: var(--accent); }
+    .note-ping-after-btn:hover { border-color: var(--border2); }
+
+    /* ── PING ── */
+    #ping-screen {}
+
+    .ping-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .ping-current-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+    }
+    .ping-current-lbl {
+      font-size: 10px;
+      font-family: var(--mono);
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 6px;
+    }
+    .ping-current-val {
+      font-size: 26px;
+      font-family: var(--mono);
+      font-weight: 300;
+      color: var(--accent);
+    }
+
+    .ping-section-lbl {
+      font-size: 11px;
+      font-family: var(--mono);
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 10px;
+    }
+
+    .presets-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 7px;
+    }
+    .preset-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 9px 4px;
+      font-size: 12px;
+      font-family: var(--mono);
+      color: oklch(30% 0.01 60);
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .preset-btn:hover { border-color: var(--border2); }
+    .preset-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+
+    .ping-custom-section {}
+    .ping-custom-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 0;
+    }
+    .ping-custom-row input[type=number] {
+      flex: 1;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 9px 12px;
+      font-size: 14px;
+      font-family: var(--sans);
+      background: var(--surface);
+      color: var(--text2);
+      outline: none;
+    }
+    .ping-custom-row select {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 9px 10px;
+      font-size: 13px;
+      font-family: var(--sans);
+      background: var(--surface);
+      color: var(--text2);
+      outline: none;
+      cursor: pointer;
+    }
+    .btn-ok {
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 9px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: var(--sans);
+    }
+
+    .notif-toggle-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nt-left {}
+    .nt-label { font-size: 14px; font-weight: 400; color: var(--text2); }
+    .nt-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    .toggle-switch {
+      width: 44px;
+      height: 24px;
+      border-radius: 12px;
+      background: oklch(82% 0.01 60);
+      border: none;
+      cursor: pointer;
+      position: relative;
+      transition: background .2s;
+      flex-shrink: 0;
+    }
+    .toggle-switch.on { background: var(--accent); }
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: white;
+      transition: left .2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,.2);
+    }
+    .toggle-switch.on::after { left: 23px; }
+
+    .btn-apply-ping {
+      width: 100%;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: var(--sans);
+      box-shadow: 0 4px 16px oklch(58% 0.18 38 / 0.3);
+      transition: opacity .15s;
+    }
+    .btn-apply-ping:hover { opacity: .88; }
+
+    /* ── MENU DRAWER ── */
+    #menu-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,.25);
+      backdrop-filter: blur(2px);
+      z-index: 50;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s;
+    }
+    #menu-overlay.open { opacity: 1; pointer-events: all; }
+
+    #menu-drawer {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 78%;
+      background: oklch(97.5% 0.008 60);
+      z-index: 51;
+      display: flex;
+      flex-direction: column;
+      box-shadow: -8px 0 40px rgba(0,0,0,.12);
+      transform: translateX(100%);
+      transition: transform .25s cubic-bezier(.22,.68,0,1.2);
+    }
+    #menu-drawer.open { transform: translateX(0); }
+
+    .menu-top {
+      padding: 20px 20px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .menu-wordmark {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: .06em;
+    }
+
+    .menu-badges {
+      padding: 0 20px 16px;
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .menu-badge {
+      background: var(--accent-bg);
+      border-radius: 20px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-family: var(--mono);
+      color: var(--accent);
+    }
+    .menu-badge-muted {
+      background: oklch(91% 0.008 60);
+      border-radius: 20px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-family: var(--mono);
+      color: var(--muted2);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .menu-divider { height: 1px; background: var(--border); margin: 0 20px 8px; flex-shrink: 0; }
+
+    .menu-nav { flex: 1; overflow-y: auto; padding: 8px 12px; }
+    .menu-nav-btn {
+      width: 100%;
+      background: none;
+      border: none;
+      border-radius: 10px;
+      padding: 13px 12px;
+      text-align: left;
+      cursor: pointer;
+      font-size: 15px;
+      color: var(--text2);
+      font-family: var(--sans);
+      transition: background .12s;
+      display: block;
+    }
+    .menu-nav-btn:hover { background: oklch(92% 0.008 60); }
+
+    .menu-actions { padding: 8px 12px 32px; display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
+    .menu-action-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      background: none;
+      border: none;
+      border-radius: 10px;
+      padding: 13px 12px;
+      text-align: left;
+      cursor: pointer;
+      font-size: 14px;
+      color: oklch(35% 0.01 60);
+      font-family: var(--sans);
+      transition: background .12s;
+    }
+    .menu-action-btn:hover { background: oklch(92% 0.008 60); }
+    .menu-action-btn.danger { color: var(--danger); }
+    .menu-action-btn.danger:hover { background: var(--danger-bg); }
+
+    .confirm-clear {
+      padding: 8px 12px;
+      background: var(--danger-bg);
+      border-radius: 10px;
+    }
+    .confirm-clear-msg { font-size: 13px; color: oklch(35% 0.12 20); margin-bottom: 8px; }
+    .confirm-clear-row { display: flex; gap: 8px; }
+    .btn-cancel-clear {
+      flex: 1;
+      background: white;
+      border: 1px solid oklch(88% 0.01 60);
+      border-radius: 8px;
+      padding: 7px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: var(--sans);
+    }
+    .btn-confirm-clear {
+      flex: 1;
+      background: oklch(48% 0.15 20);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 7px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: var(--sans);
+    }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--text);
+      color: var(--bg);
+      border-radius: 20px;
+      padding: 10px 20px;
+      font-size: 13px;
+      z-index: 200;
+      opacity: 0;
+      transition: opacity .22s, transform .22s;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+<div class="app-shell" id="app-shell">
+
+  <!-- HOME -->
+  <div class="screen" id="home">
+    <div class="home-header">
+      <span class="logo-wordmark">NOTE</span>
+      <button class="btn-icon" id="btn-open-menu" aria-label="Menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="home-ping-row">
+      <button class="ping-chip" id="ping-chip">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        <span id="ping-chip-label">1h</span>
+      </button>
+    </div>
+    <div class="home-center">
+      <button class="btn-new-note" id="btn-write" aria-label="Nouvelle note">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+      </button>
+      <span class="home-cta-label">nouvelle note</span>
+    </div>
+    <div class="last-note-wrap">
+      <div id="last-note-preview"></div>
+    </div>
+  </div>
+
+  <!-- WRITE -->
+  <div class="screen hidden" id="write">
+    <div class="write-hd">
+      <button class="btn-icon btn-back" id="btn-back-write" aria-label="Retour"></button>
+      <span style="flex:1"></span>
+      <span class="write-charcount" id="char-count">0</span>
+      <button class="btn-primary" id="btn-save" disabled>Enregistrer</button>
+    </div>
+    <textarea id="note-area" placeholder="Commence à écrire…" autocomplete="off" spellcheck="false"></textarea>
+  </div>
+
+  <!-- LIST -->
+  <div class="screen hidden" id="list">
+    <div class="hd">
+      <button class="btn-icon btn-back" id="btn-back-list" aria-label="Retour"></button>
+      <span class="hd-title">Notes</span>
+    </div>
+    <div class="list-stats" id="list-stats"></div>
+    <div class="search-wrap">
+      <div class="search-inner">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text" id="search-input" placeholder="Rechercher…">
+        <button class="btn-search-clear" id="btn-search-clear" style="display:none">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="notes-list" id="notes-list"></div>
+  </div>
+
+  <!-- VIEW -->
+  <div class="screen hidden" id="view-screen">
+    <div class="view-hd">
+      <button class="btn-icon btn-back" id="btn-back-view" aria-label="Retour"></button>
+      <span style="flex:1"></span>
+      <button class="btn-dl-note" id="btn-dl-note" aria-label="Télécharger">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Télécharger
+      </button>
+      <button class="btn-delete-note" id="btn-delete-note">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+        </svg>
+        Supprimer
+      </button>
+    </div>
+    <div class="view-meta"><div class="view-date" id="view-date"></div></div>
+    <div class="view-body" id="view-body"></div>
+    <!-- Ping par note -->
+    <div class="note-ping-card" id="note-ping-card">
+      <div class="note-ping-header">
+        <span class="note-ping-lbl">rappel de cette note</span>
+        <span class="note-ping-val" id="note-ping-val">—</span>
+      </div>
+      <div class="note-ping-row" id="note-ping-presets"></div>
+      <div class="note-ping-after-row">
+        <button class="note-ping-after-btn" data-after="warn" id="npafter-warn">Notif avant suppression</button>
+        <button class="note-ping-after-btn" data-after="delete" id="npafter-delete">Supprimer après</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PING -->
+  <div class="screen hidden" id="ping-screen">
+    <div class="hd">
+      <button class="btn-icon btn-back" id="btn-back-ping" aria-label="Retour"></button>
+      <span class="hd-title">Rappel</span>
+    </div>
+    <div class="ping-body">
+      <div class="ping-current-card">
+        <div class="ping-current-lbl">intervalle actuel</div>
+        <div class="ping-current-val" id="pc-value">—</div>
+      </div>
+
+      <div>
+        <div class="ping-section-lbl">Préréglages</div>
+        <div class="presets-grid" id="ping-presets"></div>
+      </div>
+
+      <div class="ping-custom-section">
+        <div class="ping-section-lbl">Personnalisé</div>
+        <div class="ping-custom-row">
+          <input type="number" id="custom-val" min="1" max="999" placeholder="ex. 3">
+          <select id="custom-unit">
+            <option value="min">minutes</option>
+            <option value="h">heures</option>
+            <option value="d">jours</option>
+            <option value="w">semaines</option>
+            <option value="mo">mois</option>
+            <option value="y">années</option>
+          </select>
+          <button class="btn-ok" id="btn-custom-ok">OK</button>
+        </div>
+      </div>
+
+      <div class="notif-toggle-card">
+        <div class="nt-left">
+          <div class="nt-label">Notifications système</div>
+          <div class="nt-sub">Recevoir des rappels</div>
+        </div>
+        <button class="toggle-switch" id="notif-toggle" aria-label="Toggle notifications"></button>
+      </div>
+
+      <button class="btn-apply-ping" id="btn-apply-ping">Enregistrer</button>
+    </div>
+  </div>
+
+  <!-- MENU OVERLAY + DRAWER -->
+  <div id="menu-overlay"></div>
+  <div id="menu-drawer">
+    <div class="menu-top">
+      <span class="menu-wordmark">MENU</span>
+      <button class="btn-icon" id="btn-close-menu" aria-label="Fermer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="menu-badges">
+      <span class="menu-badge" id="menu-note-count">0 note</span>
+      <span class="menu-badge-muted" id="menu-ping-badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        <span id="menu-ping-label">1h</span>
+      </span>
+    </div>
+    <div class="menu-divider"></div>
+    <div class="menu-nav">
+      <button class="menu-nav-btn" id="menu-home">Accueil</button>
+      <button class="menu-nav-btn" id="menu-new-note">Nouvelle note</button>
+      <button class="menu-nav-btn" id="menu-all-notes">Toutes les notes</button>
+      <button class="menu-nav-btn" id="menu-ping">Rappel</button>
+    </div>
+    <div class="menu-divider"></div>
+    <div class="menu-actions">
+      <button class="menu-action-btn" id="menu-export">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Exporter en .txt
+      </button>
+      <div id="clear-zone">
+        <button class="menu-action-btn danger" id="menu-clear">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+          </svg>
+          Tout effacer
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /app-shell -->
+
+<div id="toast"></div>
+
+<script>
+const NOTES_KEY = 'sn_notes';
+const PING_KEY  = 'sn_ping';
+const NOTE_PING_PRESETS = [
+  { label: '5 min', ms: 300000 }, { label: '30 min', ms: 1800000 },
+  { label: '1 h', ms: 3600000 }, { label: '6 h', ms: 21600000 },
+  { label: '1 j', ms: 86400000 }, { label: '1 sem', ms: 604800000 },
+];
+
+function loadNotes() {
+  try { return JSON.parse(localStorage.getItem(NOTES_KEY)) || []; } catch { return []; }
+}
+function saveNotes(n) { localStorage.setItem(NOTES_KEY, JSON.stringify(n)); }
+function loadPing() {
+  try { return JSON.parse(localStorage.getItem(PING_KEY)) || { ms: 3600000, label: '1h', enabled: false }; }
+  catch { return { ms: 3600000, label: '1h', enabled: false }; }
+}
+function savePing(p) { localStorage.setItem(PING_KEY, JSON.stringify(p)); }
+
+let notes = loadNotes();
+let pingState = loadPing();
+let pingTimer = null;
+let previousScreen = 'home';
+let confirmingClear = false;
+
+const screens = {
+  home:  document.getElementById('home'),
+  write: document.getElementById('write'),
+  list:  document.getElementById('list'),
+  view:  document.getElementById('view-screen'),
+  ping:  document.getElementById('ping-screen'),
+};
+
+// Cached refs
+const toastEl       = document.getElementById('toast');
+const elPingChip    = document.getElementById('ping-chip');
+const elPingChipLbl = document.getElementById('ping-chip-label');
+const elMenuPingLbl = document.getElementById('menu-ping-label');
+const elMenuNoteCnt = document.getElementById('menu-note-count');
+const elNotesList   = document.getElementById('notes-list');
+const elListStats   = document.getElementById('list-stats');
+const elPcValue     = document.getElementById('pc-value');
+const elNotifToggle = document.getElementById('notif-toggle');
+const elPingPresets = document.getElementById('ping-presets');
+const menuOverlay   = document.getElementById('menu-overlay');
+const menuDrawer    = document.getElementById('menu-drawer');
+
+// Inject back SVG into all back buttons
+const BACK_SVG = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`;
+document.querySelectorAll('.btn-back').forEach(b => { b.innerHTML = BACK_SVG; });
+
+function show(name) {
+  Object.values(screens).forEach(s => s.classList.add('hidden'));
+  screens[name].classList.remove('hidden');
+}
+
+let toastTimer;
+function toast(msg) {
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2200);
+}
+
+function fmtDate(ts) {
+  const d = new Date(ts);
+  return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+    + ' · ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+}
+
+function msToLabel(ms) {
+  const s = ms / 1000;
+  if (s < 60) return `${Math.round(s)}s`;
+  if (s < 3600) return `${Math.round(s/60)}min`;
+  if (s < 86400) return `${Math.round(s/3600)}h`;
+  if (s < 604800) return `${Math.round(s/86400)}j`;
+  if (s < 2592000) return `${Math.round(s/604800)}sem`;
+  if (s < 31536000) return `${Math.round(s/2592000)}mois`;
+  return `${Math.round(s/31536000)}an`;
+}
+
+const PRESETS = [
+  { label: '1 min',  ms: 60000 },      { label: '5 min',  ms: 300000 },
+  { label: '15 min', ms: 900000 },     { label: '30 min', ms: 1800000 },
+  { label: '1 h',    ms: 3600000 },    { label: '2 h',    ms: 7200000 },
+  { label: '4 h',    ms: 14400000 },   { label: '8 h',    ms: 28800000 },
+  { label: '1 j',    ms: 86400000 },   { label: '2 j',    ms: 172800000 },
+  { label: '1 sem',  ms: 604800000 },  { label: '1 mois', ms: 2592000000 },
+  { label: '6 mois', ms: 15552000000 },{ label: '1 an',   ms: 31536000000 },
+];
+
+const UNIT_MAP = { min: 60000, h: 3600000, d: 86400000, w: 604800000, mo: 2629800000, y: 31557600000 };
+
+// ── HOME ──
+function updateHome() {
+  const last = notes[0];
+  const preview = document.getElementById('last-note-preview');
+  if (last) {
+    preview.innerHTML = `<button class="last-note-card" id="last-note-btn">
+      <div class="last-note-meta">dernière note · ${fmtDate(last.ts)}</div>
+      <div class="last-note-text">${last.text.replace(/</g,'&lt;')}</div>
+    </button>`;
+    document.getElementById('last-note-btn').addEventListener('click', () => openViewNote(last.id, 'home'));
+  } else {
+    preview.innerHTML = `<div class="last-note-empty"><span>aucune note pour l'instant</span></div>`;
+  }
+  const lbl = msToLabel(pingState.ms);
+  elPingChipLbl.textContent = lbl;
+  elMenuPingLbl.textContent = lbl;
+  elMenuNoteCnt.textContent = `${notes.length} note${notes.length !== 1 ? 's' : ''}`;
+  elPingChip.classList.toggle('notif-on', pingState.enabled);
+}
+
+document.getElementById('ping-chip').addEventListener('click', () => { show('ping'); syncPingScreen(); });
+document.getElementById('btn-write').addEventListener('click', openWrite);
+document.getElementById('btn-back-write').addEventListener('click', () => show('home'));
+
+// ── WRITE ──
+function openWrite() {
+  const ta = document.getElementById('note-area');
+  ta.value = '';
+  document.getElementById('char-count').textContent = '0';
+  document.getElementById('btn-save').disabled = true;
+  show('write');
+  setTimeout(() => ta.focus(), 80);
+}
+
+document.getElementById('note-area').addEventListener('input', function() {
+  const len = this.value.length;
+  document.getElementById('char-count').textContent = len;
+  document.getElementById('btn-save').disabled = !this.value.trim();
+});
+
+document.getElementById('btn-save').addEventListener('click', () => {
+  const text = document.getElementById('note-area').value.trim();
+  if (!text) return;
+  notes.unshift({ id: Date.now(), ts: Date.now(), text });
+  saveNotes(notes);
+  updateHome();
+  toast('Note enregistrée');
+  show('home');
+});
+
+// ── LIST ──
+function openList() {
+  refreshList(notes);
+  show('list');
+}
+
+function refreshList(list = notes) {
+  renderList(list);
+  const chars = notes.reduce((a, n) => a + n.text.length, 0);
+  elListStats.innerHTML = `<div class="stat-col"><span class="stat-val">${notes.length}</span><span class="stat-lbl">notes</span></div>
+    <div class="stat-col"><span class="stat-val">${chars.toLocaleString('fr')}</span><span class="stat-lbl">caractères</span></div>`;
+}
+
+function renderList(list) {
+  if (!list.length) {
+    const q = document.getElementById('search-input').value;
+    elNotesList.innerHTML = `<div class="list-empty">${q ? 'Aucun résultat' : 'Aucune note'}</div>`;
+    return;
+  }
+  const items = [];
+  for (let i = 0; i < list.length; i++) {
+    const n = list[i];
+    const excerpt = n.text.length > 80 ? n.text.slice(0, 80).trimEnd() + '…' : n.text;
+    items.push(`<div class="note-row" data-id="${n.id}">
+      <button class="note-card" data-id="${n.id}">
+        <div class="note-card-date">${fmtDate(n.ts)}</div>
+        <div class="note-card-text">${excerpt.replace(/</g,'&lt;')}</div>
+      </button>
+      <button class="note-del-btn" data-del="${n.id}" aria-label="Supprimer">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+        </svg>
+      </button>
+    </div>`);
+  }
+  elNotesList.innerHTML = items.join('');
+
+  elNotesList.querySelectorAll('.note-card').forEach(card => {
+    card.addEventListener('click', () => openViewNote(Number(card.dataset.id), 'list'));
+  });
+  elNotesList.querySelectorAll('.note-del-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => { e.stopPropagation(); deleteNote(Number(btn.dataset.del)); });
+  });
+}
+
+let searchDebounce;
+const elSearchInput = document.getElementById('search-input');
+const elSearchClear = document.getElementById('btn-search-clear');
+elSearchInput.addEventListener('input', function() {
+  clearTimeout(searchDebounce);
+  elSearchClear.style.display = this.value ? 'flex' : 'none';
+  const q = this.value.toLowerCase();
+  searchDebounce = setTimeout(() => renderList(q ? notes.filter(n => n.text.toLowerCase().includes(q)) : notes), 150);
+});
+elSearchClear.addEventListener('click', () => {
+  elSearchInput.value = '';
+  elSearchClear.style.display = 'none';
+  renderList(notes);
+});
+
+document.getElementById('btn-back-list').addEventListener('click', () => show('home'));
+
+function deleteNote(id) {
+  notes = notes.filter(n => n.id !== id);
+  saveNotes(notes);
+  updateHome();
+  if (!screens.list.classList.contains('hidden')) refreshList(notes);
+  toast('Note supprimée');
+}
+
+// ── VIEW ──
+let notePingTimers = {}; // id → {timer, after}
+
+function openViewNote(id, from) {
+  const note = notes.find(n => n.id === id);
+  if (!note) return;
+  previousScreen = from;
+  document.getElementById('view-date').textContent = fmtDate(note.ts);
+  document.getElementById('view-body').textContent = note.text;
+  document.getElementById('btn-delete-note').dataset.id = id;
+  document.getElementById('btn-dl-note').dataset.id = id;
+  renderNotePingCard(note);
+  show('view');
+}
+
+function renderNotePingCard(note) {
+  const ping = note.ping || null;
+  const after = note.pingAfter || 'warn';
+  const valEl = document.getElementById('note-ping-val');
+  valEl.textContent = ping ? msToLabel(ping) : 'aucun';
+
+  const presetsEl = document.getElementById('note-ping-presets');
+  presetsEl.innerHTML = NOTE_PING_PRESETS.map(p =>
+    `<button class="note-ping-preset${ping === p.ms ? ' active' : ''}" data-ms="${p.ms}">${p.label}</button>`
+  ).join('');
+  presetsEl.querySelectorAll('.note-ping-preset').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const ms = Number(btn.dataset.ms);
+      setNotePing(note.id, ms, after);
+      renderNotePingCard(notes.find(n => n.id === note.id));
+    });
+  });
+
+  document.getElementById('npafter-warn').classList.toggle('active', after === 'warn');
+  document.getElementById('npafter-delete').classList.toggle('active', after === 'delete');
+  document.getElementById('npafter-warn').onclick = () => setNotePingAfter(note.id, 'warn');
+  document.getElementById('npafter-delete').onclick = () => setNotePingAfter(note.id, 'delete');
+}
+
+function setNotePing(id, ms, after) {
+  const note = notes.find(n => n.id === id);
+  if (!note) return;
+  note.ping = ms;
+  note.pingAfter = after || note.pingAfter || 'warn';
+  saveNotes(notes);
+  scheduleNotePing(note);
+  toast('Rappel : ' + msToLabel(ms));
+}
+
+function setNotePingAfter(id, after) {
+  const note = notes.find(n => n.id === id);
+  if (!note) return;
+  note.pingAfter = after;
+  saveNotes(notes);
+  renderNotePingCard(note);
+}
+
+function scheduleNotePing(note) {
+  if (notePingTimers[note.id]) clearTimeout(notePingTimers[note.id].timer);
+  if (!note.ping) return;
+  const delay = note.pingDeadline ? note.pingDeadline - Date.now() : note.ping;
+  if (delay <= 0) { fireNotePing(note); return; }
+  note.pingDeadline = Date.now() + delay;
+  saveNotes(notes);
+  notePingTimers[note.id] = { timer: setTimeout(() => fireNotePing(note), delay) };
+}
+
+function fireNotePing(note) {
+  const current = notes.find(n => n.id === note.id);
+  if (!current) return;
+  if (current.pingAfter === 'delete') {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification('Note supprimée — Snapshot', {
+        body: current.text.slice(0, 60) + (current.text.length > 60 ? '…' : ''),
+        icon: 'icons/icon-192.png',
+      });
+    }
+    deleteNote(current.id);
+  } else {
+    // warn mode : notif + replanifie dans 5 min pour auto-delete
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification('Ta note va être supprimée dans 5 min — Snapshot', {
+        body: current.text.slice(0, 60) + (current.text.length > 60 ? '…' : ''),
+        icon: 'icons/icon-192.png',
+      });
+    }
+    current.pingAfter = 'delete';
+    current.ping = 300000;
+    current.pingDeadline = Date.now() + 300000;
+    saveNotes(notes);
+    scheduleNotePing(current);
+  }
+}
+
+function restoreNotePingTimers() {
+  notes.forEach(note => {
+    if (note.ping && note.pingDeadline) scheduleNotePing(note);
+  });
+}
+
+document.getElementById('btn-back-view').addEventListener('click', () => {
+  if (previousScreen === 'list') openList(); else show('home');
+});
+
+document.getElementById('btn-delete-note').addEventListener('click', function() {
+  const id = Number(this.dataset.id);
+  if (!id) return;
+  deleteNote(id);
+  if (previousScreen === 'list') openList(); else show('home');
+});
+
+document.getElementById('btn-dl-note').addEventListener('click', function() {
+  const id = Number(this.dataset.id);
+  const note = notes.find(n => n.id === id);
+  if (!note) return;
+  const blob = new Blob([`[${fmtDate(note.ts)}]\n\n${note.text}`], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `note-${new Date(note.ts).toISOString().slice(0,10)}.txt`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('Note téléchargée');
+});
+
+// ── MENU ──
+function setMenu(open) {
+  menuOverlay.classList.toggle('open', open);
+  menuDrawer.classList.toggle('open', open);
+}
+
+document.getElementById('btn-open-menu').addEventListener('click', () => setMenu(true));
+document.getElementById('btn-close-menu').addEventListener('click', () => setMenu(false));
+menuOverlay.addEventListener('click', () => setMenu(false));
+
+document.getElementById('menu-home').addEventListener('click',      () => { setMenu(false); show('home'); });
+document.getElementById('menu-new-note').addEventListener('click',  () => { setMenu(false); openWrite(); });
+document.getElementById('menu-all-notes').addEventListener('click', () => { setMenu(false); openList(); });
+document.getElementById('menu-ping').addEventListener('click',      () => { setMenu(false); show('ping'); syncPingScreen(); });
+
+document.getElementById('menu-export').addEventListener('click', () => {
+  setMenu(false);
+  if (!notes.length) { toast('Aucune note à exporter'); return; }
+  const lines = notes.map(n => `[${fmtDate(n.ts)}]\n${n.text}`);
+  const blob = new Blob([lines.join('\n\n---\n\n')], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `notes-${new Date().toISOString().slice(0,10)}.txt`;
+  a.click();
+  toast('Notes exportées !');
+});
+
+document.getElementById('menu-clear').addEventListener('click', () => {
+  if (confirmingClear) return;
+  confirmingClear = true;
+  const zone = document.getElementById('clear-zone');
+  zone.innerHTML = `<div class="confirm-clear">
+    <div class="confirm-clear-msg">Effacer toutes les notes ?</div>
+    <div class="confirm-clear-row">
+      <button class="btn-cancel-clear" id="btn-cancel-clear">Annuler</button>
+      <button class="btn-confirm-clear" id="btn-confirm-clear">Confirmer</button>
+    </div>
+  </div>`;
+  document.getElementById('btn-cancel-clear').addEventListener('click', () => {
+    confirmingClear = false;
+    zone.innerHTML = `<button class="menu-action-btn danger" id="menu-clear">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+      </svg>
+      Tout effacer
+    </button>`;
+    document.getElementById('menu-clear').addEventListener('click', arguments.callee.caller);
+    // re-bind
+    bindMenuClear();
+  });
+  document.getElementById('btn-confirm-clear').addEventListener('click', () => {
+    notes = [];
+    saveNotes(notes);
+    updateHome();
+    setMenu(false);
+    confirmingClear = false;
+    toast('Toutes les notes effacées');
+    zone.innerHTML = `<button class="menu-action-btn danger" id="menu-clear">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+      </svg>
+      Tout effacer
+    </button>`;
+    bindMenuClear();
+  });
+});
+
+function bindMenuClear() {
+  const btn = document.getElementById('menu-clear');
+  if (!btn) return;
+  btn.addEventListener('click', () => {
+    if (confirmingClear) return;
+    document.getElementById('menu-clear').click();
+  });
+}
+
+// ── PING ──
+elPingPresets.innerHTML = PRESETS.map((p, i) =>
+  `<button class="preset-btn" data-i="${i}" data-ms="${p.ms}">${p.label}</button>`
+).join('');
+
+elPingPresets.querySelectorAll('.preset-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const p = PRESETS[Number(btn.dataset.i)];
+    pingState.ms = p.ms;
+    pingState.label = p.label;
+    syncPresetsActive();
+    elPcValue.textContent = msToLabel(pingState.ms);
+  });
+});
+
+function syncPresetsActive() {
+  elPingPresets.querySelectorAll('.preset-btn').forEach(b =>
+    b.classList.toggle('active', Number(b.dataset.ms) === pingState.ms)
+  );
+}
+
+function syncPingScreen() {
+  elPcValue.textContent = msToLabel(pingState.ms);
+  elNotifToggle.classList.toggle('on', pingState.enabled);
+  syncPresetsActive();
+}
+
+document.getElementById('btn-custom-ok').addEventListener('click', () => {
+  const val = document.getElementById('custom-val').value;
+  const unit = document.getElementById('custom-unit').value;
+  const n = Number(val);
+  if (!n || n <= 0) return;
+  pingState.ms = n * (UNIT_MAP[unit] || 60000);
+  pingState.label = msToLabel(pingState.ms);
+  syncPresetsActive();
+  elPcValue.textContent = msToLabel(pingState.ms);
+  document.getElementById('custom-val').value = '';
+});
+
+elNotifToggle.addEventListener('click', function() {
+  this.classList.toggle('on');
+  pingState.enabled = this.classList.contains('on');
+  if (pingState.enabled) requestNotifPermission();
+});
+
+document.getElementById('btn-apply-ping').addEventListener('click', () => {
+  savePing(pingState);
+  updateHome();
+  startPing();
+  toast('Rappel mis à jour : ' + msToLabel(pingState.ms));
+  show('home');
+});
+
+document.getElementById('btn-back-ping').addEventListener('click', () => show('home'));
+
+// ── NOTIFICATIONS ──
+function requestNotifPermission() {
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+}
+
+function sendNotif() {
+  if (!pingState.enabled) return;
+  if ('Notification' in window && Notification.permission === 'granted') {
+    new Notification('Snapshot Note', {
+      body: 'C\'est le moment de capturer ta pensée !',
+      icon: 'icons/icon-192.png',
+    });
+  }
+}
+
+function startPing() {
+  if (pingTimer) clearInterval(pingTimer);
+  if (pingState.enabled && pingState.ms) pingTimer = setInterval(sendNotif, pingState.ms);
+}
+
+// ── PWA ──
+let deferredInstall = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstall = e;
+});
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+
+updateHome();
+startPing();
+restoreNotePingTimers();
+</script>
+</body>
+</html>
