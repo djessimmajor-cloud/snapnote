@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head><title>Icon Generator</title></head>
+<body>
+<canvas id="c192" width="192" height="192"></canvas>
+<canvas id="c512" width="512" height="512"></canvas>
+<a id="dl192" download="icon-192.png">Download 192</a><br>
+<a id="dl512" download="icon-512.png">Download 512</a>
+<script>
+function draw(canvas) {
+  const s = canvas.width;
+  const ctx = canvas.getContext('2d');
+  const r = s * 0.18;
+
+  // bg
+  ctx.fillStyle = '#0f0f14';
+  ctx.beginPath();
+  ctx.roundRect(0, 0, s, s, r);
+  ctx.fill();
+
+  // gradient circle
+  const grad = ctx.createRadialGradient(s*.42, s*.38, 0, s*.5, s*.5, s*.45);
+  grad.addColorStop(0, 'rgba(124,92,252,0.35)');
+  grad.addColorStop(1, 'rgba(124,92,252,0)');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.arc(s*.5, s*.5, s*.45, 0, Math.PI*2);
+  ctx.fill();
+
+  // pen icon
+  const sc = s / 100;
+  ctx.strokeStyle = '#a78bfa';
+  ctx.lineWidth = sc * 3.2;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  ctx.beginPath();
+  ctx.moveTo(28*sc, 78*sc);
+  ctx.lineTo(30*sc, 58*sc);
+  ctx.lineTo(64*sc, 24*sc);
+  ctx.quadraticCurveTo(72*sc, 16*sc, 80*sc, 24*sc);
+  ctx.quadraticCurveTo(88*sc, 32*sc, 80*sc, 40*sc);
+  ctx.lineTo(46*sc, 74*sc);
+  ctx.closePath();
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(30*sc, 58*sc);
+  ctx.lineTo(46*sc, 74*sc);
+  ctx.stroke();
+
+  ctx.fillStyle = '#7c5cfc';
+  ctx.beginPath();
+  ctx.arc(28*sc, 78*sc, sc*2.5, 0, Math.PI*2);
+  ctx.fill();
+}
+
+['c192','c512'].forEach(id => draw(document.getElementById(id)));
+
+document.getElementById('dl192').href = document.getElementById('c192').toDataURL();
+document.getElementById('dl512').href = document.getElementById('c512').toDataURL();
+</script>
+</body>
+</html>
