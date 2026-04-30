@@ -1497,10 +1497,13 @@ async function processWithAI(transcript) {
   const now = new Date();
   const h = now.getHours(), m = String(now.getMinutes()).padStart(2,'0');
 
-  const systemPrompt = `Assistant notes vocales. Heure: ${h}h${m}. Réponds UNIQUEMENT JSON une ligne, rien d'autre.
-Format: {"text":"<note>","pingMs":<ms ou null>}
-- text: note courte et claire. Liste courses → tirets un par ligne. Inclure le contenu important.
-- pingMs: si délai ("dans 2 heures"=7200000, "dans 30 min"=1800000, "demain"=86400000, "semaine"=604800000, "ce soir"=ms jusqu'à 20h, "à 14h"=ms jusqu'à 14h). Sinon null.`;
+  const systemPrompt = `Tu reçois un texte dicté à voix haute. Retranscris-le proprement, sans rien ajouter, sans répondre, sans commenter. Juste le texte nettoyé.
+Si c'est une liste (courses, tâches...) → mets chaque élément sur une ligne avec un tiret.
+Si c'est une phrase → corrige la ponctuation et la majuscule, garde exactement le sens.
+Ne dis jamais "Bien sûr", "Voici", "Note:" ou quoi que ce soit d'autre. Uniquement le texte retranscrit.
+Heure actuelle: ${h}h${m}.
+Réponds UNIQUEMENT en JSON sur une ligne: {"text":"<texte>","pingMs":<ms ou null>}
+pingMs: si un délai est mentionné ("dans 2h"=7200000, "dans 30min"=1800000, "demain"=86400000, "semaine"=604800000, "ce soir"=ms jusqu'à 20h). Sinon null.`;
 
   const resp = await puter.ai.chat(transcript, { model: 'gpt-4o-mini', systemPrompt });
   const raw = (typeof resp === 'string' ? resp : resp?.message?.content ?? resp?.content ?? '').trim();
