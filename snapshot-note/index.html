@@ -13,7 +13,6 @@
   <link rel="icon" href="icons/icon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
-  <script src="https://js.puter.com/v2/"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
@@ -1510,21 +1509,17 @@ function extractPingFromText(text) {
 }
 
 async function processWithAI(transcript) {
-  const systemPrompt = `Tu es un outil de mise en forme de notes. Règle unique : reprendre exactement ce que l'utilisateur a dit, juste avec la ponctuation et les majuscules corrigées. Si c'est une liste d'éléments, mettre chaque élément sur une nouvelle ligne précédé d'un tiret. Ne jamais ajouter de mots, ne jamais répondre, ne jamais commenter. Sortir uniquement le texte mis en forme.`;
+  const prompt = `Tu es un outil de mise en forme de notes. Règle unique : reprendre exactement ce que l'utilisateur a dit, juste avec la ponctuation et les majuscules corrigées. Si c'est une liste d'éléments, mettre chaque élément sur une nouvelle ligne précédé d'un tiret. Ne jamais ajouter de mots, ne jamais répondre, ne jamais commenter. Sortir uniquement le texte mis en forme.
 
-  const resp = await puter.ai.chat(transcript, { model: 'gpt-4o-mini', systemPrompt });
+Texte: ${transcript}`;
 
-  // Extraire le texte peu importe la structure retournée par Puter
-  let text = '';
-  if (typeof resp === 'string') text = resp;
-  else if (resp?.message?.content) text = resp.message.content;
-  else if (resp?.content) text = resp.content;
-  else if (resp?.text) text = resp.text;
-  else text = JSON.stringify(resp);
-
-  text = normalizeTranscript(text);
+  const resp = await fetch(`https://text.pollinations.ai/${encodeURIComponent(prompt)}`, {
+    signal: AbortSignal.timeout(15000)
+  });
+  if (!resp.ok) throw new Error('API error');
+  const text = normalizeTranscript(await resp.text());
   const pingMs = extractPingFromText(transcript);
-  return { text, pingMs };
+  return { text: text || normalizeTranscript(transcript), pingMs };
 }
 
 document.getElementById('btn-save').addEventListener('click', () => {
