@@ -2,12 +2,14 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#f5f0eb">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <title>Snapshot Note</title>
+  <meta name="apple-mobile-web-app-title" content="Mémo">
+  <title>Mémo</title>
   <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="icon" href="icons/icon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
@@ -28,6 +30,8 @@
       --accent-bg: oklch(58% 0.18 38 / 0.12);
       --danger:  oklch(48% 0.15 20);
       --danger-bg: oklch(95% 0.01 20);
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bot: env(safe-area-inset-bottom, 0px);
       --mono: 'DM Mono', monospace;
       --sans: 'DM Sans', system-ui, sans-serif;
     }
@@ -45,6 +49,8 @@
       width: 100%; height: 100%;
       background: var(--bg);
       overflow: hidden;
+      padding-top: var(--safe-top);
+      padding-bottom: var(--safe-bot);
     }
 
     @media (min-width: 600px) {
@@ -54,6 +60,8 @@
         height: min(844px, 96vh);
         border-radius: 24px;
         box-shadow: 0 24px 80px rgba(0,0,0,0.18), 0 4px 16px rgba(0,0,0,0.08);
+        padding-top: 0;
+        padding-bottom: 0;
       }
     }
 
@@ -109,9 +117,7 @@
     .btn-primary:not(:disabled):hover { opacity: .88; }
 
     /* ── HOME ── */
-    #home {
-      background: var(--bg);
-    }
+    #home { background: var(--bg); }
 
     .home-header {
       padding: 16px 20px 0;
@@ -126,33 +132,6 @@
       font-size: 13px;
       color: var(--muted);
       letter-spacing: .04em;
-    }
-
-    .ping-chip {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      background: oklch(91% 0.008 60);
-      border: none;
-      border-radius: 20px;
-      padding: 5px 12px;
-      cursor: pointer;
-      font-family: var(--mono);
-      font-size: 12px;
-      color: var(--muted2);
-      transition: background .15s, color .15s;
-      letter-spacing: .03em;
-    }
-    .ping-chip.notif-on {
-      background: var(--accent-bg);
-      color: var(--accent);
-    }
-
-    .home-ping-row {
-      padding: 12px 20px 0;
-      display: flex;
-      justify-content: flex-end;
-      flex-shrink: 0;
     }
 
     .home-center {
@@ -234,8 +213,6 @@
     .last-note-empty span { font-size: 13px; color: var(--muted); }
 
     /* ── WRITE ── */
-    #write {}
-
     .write-hd {
       display: flex;
       align-items: center;
@@ -264,9 +241,47 @@
     }
     #note-area::placeholder { color: var(--muted); }
 
-    /* ── LIST ── */
-    #list {}
+    /* ── VOICE BUTTONS ── */
+    .voice-bar {
+      display: flex;
+      gap: 8px;
+      padding: 0 16px 12px;
+      flex-shrink: 0;
+    }
+    .btn-voice {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 8px;
+      background: var(--surface);
+      color: var(--text2);
+      font-size: 12px;
+      font-family: var(--sans);
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .btn-voice:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-voice.recording {
+      background: oklch(58% 0.18 38 / 0.1);
+      border-color: var(--accent);
+      color: var(--accent);
+      animation: pulse-border 1.2s ease-in-out infinite;
+    }
+    .btn-voice-ai {
+      border-color: oklch(58% 0.18 38 / 0.4);
+      color: var(--accent);
+    }
+    .btn-voice-ai:hover { background: var(--accent-bg); }
+    @keyframes pulse-border {
+      0%, 100% { box-shadow: 0 0 0 0 oklch(58% 0.18 38 / 0.3); }
+      50% { box-shadow: 0 0 0 4px oklch(58% 0.18 38 / 0); }
+    }
 
+    /* ── LIST ── */
     .list-stats {
       padding: 2px 20px 12px;
       display: flex;
@@ -376,8 +391,6 @@
     }
 
     /* ── VIEW ── */
-    #view-screen {}
-
     .view-hd {
       display: flex;
       align-items: center;
@@ -440,232 +453,114 @@
       white-space: pre-wrap;
     }
 
-    /* ── NOTE PING ── */
+    /* ── NOTE PING (grande modale) ── */
     .note-ping-card {
-      margin: 0 20px 16px;
+      margin: 0 16px 16px;
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 14px 16px;
+      border-radius: 18px;
+      padding: 18px 18px 14px;
       flex-shrink: 0;
     }
     .note-ping-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 10px;
+      margin-bottom: 14px;
     }
     .note-ping-lbl {
-      font-size: 10px;
+      font-size: 11px;
       font-family: var(--mono);
       color: var(--muted);
       text-transform: uppercase;
       letter-spacing: .06em;
     }
     .note-ping-val {
-      font-size: 15px;
+      font-size: 17px;
       font-family: var(--mono);
-      font-weight: 300;
+      font-weight: 400;
       color: var(--accent);
     }
-    .note-ping-row {
-      display: flex;
-      gap: 7px;
-      flex-wrap: wrap;
+    .note-ping-presets-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 10px;
     }
     .note-ping-preset {
       background: oklch(95% 0.008 60);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 6px 10px;
-      font-size: 11px;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 8px;
+      font-size: 13px;
       font-family: var(--mono);
-      color: oklch(35% 0.01 60);
+      color: oklch(30% 0.01 60);
       cursor: pointer;
       transition: all .15s;
+      text-align: center;
     }
     .note-ping-preset:hover { border-color: var(--accent); color: var(--accent); }
-    .note-ping-preset.active { background: var(--accent); border-color: var(--accent); color: white; }
+    .note-ping-preset.active { background: var(--accent); border-color: var(--accent); color: white; font-weight: 500; }
+
+    .note-ping-custom-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .note-ping-custom-row input[type=number] {
+      flex: 1;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 14px;
+      font-family: var(--sans);
+      background: oklch(95% 0.008 60);
+      color: var(--text2);
+      outline: none;
+    }
+    .note-ping-custom-row select {
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 10px;
+      font-size: 13px;
+      font-family: var(--sans);
+      background: oklch(95% 0.008 60);
+      color: var(--text2);
+      outline: none;
+      cursor: pointer;
+    }
+    .btn-note-ping-ok {
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: var(--sans);
+      white-space: nowrap;
+    }
 
     .note-ping-after-row {
       display: flex;
-      gap: 7px;
-      margin-top: 10px;
+      gap: 8px;
     }
     .note-ping-after-btn {
       flex: 1;
       background: oklch(95% 0.008 60);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 8px 6px;
-      font-size: 11px;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 11px 6px;
+      font-size: 12px;
       font-family: var(--sans);
       color: oklch(35% 0.01 60);
       cursor: pointer;
       transition: all .15s;
       text-align: center;
+      line-height: 1.3;
     }
-    .note-ping-after-btn.active { background: var(--accent-bg); border-color: var(--accent); color: var(--accent); }
+    .note-ping-after-btn.active { background: var(--accent-bg); border-color: var(--accent); color: var(--accent); font-weight: 500; }
     .note-ping-after-btn:hover { border-color: var(--border2); }
-
-    /* ── PING ── */
-    #ping-screen {}
-
-    .ping-body {
-      flex: 1;
-      overflow-y: auto;
-      padding: 8px 20px 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    .ping-current-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 14px 16px;
-    }
-    .ping-current-lbl {
-      font-size: 10px;
-      font-family: var(--mono);
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: .06em;
-      margin-bottom: 6px;
-    }
-    .ping-current-val {
-      font-size: 26px;
-      font-family: var(--mono);
-      font-weight: 300;
-      color: var(--accent);
-    }
-
-    .ping-section-lbl {
-      font-size: 11px;
-      font-family: var(--mono);
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: .06em;
-      margin-bottom: 10px;
-    }
-
-    .presets-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 7px;
-    }
-    .preset-btn {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 9px 4px;
-      font-size: 12px;
-      font-family: var(--mono);
-      color: oklch(30% 0.01 60);
-      cursor: pointer;
-      transition: all .15s;
-    }
-    .preset-btn:hover { border-color: var(--border2); }
-    .preset-btn.active {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: white;
-    }
-
-    .ping-custom-section {}
-    .ping-custom-row {
-      display: flex;
-      gap: 8px;
-      margin-top: 0;
-    }
-    .ping-custom-row input[type=number] {
-      flex: 1;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 9px 12px;
-      font-size: 14px;
-      font-family: var(--sans);
-      background: var(--surface);
-      color: var(--text2);
-      outline: none;
-    }
-    .ping-custom-row select {
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 9px 10px;
-      font-size: 13px;
-      font-family: var(--sans);
-      background: var(--surface);
-      color: var(--text2);
-      outline: none;
-      cursor: pointer;
-    }
-    .btn-ok {
-      background: var(--accent);
-      color: white;
-      border: none;
-      border-radius: 10px;
-      padding: 9px 14px;
-      font-size: 13px;
-      cursor: pointer;
-      font-family: var(--sans);
-    }
-
-    .notif-toggle-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 14px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .nt-left {}
-    .nt-label { font-size: 14px; font-weight: 400; color: var(--text2); }
-    .nt-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
-
-    .toggle-switch {
-      width: 44px;
-      height: 24px;
-      border-radius: 12px;
-      background: oklch(82% 0.01 60);
-      border: none;
-      cursor: pointer;
-      position: relative;
-      transition: background .2s;
-      flex-shrink: 0;
-    }
-    .toggle-switch.on { background: var(--accent); }
-    .toggle-switch::after {
-      content: '';
-      position: absolute;
-      top: 3px;
-      left: 3px;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background: white;
-      transition: left .2s;
-      box-shadow: 0 1px 3px rgba(0,0,0,.2);
-    }
-    .toggle-switch.on::after { left: 23px; }
-
-    .btn-apply-ping {
-      width: 100%;
-      background: var(--accent);
-      color: white;
-      border: none;
-      border-radius: 12px;
-      padding: 14px;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      font-family: var(--sans);
-      box-shadow: 0 4px 16px oklch(58% 0.18 38 / 0.3);
-      transition: opacity .15s;
-    }
-    .btn-apply-ping:hover { opacity: .88; }
 
     /* ── MENU DRAWER ── */
     #menu-overlay {
@@ -682,9 +577,7 @@
 
     #menu-drawer {
       position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
+      top: 0; right: 0; bottom: 0;
       width: 78%;
       background: oklch(97.5% 0.008 60);
       z-index: 51;
@@ -723,17 +616,6 @@
       font-size: 12px;
       font-family: var(--mono);
       color: var(--accent);
-    }
-    .menu-badge-muted {
-      background: oklch(91% 0.008 60);
-      border-radius: 20px;
-      padding: 4px 10px;
-      font-size: 12px;
-      font-family: var(--mono);
-      color: var(--muted2);
-      display: flex;
-      align-items: center;
-      gap: 4px;
     }
 
     .menu-divider { height: 1px; background: var(--border); margin: 0 20px 8px; flex-shrink: 0; }
@@ -784,26 +666,156 @@
     .confirm-clear-msg { font-size: 13px; color: oklch(35% 0.12 20); margin-bottom: 8px; }
     .confirm-clear-row { display: flex; gap: 8px; }
     .btn-cancel-clear {
-      flex: 1;
-      background: white;
-      border: 1px solid oklch(88% 0.01 60);
-      border-radius: 8px;
-      padding: 7px;
-      font-size: 12px;
-      cursor: pointer;
-      font-family: var(--sans);
+      flex: 1; background: white; border: 1px solid oklch(88% 0.01 60);
+      border-radius: 8px; padding: 7px; font-size: 12px; cursor: pointer; font-family: var(--sans);
     }
     .btn-confirm-clear {
-      flex: 1;
-      background: oklch(48% 0.15 20);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 7px;
-      font-size: 12px;
-      cursor: pointer;
-      font-family: var(--sans);
+      flex: 1; background: oklch(48% 0.15 20); color: white; border: none;
+      border-radius: 8px; padding: 7px; font-size: 12px; cursor: pointer; font-family: var(--sans);
     }
+
+    /* ── INSTALL BANNER ── */
+    #install-banner {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 14px 20px calc(28px + var(--safe-bot));
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 100;
+      transform: translateY(100%);
+      transition: transform .3s cubic-bezier(.22,.68,0,1.2);
+    }
+    #install-banner.show { transform: translateY(0); }
+    .install-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: var(--accent-bg);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--accent); flex-shrink: 0;
+    }
+    .install-text { flex: 1; }
+    .install-text strong { font-size: 13px; font-weight: 500; color: var(--text2); display: block; }
+    .install-text span { font-size: 12px; color: var(--muted); }
+    .btn-install {
+      background: var(--accent); color: white; border: none;
+      border-radius: 10px; padding: 9px 16px; font-size: 13px;
+      font-weight: 500; font-family: var(--sans); cursor: pointer;
+      white-space: nowrap; transition: opacity .15s;
+    }
+    .btn-install:hover { opacity: .88; }
+    .btn-install-close {
+      background: none; border: none; cursor: pointer;
+      color: var(--muted); padding: 4px;
+    }
+
+    /* ── EASTER EGG ── */
+    #easter-screen {
+      background: var(--bg);
+      overflow-y: auto;
+    }
+    .easter-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 28px 48px;
+      gap: 0;
+      overflow-y: auto;
+    }
+    .easter-heart {
+      font-size: 48px;
+      margin-bottom: 20px;
+      animation: heartbeat 1.8s ease-in-out infinite;
+    }
+    @keyframes heartbeat {
+      0%, 100% { transform: scale(1); }
+      14% { transform: scale(1.12); }
+      28% { transform: scale(1); }
+      42% { transform: scale(1.08); }
+      56% { transform: scale(1); }
+    }
+    .easter-title {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 8px;
+      text-align: center;
+    }
+    .easter-sub {
+      font-size: 13px;
+      color: var(--muted);
+      text-align: center;
+      font-family: var(--mono);
+      margin-bottom: 32px;
+      letter-spacing: .03em;
+    }
+    .easter-section {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px 20px;
+      margin-bottom: 14px;
+    }
+    .easter-section-title {
+      font-size: 10px;
+      font-family: var(--mono);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .easter-person {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .easter-person:last-child { border-bottom: none; }
+    .easter-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--accent-bg);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .easter-name { font-size: 14px; font-weight: 500; color: var(--text2); }
+    .easter-role { font-size: 12px; color: var(--muted); }
+    .easter-msg {
+      font-size: 14px;
+      color: oklch(30% 0.01 60);
+      line-height: 1.6;
+      font-weight: 300;
+      text-align: center;
+      font-style: italic;
+      margin-bottom: 24px;
+    }
+    .easter-claude {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--accent-bg);
+      border: 1px solid oklch(58% 0.18 38 / 0.2);
+      border-radius: 14px;
+      padding: 14px 16px;
+      width: 100%;
+    }
+    .easter-claude-icon {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      color: white;
+      font-family: var(--mono);
+      font-size: 14px;
+      font-weight: 400;
+      flex-shrink: 0;
+    }
+    .easter-claude-text { font-size: 13px; color: var(--accent); line-height: 1.5; }
 
     /* ── TOAST ── */
     #toast {
@@ -831,19 +843,11 @@
   <!-- HOME -->
   <div class="screen" id="home">
     <div class="home-header">
-      <span class="logo-wordmark">NOTE</span>
+      <button class="logo-wordmark" id="btn-easter" style="background:none;border:none;cursor:pointer;font-family:var(--mono);font-size:13px;color:var(--muted);letter-spacing:.04em;" aria-label="Easter egg">mémo</button>
       <button class="btn-icon" id="btn-open-menu" aria-label="Menu">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
           <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
         </svg>
-      </button>
-    </div>
-    <div class="home-ping-row">
-      <button class="ping-chip" id="ping-chip">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-        </svg>
-        <span id="ping-chip-label">1h</span>
       </button>
     </div>
     <div class="home-center">
@@ -868,6 +872,25 @@
       <button class="btn-primary" id="btn-save" disabled>Enregistrer</button>
     </div>
     <textarea id="note-area" placeholder="Commence à écrire…" autocomplete="off" spellcheck="false"></textarea>
+    <!-- Boutons vocaux -->
+    <div class="voice-bar">
+      <button class="btn-voice" id="btn-voice-raw" aria-label="Dicter">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/>
+          <line x1="8" y1="23" x2="16" y2="23"/>
+        </svg>
+        Dicter
+      </button>
+      <button class="btn-voice btn-voice-ai" id="btn-voice-ai" aria-label="Dicter avec IA">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/>
+          <line x1="8" y1="23" x2="16" y2="23"/>
+        </svg>
+        Dicter + IA
+      </button>
+    </div>
   </div>
 
   <!-- LIST -->
@@ -913,62 +936,79 @@
     </div>
     <div class="view-meta"><div class="view-date" id="view-date"></div></div>
     <div class="view-body" id="view-body"></div>
-    <!-- Ping par note -->
     <div class="note-ping-card" id="note-ping-card">
       <div class="note-ping-header">
         <span class="note-ping-lbl">rappel de cette note</span>
         <span class="note-ping-val" id="note-ping-val">—</span>
       </div>
-      <div class="note-ping-row" id="note-ping-presets"></div>
+      <div class="note-ping-presets-grid" id="note-ping-presets"></div>
+      <div class="note-ping-custom-row">
+        <input type="number" id="note-custom-val" min="1" max="999" placeholder="ex. 3">
+        <select id="note-custom-unit">
+          <option value="min">min</option>
+          <option value="h">heures</option>
+          <option value="d">jours</option>
+          <option value="w">semaines</option>
+          <option value="mo">mois</option>
+        </select>
+        <button class="btn-note-ping-ok" id="btn-note-ping-ok">OK</button>
+      </div>
       <div class="note-ping-after-row">
-        <button class="note-ping-after-btn" data-after="warn" id="npafter-warn">Notif avant suppression</button>
-        <button class="note-ping-after-btn" data-after="delete" id="npafter-delete">Supprimer après</button>
+        <button class="note-ping-after-btn" data-after="warn" id="npafter-warn">⚠️ Notif avant<br>suppression</button>
+        <button class="note-ping-after-btn" data-after="delete" id="npafter-delete">🗑️ Supprimer<br>après le ping</button>
       </div>
     </div>
   </div>
 
-  <!-- PING -->
-  <div class="screen hidden" id="ping-screen">
+  <!-- EASTER EGG -->
+  <div class="screen hidden" id="easter-screen">
     <div class="hd">
-      <button class="btn-icon btn-back" id="btn-back-ping" aria-label="Retour"></button>
-      <span class="hd-title">Rappel</span>
+      <button class="btn-icon btn-back" id="btn-back-easter" aria-label="Retour"></button>
+      <span class="hd-title" style="font-family:var(--mono);font-size:12px;color:var(--muted);">✦ merci ✦</span>
     </div>
-    <div class="ping-body">
-      <div class="ping-current-card">
-        <div class="ping-current-lbl">intervalle actuel</div>
-        <div class="ping-current-val" id="pc-value">—</div>
-      </div>
+    <div class="easter-body">
+      <div class="easter-heart">💛</div>
+      <div class="easter-title">Merci à vous</div>
+      <div class="easter-sub">mémo — construit avec amour</div>
 
-      <div>
-        <div class="ping-section-lbl">Préréglages</div>
-        <div class="presets-grid" id="ping-presets"></div>
-      </div>
+      <p class="easter-msg">"Cette app n'existerait pas sans les gens qui comptent pour moi. Merci d'être là."</p>
 
-      <div class="ping-custom-section">
-        <div class="ping-section-lbl">Personnalisé</div>
-        <div class="ping-custom-row">
-          <input type="number" id="custom-val" min="1" max="999" placeholder="ex. 3">
-          <select id="custom-unit">
-            <option value="min">minutes</option>
-            <option value="h">heures</option>
-            <option value="d">jours</option>
-            <option value="w">semaines</option>
-            <option value="mo">mois</option>
-            <option value="y">années</option>
-          </select>
-          <button class="btn-ok" id="btn-custom-ok">OK</button>
+      <div class="easter-section">
+        <div class="easter-section-title">Famille</div>
+        <div class="easter-person">
+          <div class="easter-avatar">👨</div>
+          <div>
+            <div class="easter-name">Papa</div>
+            <div class="easter-role">Merci pour tout ce que tu m'as appris</div>
+          </div>
+        </div>
+        <div class="easter-person">
+          <div class="easter-avatar">👩</div>
+          <div>
+            <div class="easter-name">Maman</div>
+            <div class="easter-role">Ta confiance m'a donné des ailes</div>
+          </div>
         </div>
       </div>
 
-      <div class="notif-toggle-card">
-        <div class="nt-left">
-          <div class="nt-label">Notifications système</div>
-          <div class="nt-sub">Recevoir des rappels</div>
+      <div class="easter-section">
+        <div class="easter-section-title">Amis</div>
+        <div class="easter-person">
+          <div class="easter-avatar">🤝</div>
+          <div>
+            <div class="easter-name">Mes amis</div>
+            <div class="easter-role">Vous rendez tout plus léger</div>
+          </div>
         </div>
-        <button class="toggle-switch" id="notif-toggle" aria-label="Toggle notifications"></button>
       </div>
 
-      <button class="btn-apply-ping" id="btn-apply-ping">Enregistrer</button>
+      <div class="easter-claude">
+        <div class="easter-claude-icon">AI</div>
+        <div class="easter-claude-text">
+          <strong style="display:block;margin-bottom:2px;">Claude Code</strong>
+          Codé ensemble, ligne par ligne. Merci pour la patience et la créativité.
+        </div>
+      </div>
     </div>
   </div>
 
@@ -985,19 +1025,12 @@
     </div>
     <div class="menu-badges">
       <span class="menu-badge" id="menu-note-count">0 note</span>
-      <span class="menu-badge-muted" id="menu-ping-badge">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-        </svg>
-        <span id="menu-ping-label">1h</span>
-      </span>
     </div>
     <div class="menu-divider"></div>
     <div class="menu-nav">
       <button class="menu-nav-btn" id="menu-home">Accueil</button>
       <button class="menu-nav-btn" id="menu-new-note">Nouvelle note</button>
       <button class="menu-nav-btn" id="menu-all-notes">Toutes les notes</button>
-      <button class="menu-nav-btn" id="menu-ping">Rappel</button>
     </div>
     <div class="menu-divider"></div>
     <div class="menu-actions">
@@ -1012,10 +1045,29 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
           </svg>
-          Tout effacer
+          Supprimer toutes les données
         </button>
       </div>
     </div>
+  </div>
+
+  <!-- INSTALL BANNER -->
+  <div id="install-banner">
+    <div class="install-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+    </div>
+    <div class="install-text">
+      <strong>Installer Mémo</strong>
+      <span>Accès rapide depuis l'écran d'accueil</span>
+    </div>
+    <button class="btn-install" id="btn-install">Installer</button>
+    <button class="btn-install-close" id="btn-install-close" aria-label="Fermer">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
   </div>
 
 </div><!-- /app-shell -->
@@ -1024,52 +1076,38 @@
 
 <script>
 const NOTES_KEY = 'sn_notes';
-const PING_KEY  = 'sn_ping';
 const NOTE_PING_PRESETS = [
   { label: '5 min', ms: 300000 }, { label: '30 min', ms: 1800000 },
-  { label: '1 h', ms: 3600000 }, { label: '6 h', ms: 21600000 },
-  { label: '1 j', ms: 86400000 }, { label: '1 sem', ms: 604800000 },
+  { label: '1 h',   ms: 3600000 }, { label: '6 h',   ms: 21600000 },
+  { label: '1 j',   ms: 86400000 }, { label: '1 sem', ms: 604800000 },
 ];
+const UNIT_MAP = { min: 60000, h: 3600000, d: 86400000, w: 604800000, mo: 2629800000 };
 
 function loadNotes() {
   try { return JSON.parse(localStorage.getItem(NOTES_KEY)) || []; } catch { return []; }
 }
 function saveNotes(n) { localStorage.setItem(NOTES_KEY, JSON.stringify(n)); }
-function loadPing() {
-  try { return JSON.parse(localStorage.getItem(PING_KEY)) || { ms: 3600000, label: '1h', enabled: false }; }
-  catch { return { ms: 3600000, label: '1h', enabled: false }; }
-}
-function savePing(p) { localStorage.setItem(PING_KEY, JSON.stringify(p)); }
 
 let notes = loadNotes();
-let pingState = loadPing();
-let pingTimer = null;
 let previousScreen = 'home';
 let confirmingClear = false;
+let notePingTimers = {};
 
 const screens = {
-  home:  document.getElementById('home'),
-  write: document.getElementById('write'),
-  list:  document.getElementById('list'),
-  view:  document.getElementById('view-screen'),
-  ping:  document.getElementById('ping-screen'),
+  home:   document.getElementById('home'),
+  write:  document.getElementById('write'),
+  list:   document.getElementById('list'),
+  view:   document.getElementById('view-screen'),
+  easter: document.getElementById('easter-screen'),
 };
 
-// Cached refs
 const toastEl       = document.getElementById('toast');
-const elPingChip    = document.getElementById('ping-chip');
-const elPingChipLbl = document.getElementById('ping-chip-label');
-const elMenuPingLbl = document.getElementById('menu-ping-label');
 const elMenuNoteCnt = document.getElementById('menu-note-count');
 const elNotesList   = document.getElementById('notes-list');
 const elListStats   = document.getElementById('list-stats');
-const elPcValue     = document.getElementById('pc-value');
-const elNotifToggle = document.getElementById('notif-toggle');
-const elPingPresets = document.getElementById('ping-presets');
 const menuOverlay   = document.getElementById('menu-overlay');
 const menuDrawer    = document.getElementById('menu-drawer');
 
-// Inject back SVG into all back buttons
 const BACK_SVG = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`;
 document.querySelectorAll('.btn-back').forEach(b => { b.innerHTML = BACK_SVG; });
 
@@ -1103,18 +1141,6 @@ function msToLabel(ms) {
   return `${Math.round(s/31536000)}an`;
 }
 
-const PRESETS = [
-  { label: '1 min',  ms: 60000 },      { label: '5 min',  ms: 300000 },
-  { label: '15 min', ms: 900000 },     { label: '30 min', ms: 1800000 },
-  { label: '1 h',    ms: 3600000 },    { label: '2 h',    ms: 7200000 },
-  { label: '4 h',    ms: 14400000 },   { label: '8 h',    ms: 28800000 },
-  { label: '1 j',    ms: 86400000 },   { label: '2 j',    ms: 172800000 },
-  { label: '1 sem',  ms: 604800000 },  { label: '1 mois', ms: 2592000000 },
-  { label: '6 mois', ms: 15552000000 },{ label: '1 an',   ms: 31536000000 },
-];
-
-const UNIT_MAP = { min: 60000, h: 3600000, d: 86400000, w: 604800000, mo: 2629800000, y: 31557600000 };
-
 // ── HOME ──
 function updateHome() {
   const last = notes[0];
@@ -1128,16 +1154,21 @@ function updateHome() {
   } else {
     preview.innerHTML = `<div class="last-note-empty"><span>aucune note pour l'instant</span></div>`;
   }
-  const lbl = msToLabel(pingState.ms);
-  elPingChipLbl.textContent = lbl;
-  elMenuPingLbl.textContent = lbl;
   elMenuNoteCnt.textContent = `${notes.length} note${notes.length !== 1 ? 's' : ''}`;
-  elPingChip.classList.toggle('notif-on', pingState.enabled);
 }
 
-document.getElementById('ping-chip').addEventListener('click', () => { show('ping'); syncPingScreen(); });
 document.getElementById('btn-write').addEventListener('click', openWrite);
 document.getElementById('btn-back-write').addEventListener('click', () => show('home'));
+
+// Easter egg — clic sur le logo
+let easterTaps = 0, easterTimer;
+document.getElementById('btn-easter').addEventListener('click', () => {
+  easterTaps++;
+  clearTimeout(easterTimer);
+  if (easterTaps >= 3) { easterTaps = 0; show('easter'); return; }
+  easterTimer = setTimeout(() => { easterTaps = 0; }, 800);
+});
+document.getElementById('btn-back-easter').addEventListener('click', () => show('home'));
 
 // ── WRITE ──
 function openWrite() {
@@ -1150,8 +1181,7 @@ function openWrite() {
 }
 
 document.getElementById('note-area').addEventListener('input', function() {
-  const len = this.value.length;
-  document.getElementById('char-count').textContent = len;
+  document.getElementById('char-count').textContent = this.value.length;
   document.getElementById('btn-save').disabled = !this.value.trim();
 });
 
@@ -1165,11 +1195,123 @@ document.getElementById('btn-save').addEventListener('click', () => {
   show('home');
 });
 
-// ── LIST ──
-function openList() {
-  refreshList(notes);
-  show('list');
+// ── VOICE ──
+let recognition = null;
+let voiceMode = null; // 'raw' | 'ai'
+
+function supportsVoice() {
+  return 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window;
 }
+
+function startVoice(mode) {
+  if (!supportsVoice()) { toast('Vocal non supporté sur ce navigateur'); return; }
+  if (voiceMode) { stopVoice(); return; }
+
+  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SpeechRec();
+  recognition.lang = 'fr-FR';
+  recognition.continuous = false;
+  recognition.interimResults = false;
+
+  voiceMode = mode;
+  const btn = mode === 'raw' ? document.getElementById('btn-voice-raw') : document.getElementById('btn-voice-ai');
+  btn.classList.add('recording');
+  btn.querySelector('span') && (btn.querySelector('span').textContent = 'Stop');
+
+  recognition.onresult = async (e) => {
+    const transcript = e.results[0][0].transcript;
+    stopVoice();
+    if (mode === 'raw') {
+      const ta = document.getElementById('note-area');
+      ta.value += (ta.value ? '\n' : '') + transcript;
+      ta.dispatchEvent(new Event('input'));
+    } else {
+      toast('✨ IA en cours…');
+      const result = await processWithAI(transcript);
+      const ta = document.getElementById('note-area');
+      ta.value = result.text;
+      ta.dispatchEvent(new Event('input'));
+      if (result.pingMs) {
+        notes[0] && setNotePingForCurrent(result.pingMs);
+        toast('Note IA prête — rappel : ' + msToLabel(result.pingMs));
+      } else {
+        toast('Note IA prête');
+      }
+    }
+  };
+
+  recognition.onerror = () => { stopVoice(); toast('Erreur microphone'); };
+  recognition.onend = () => stopVoice();
+  recognition.start();
+}
+
+function stopVoice() {
+  if (recognition) { try { recognition.stop(); } catch {} recognition = null; }
+  voiceMode = null;
+  document.getElementById('btn-voice-raw').classList.remove('recording');
+  document.getElementById('btn-voice-ai').classList.remove('recording');
+}
+
+// IA locale — reformate le texte vocal intelligemment
+async function processWithAI(transcript) {
+  const lower = transcript.toLowerCase();
+
+  // Détection liste de courses
+  const isShoppingList = /course|acheter|supermarché|epicerie|magasin|frigo|marché/.test(lower);
+  // Détection rappel dans le texte
+  const pingMs = extractPingFromText(lower);
+
+  if (isShoppingList) {
+    const items = extractShoppingItems(transcript);
+    return {
+      text: '🛒 Liste de courses\n\n' + items.map(i => '• ' + i).join('\n'),
+      pingMs: pingMs || 3600000
+    };
+  }
+
+  // Reformatage général : capitalise, ponctue
+  let text = transcript.trim();
+  text = text.charAt(0).toUpperCase() + text.slice(1);
+  if (!/[.!?]$/.test(text)) text += '.';
+
+  return { text, pingMs };
+}
+
+function extractShoppingItems(text) {
+  // Retire les mots de liaison et coupe sur "et", virgules, "puis", "aussi"
+  const cleaned = text
+    .replace(/\b(acheter|il faut|j'ai besoin de|du|de la|des|un|une|le|la|les|aussi|puis|et puis)\b/gi, ' ')
+    .replace(/[,;]/g, ' et ');
+  return cleaned.split(/\s+et\s+/i)
+    .map(s => s.trim())
+    .filter(s => s.length > 1);
+}
+
+function extractPingFromText(text) {
+  const m5 = /5\s*min/.test(text) ? 300000 : null;
+  const m30 = /30\s*min/.test(text) ? 1800000 : null;
+  const h1 = /1\s*heure|dans\s*une\s*heure/.test(text) ? 3600000 : null;
+  const h2 = /2\s*heures/.test(text) ? 7200000 : null;
+  const d1 = /demain|1\s*jour|ce\s*soir/.test(text) ? 86400000 : null;
+  const w1 = /semaine|7\s*jour/.test(text) ? 604800000 : null;
+  return m5 || m30 || h1 || h2 || d1 || w1;
+}
+
+// Ping assigné juste après sauvegarde IA
+function setNotePingForCurrent(ms) {
+  const note = notes[0];
+  if (!note) return;
+  note.ping = ms;
+  note.pingAfter = 'warn';
+  saveNotes(notes);
+  scheduleNotePing(note);
+}
+
+document.getElementById('btn-voice-raw').addEventListener('click', () => startVoice('raw'));
+document.getElementById('btn-voice-ai').addEventListener('click', () => startVoice('ai'));
+
+// ── LIST ──
+function openList() { refreshList(notes); show('list'); }
 
 function refreshList(list = notes) {
   renderList(list);
@@ -1184,11 +1326,9 @@ function renderList(list) {
     elNotesList.innerHTML = `<div class="list-empty">${q ? 'Aucun résultat' : 'Aucune note'}</div>`;
     return;
   }
-  const items = [];
-  for (let i = 0; i < list.length; i++) {
-    const n = list[i];
+  const items = list.map(n => {
     const excerpt = n.text.length > 80 ? n.text.slice(0, 80).trimEnd() + '…' : n.text;
-    items.push(`<div class="note-row" data-id="${n.id}">
+    return `<div class="note-row" data-id="${n.id}">
       <button class="note-card" data-id="${n.id}">
         <div class="note-card-date">${fmtDate(n.ts)}</div>
         <div class="note-card-text">${excerpt.replace(/</g,'&lt;')}</div>
@@ -1198,16 +1338,15 @@ function renderList(list) {
           <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
         </svg>
       </button>
-    </div>`);
-  }
+    </div>`;
+  });
   elNotesList.innerHTML = items.join('');
-
-  elNotesList.querySelectorAll('.note-card').forEach(card => {
-    card.addEventListener('click', () => openViewNote(Number(card.dataset.id), 'list'));
-  });
-  elNotesList.querySelectorAll('.note-del-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => { e.stopPropagation(); deleteNote(Number(btn.dataset.del)); });
-  });
+  elNotesList.querySelectorAll('.note-card').forEach(card =>
+    card.addEventListener('click', () => openViewNote(Number(card.dataset.id), 'list'))
+  );
+  elNotesList.querySelectorAll('.note-del-btn').forEach(btn =>
+    btn.addEventListener('click', (e) => { e.stopPropagation(); deleteNote(Number(btn.dataset.del)); })
+  );
 }
 
 let searchDebounce;
@@ -1224,10 +1363,10 @@ elSearchClear.addEventListener('click', () => {
   elSearchClear.style.display = 'none';
   renderList(notes);
 });
-
 document.getElementById('btn-back-list').addEventListener('click', () => show('home'));
 
 function deleteNote(id) {
+  if (notePingTimers[id]) { clearTimeout(notePingTimers[id].timer); delete notePingTimers[id]; }
   notes = notes.filter(n => n.id !== id);
   saveNotes(notes);
   updateHome();
@@ -1236,8 +1375,6 @@ function deleteNote(id) {
 }
 
 // ── VIEW ──
-let notePingTimers = {}; // id → {timer, after}
-
 function openViewNote(id, from) {
   const note = notes.find(n => n.id === id);
   if (!note) return;
@@ -1253,8 +1390,7 @@ function openViewNote(id, from) {
 function renderNotePingCard(note) {
   const ping = note.ping || null;
   const after = note.pingAfter || 'warn';
-  const valEl = document.getElementById('note-ping-val');
-  valEl.textContent = ping ? msToLabel(ping) : 'aucun';
+  document.getElementById('note-ping-val').textContent = ping ? msToLabel(ping) : 'aucun';
 
   const presetsEl = document.getElementById('note-ping-presets');
   presetsEl.innerHTML = NOTE_PING_PRESETS.map(p =>
@@ -1262,23 +1398,36 @@ function renderNotePingCard(note) {
   ).join('');
   presetsEl.querySelectorAll('.note-ping-preset').forEach(btn => {
     btn.addEventListener('click', () => {
-      const ms = Number(btn.dataset.ms);
-      setNotePing(note.id, ms, after);
+      setNotePing(note.id, Number(btn.dataset.ms), after);
       renderNotePingCard(notes.find(n => n.id === note.id));
     });
   });
 
   document.getElementById('npafter-warn').classList.toggle('active', after === 'warn');
   document.getElementById('npafter-delete').classList.toggle('active', after === 'delete');
-  document.getElementById('npafter-warn').onclick = () => setNotePingAfter(note.id, 'warn');
-  document.getElementById('npafter-delete').onclick = () => setNotePingAfter(note.id, 'delete');
+  document.getElementById('npafter-warn').onclick = () => { setNotePingAfter(note.id, 'warn'); renderNotePingCard(notes.find(n => n.id === note.id)); };
+  document.getElementById('npafter-delete').onclick = () => { setNotePingAfter(note.id, 'delete'); renderNotePingCard(notes.find(n => n.id === note.id)); };
 }
+
+document.getElementById('btn-note-ping-ok').addEventListener('click', () => {
+  const val = Number(document.getElementById('note-custom-val').value);
+  const unit = document.getElementById('note-custom-unit').value;
+  if (!val || val <= 0) return;
+  const ms = val * (UNIT_MAP[unit] || 60000);
+  const noteId = Number(document.getElementById('btn-delete-note').dataset.id);
+  const note = notes.find(n => n.id === noteId);
+  if (!note) return;
+  setNotePing(noteId, ms, note.pingAfter || 'warn');
+  renderNotePingCard(notes.find(n => n.id === noteId));
+  document.getElementById('note-custom-val').value = '';
+});
 
 function setNotePing(id, ms, after) {
   const note = notes.find(n => n.id === id);
   if (!note) return;
   note.ping = ms;
   note.pingAfter = after || note.pingAfter || 'warn';
+  note.pingDeadline = Date.now() + ms;
   saveNotes(notes);
   scheduleNotePing(note);
   toast('Rappel : ' + msToLabel(ms));
@@ -1289,37 +1438,28 @@ function setNotePingAfter(id, after) {
   if (!note) return;
   note.pingAfter = after;
   saveNotes(notes);
-  renderNotePingCard(note);
 }
 
 function scheduleNotePing(note) {
   if (notePingTimers[note.id]) clearTimeout(notePingTimers[note.id].timer);
   if (!note.ping) return;
-  const delay = note.pingDeadline ? note.pingDeadline - Date.now() : note.ping;
+  const delay = note.pingDeadline ? Math.max(0, note.pingDeadline - Date.now()) : note.ping;
   if (delay <= 0) { fireNotePing(note); return; }
-  note.pingDeadline = Date.now() + delay;
-  saveNotes(notes);
   notePingTimers[note.id] = { timer: setTimeout(() => fireNotePing(note), delay) };
 }
 
 function fireNotePing(note) {
   const current = notes.find(n => n.id === note.id);
   if (!current) return;
+  const body = current.text.slice(0, 60) + (current.text.length > 60 ? '…' : '');
   if (current.pingAfter === 'delete') {
     if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification('Note supprimée — Snapshot', {
-        body: current.text.slice(0, 60) + (current.text.length > 60 ? '…' : ''),
-        icon: 'icons/icon-192.png',
-      });
+      new Notification('Note supprimée — Mémo', { body, icon: 'icons/icon-192.png' });
     }
     deleteNote(current.id);
   } else {
-    // warn mode : notif + replanifie dans 5 min pour auto-delete
     if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification('Ta note va être supprimée dans 5 min — Snapshot', {
-        body: current.text.slice(0, 60) + (current.text.length > 60 ? '…' : ''),
-        icon: 'icons/icon-192.png',
-      });
+      new Notification('⚠️ Ta note va être supprimée dans 5 min — Mémo', { body, icon: 'icons/icon-192.png' });
     }
     current.pingAfter = 'delete';
     current.ping = 300000;
@@ -1330,9 +1470,7 @@ function fireNotePing(note) {
 }
 
 function restoreNotePingTimers() {
-  notes.forEach(note => {
-    if (note.ping && note.pingDeadline) scheduleNotePing(note);
-  });
+  notes.forEach(note => { if (note.ping && note.pingDeadline) scheduleNotePing(note); });
 }
 
 document.getElementById('btn-back-view').addEventListener('click', () => {
@@ -1368,11 +1506,9 @@ function setMenu(open) {
 document.getElementById('btn-open-menu').addEventListener('click', () => setMenu(true));
 document.getElementById('btn-close-menu').addEventListener('click', () => setMenu(false));
 menuOverlay.addEventListener('click', () => setMenu(false));
-
 document.getElementById('menu-home').addEventListener('click',      () => { setMenu(false); show('home'); });
 document.getElementById('menu-new-note').addEventListener('click',  () => { setMenu(false); openWrite(); });
 document.getElementById('menu-all-notes').addEventListener('click', () => { setMenu(false); openList(); });
-document.getElementById('menu-ping').addEventListener('click',      () => { setMenu(false); show('ping'); syncPingScreen(); });
 
 document.getElementById('menu-export').addEventListener('click', () => {
   setMenu(false);
@@ -1386,12 +1522,12 @@ document.getElementById('menu-export').addEventListener('click', () => {
   toast('Notes exportées !');
 });
 
-document.getElementById('menu-clear').addEventListener('click', () => {
+document.getElementById('menu-clear').addEventListener('click', function handleClear() {
   if (confirmingClear) return;
   confirmingClear = true;
   const zone = document.getElementById('clear-zone');
   zone.innerHTML = `<div class="confirm-clear">
-    <div class="confirm-clear-msg">Effacer toutes les notes ?</div>
+    <div class="confirm-clear-msg">Effacer toutes les notes et données ?</div>
     <div class="confirm-clear-row">
       <button class="btn-cancel-clear" id="btn-cancel-clear">Annuler</button>
       <button class="btn-confirm-clear" id="btn-confirm-clear">Confirmer</button>
@@ -1403,92 +1539,27 @@ document.getElementById('menu-clear').addEventListener('click', () => {
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
       </svg>
-      Tout effacer
+      Supprimer toutes les données
     </button>`;
-    document.getElementById('menu-clear').addEventListener('click', arguments.callee.caller);
-    // re-bind
-    bindMenuClear();
+    document.getElementById('menu-clear').addEventListener('click', handleClear);
   });
   document.getElementById('btn-confirm-clear').addEventListener('click', () => {
+    // Supprime tout le localStorage de l'app
+    localStorage.removeItem(NOTES_KEY);
     notes = [];
-    saveNotes(notes);
     updateHome();
     setMenu(false);
     confirmingClear = false;
-    toast('Toutes les notes effacées');
+    toast('Toutes les données supprimées');
     zone.innerHTML = `<button class="menu-action-btn danger" id="menu-clear">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
       </svg>
-      Tout effacer
+      Supprimer toutes les données
     </button>`;
-    bindMenuClear();
+    document.getElementById('menu-clear').addEventListener('click', handleClear);
   });
 });
-
-function bindMenuClear() {
-  const btn = document.getElementById('menu-clear');
-  if (!btn) return;
-  btn.addEventListener('click', () => {
-    if (confirmingClear) return;
-    document.getElementById('menu-clear').click();
-  });
-}
-
-// ── PING ──
-elPingPresets.innerHTML = PRESETS.map((p, i) =>
-  `<button class="preset-btn" data-i="${i}" data-ms="${p.ms}">${p.label}</button>`
-).join('');
-
-elPingPresets.querySelectorAll('.preset-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const p = PRESETS[Number(btn.dataset.i)];
-    pingState.ms = p.ms;
-    pingState.label = p.label;
-    syncPresetsActive();
-    elPcValue.textContent = msToLabel(pingState.ms);
-  });
-});
-
-function syncPresetsActive() {
-  elPingPresets.querySelectorAll('.preset-btn').forEach(b =>
-    b.classList.toggle('active', Number(b.dataset.ms) === pingState.ms)
-  );
-}
-
-function syncPingScreen() {
-  elPcValue.textContent = msToLabel(pingState.ms);
-  elNotifToggle.classList.toggle('on', pingState.enabled);
-  syncPresetsActive();
-}
-
-document.getElementById('btn-custom-ok').addEventListener('click', () => {
-  const val = document.getElementById('custom-val').value;
-  const unit = document.getElementById('custom-unit').value;
-  const n = Number(val);
-  if (!n || n <= 0) return;
-  pingState.ms = n * (UNIT_MAP[unit] || 60000);
-  pingState.label = msToLabel(pingState.ms);
-  syncPresetsActive();
-  elPcValue.textContent = msToLabel(pingState.ms);
-  document.getElementById('custom-val').value = '';
-});
-
-elNotifToggle.addEventListener('click', function() {
-  this.classList.toggle('on');
-  pingState.enabled = this.classList.contains('on');
-  if (pingState.enabled) requestNotifPermission();
-});
-
-document.getElementById('btn-apply-ping').addEventListener('click', () => {
-  savePing(pingState);
-  updateHome();
-  startPing();
-  toast('Rappel mis à jour : ' + msToLabel(pingState.ms));
-  show('home');
-});
-
-document.getElementById('btn-back-ping').addEventListener('click', () => show('home'));
 
 // ── NOTIFICATIONS ──
 function requestNotifPermission() {
@@ -1497,32 +1568,38 @@ function requestNotifPermission() {
   }
 }
 
-function sendNotif() {
-  if (!pingState.enabled) return;
-  if ('Notification' in window && Notification.permission === 'granted') {
-    new Notification('Snapshot Note', {
-      body: 'C\'est le moment de capturer ta pensée !',
-      icon: 'icons/icon-192.png',
-    });
-  }
-}
-
-function startPing() {
-  if (pingTimer) clearInterval(pingTimer);
-  if (pingState.enabled && pingState.ms) pingTimer = setInterval(sendNotif, pingState.ms);
-}
-
-// ── PWA ──
+// ── PWA / INSTALL ──
 let deferredInstall = null;
+const installBanner = document.getElementById('install-banner');
+
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredInstall = e;
+  installBanner.classList.add('show');
 });
 
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+document.getElementById('btn-install').addEventListener('click', async () => {
+  if (!deferredInstall) return;
+  deferredInstall.prompt();
+  const { outcome } = await deferredInstall.userChoice;
+  if (outcome === 'accepted') installBanner.classList.remove('show');
+  deferredInstall = null;
+});
 
+document.getElementById('btn-install-close').addEventListener('click', () => {
+  installBanner.classList.remove('show');
+});
+
+// iOS : affiche instructions d'installation si pas installée
+if (/iphone|ipad|ipod/i.test(navigator.userAgent) && !window.navigator.standalone) {
+  setTimeout(() => {
+    toast('iOS : "Partager" → "Sur l\'écran d\'accueil" pour installer');
+  }, 3000);
+}
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+requestNotifPermission();
 updateHome();
-startPing();
 restoreNotePingTimers();
 </script>
 </body>
