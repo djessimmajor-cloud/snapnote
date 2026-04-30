@@ -13,6 +13,7 @@
   <link rel="icon" href="icons/icon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+  <script src="https://js.puter.com/v2/"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
@@ -844,6 +845,84 @@
       flex-shrink: 0;
     }
     .easter-claude-text { font-size: 13px; color: var(--accent); line-height: 1.5; }
+    /* Easter egg dans l'easter egg */
+    #easter-secret {
+      position: fixed;
+      inset: 0;
+      background: #0a0a0f;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .4s;
+    }
+    #easter-secret.visible { opacity: 1; pointer-events: all; }
+    .secret-close {
+      position: absolute;
+      top: 16px; right: 16px;
+      background: none; border: none; cursor: pointer;
+      color: #555; font-size: 20px; padding: 8px;
+    }
+    .secret-stars {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .secret-star {
+      position: absolute;
+      width: 2px; height: 2px;
+      background: white;
+      border-radius: 50%;
+      animation: twinkle var(--d, 3s) ease-in-out infinite var(--delay, 0s);
+    }
+    @keyframes twinkle {
+      0%,100% { opacity: .2; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.5); }
+    }
+    .secret-badge {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: #b45a3c;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .secret-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: #f5f0eb;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    .secret-sub {
+      font-size: 13px;
+      color: #555;
+      font-family: var(--mono);
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .secret-code {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: #b45a3c;
+      background: #1a1a2e;
+      border: 1px solid #2a2a3e;
+      border-radius: 10px;
+      padding: 16px 20px;
+      text-align: center;
+      line-height: 1.8;
+      max-width: 280px;
+    }
+    .secret-version {
+      margin-top: 32px;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: #333;
+    }
 
     /* AI loading */
     .ai-thinking {
@@ -1023,7 +1102,7 @@
       <span class="hd-title" style="font-family:var(--mono);font-size:12px;color:var(--muted);">merci</span>
     </div>
     <div class="easter-body">
-      <svg class="easter-heart" viewBox="0 0 24 24" fill="currentColor">
+      <svg class="easter-heart" id="easter-heart-btn" viewBox="0 0 24 24" fill="currentColor" style="cursor:pointer;" title="...">
         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
       </svg>
       <div class="easter-title">Merci à vous</div>
@@ -1096,6 +1175,24 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- EASTER EGG SECRET (dans l'easter egg) -->
+  <div id="easter-secret">
+    <div class="secret-stars" id="secret-stars"></div>
+    <button class="secret-close" id="btn-secret-close">✕</button>
+    <div class="secret-badge">// secret unlocked</div>
+    <div class="secret-title">Djessim Major</div>
+    <div class="secret-sub">le vrai boss derrière mémo</div>
+    <div class="secret-code">
+      const memo = {<br>
+      &nbsp;&nbsp;created: "2025",<br>
+      &nbsp;&nbsp;by: "Djessim Major",<br>
+      &nbsp;&nbsp;stack: "HTML + IA",<br>
+      &nbsp;&nbsp;mood: "builder 🔥",<br>
+      }
+    </div>
+    <div class="secret-version">memo v1.0 — 🤫</div>
   </div>
 
   <!-- MENU OVERLAY + DRAWER -->
@@ -1256,6 +1353,36 @@ document.getElementById('btn-easter').addEventListener('click', () => {
 });
 document.getElementById('btn-back-easter').addEventListener('click', () => show('home'));
 
+// Easter egg dans l'easter egg — triple clic sur le cœur
+let heartClicks = 0, heartTimer;
+document.getElementById('easter-heart-btn').addEventListener('click', () => {
+  heartClicks++;
+  clearTimeout(heartTimer);
+  if (heartClicks >= 3) {
+    heartClicks = 0;
+    openSecret();
+    return;
+  }
+  heartTimer = setTimeout(() => { heartClicks = 0; }, 700);
+});
+
+function openSecret() {
+  const s = document.getElementById('easter-secret');
+  // Generate stars
+  const container = document.getElementById('secret-stars');
+  container.innerHTML = '';
+  for (let i = 0; i < 80; i++) {
+    const star = document.createElement('div');
+    star.className = 'secret-star';
+    star.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${2+Math.random()*4}s;--delay:${Math.random()*3}s;opacity:${Math.random()*.8}`;
+    container.appendChild(star);
+  }
+  s.classList.add('visible');
+}
+document.getElementById('btn-secret-close').addEventListener('click', () => {
+  document.getElementById('easter-secret').classList.remove('visible');
+});
+
 // WRITE
 function openWrite() {
   const ta = document.getElementById('note-area');
@@ -1365,39 +1492,18 @@ function stopVoice() {
 
 let pendingPingMs = null;
 
-// IA via Pollinations (gratuit, sans clé API)
+// IA via Puter.js (GPT-4o gratuit, sans clé, sans limite)
 async function processWithAI(transcript) {
   const now = new Date();
   const h = now.getHours(), m = String(now.getMinutes()).padStart(2,'0');
 
-  const messages = [
-    {
-      role: 'system',
-      content: `Assistant notes vocales. Heure: ${h}h${m}. Réponds UNIQUEMENT JSON une ligne, rien d'autre.
+  const systemPrompt = `Assistant notes vocales. Heure: ${h}h${m}. Réponds UNIQUEMENT JSON une ligne, rien d'autre.
 Format: {"text":"<note>","pingMs":<ms ou null>}
-- text: note courte et claire. Liste courses → tirets un par ligne. Inclure le contenu important du message.
-- pingMs: si délai ("dans 2 heures"=7200000, "dans 30 min"=1800000, "demain"=86400000, "semaine"=604800000, "ce soir"=ms jusqu'à 20h, "à 14h"=ms jusqu'à 14h). Sinon null.`
-    },
-    { role: 'user', content: transcript }
-  ];
+- text: note courte et claire. Liste courses → tirets un par ligne. Inclure le contenu important.
+- pingMs: si délai ("dans 2 heures"=7200000, "dans 30 min"=1800000, "demain"=86400000, "semaine"=604800000, "ce soir"=ms jusqu'à 20h, "à 14h"=ms jusqu'à 14h). Sinon null.`;
 
-  // Pollinations chat API (plus stable que text/)
-  const resp = await fetch('https://text.pollinations.ai/openai', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model: 'openai', messages, jsonMode: true }),
-    signal: AbortSignal.timeout(20000)
-  });
-  if (!resp.ok) throw new Error('API error');
-  const body = await resp.text();
-  let raw = '';
-  try {
-    const data = JSON.parse(body);
-    raw = data?.choices?.[0]?.message?.content ?? '';
-  } catch {
-    // Pollinations returned plain text instead of JSON envelope
-    raw = body;
-  }
+  const resp = await puter.ai.chat(transcript, { model: 'gpt-4o-mini', systemPrompt });
+  const raw = (typeof resp === 'string' ? resp : resp?.message?.content ?? resp?.content ?? '').trim();
 
   const jsonMatch = raw.match(/\{[\s\S]*?\}/);
   if (jsonMatch) {
@@ -1411,9 +1517,7 @@ Format: {"text":"<note>","pingMs":<ms ou null>}
       }
     } catch {}
   }
-  // raw is plain reformatted text — use it directly
-  const cleanRaw = normalizeTranscript(raw);
-  return { text: cleanRaw || normalizeTranscript(transcript), pingMs: null };
+  return { text: normalizeTranscript(raw || transcript), pingMs: null };
 }
 
 document.getElementById('btn-save').addEventListener('click', () => {
