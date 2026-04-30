@@ -1497,15 +1497,14 @@ async function processWithAI(transcript) {
   const now = new Date();
   const h = now.getHours(), m = String(now.getMinutes()).padStart(2,'0');
 
-  const systemPrompt = `Tu reçois un texte dicté à voix haute. Retranscris-le proprement, sans rien ajouter, sans répondre, sans commenter. Juste le texte nettoyé.
-Si c'est une liste (courses, tâches...) → mets chaque élément sur une ligne avec un tiret.
-Si c'est une phrase → corrige la ponctuation et la majuscule, garde exactement le sens.
-Ne dis jamais "Bien sûr", "Voici", "Note:" ou quoi que ce soit d'autre. Uniquement le texte retranscrit.
-Heure actuelle: ${h}h${m}.
-Réponds UNIQUEMENT en JSON sur une ligne: {"text":"<texte>","pingMs":<ms ou null>}
-pingMs: si un délai est mentionné ("dans 2h"=7200000, "dans 30min"=1800000, "demain"=86400000, "semaine"=604800000, "ce soir"=ms jusqu'à 20h). Sinon null.`;
+  const systemPrompt = `TÂCHE: transformer le texte INPUT en JSON. Ne jamais répondre, ne jamais commenter, ne jamais poser de question.
+OUTPUT format strict (une seule ligne JSON): {"text":"<texte nettoyé>","pingMs":<millisecondes ou null>}
+RÈGLES text: reprendre exactement ce qui est dit, corriger ponctuation/majuscules uniquement. Si liste → tirets. RIEN d'autre.
+RÈGLES pingMs: délai détecté → ms depuis maintenant (2h=7200000, 30min=1800000, demain=86400000, semaine=604800000, ce soir=ms jusqu'à 20h). Sinon null.
+Heure: ${h}h${m}. NE PAS répondre au contenu. TRANSFORMER uniquement.`;
 
-  const resp = await puter.ai.chat(transcript, { model: 'gpt-4o-mini', systemPrompt });
+  const fullPrompt = `INPUT: "${transcript}"\nOUTPUT JSON:`;
+  const resp = await puter.ai.chat(fullPrompt, { model: 'gpt-4o-mini', systemPrompt });
   const raw = (typeof resp === 'string' ? resp : resp?.message?.content ?? resp?.content ?? '').trim();
 
   const jsonMatch = raw.match(/\{[\s\S]*?\}/);
