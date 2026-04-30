@@ -1322,7 +1322,13 @@ function startVoice(mode) {
       btnAi.innerHTML = `<span class="ai-thinking"><span></span><span></span><span></span></span> IA...`;
       btnAi.disabled = true;
       try {
-        const result = await processWithAI(transcript);
+        let result;
+        try {
+          result = await processWithAI(transcript);
+        } catch {
+          // Retry once before giving up
+          result = await processWithAI(transcript);
+        }
         const ta = document.getElementById('note-area');
         ta.value = result.text;
         ta.dispatchEvent(new Event('input'));
@@ -1333,10 +1339,11 @@ function startVoice(mode) {
           toast('Mémo pret');
         }
       } catch {
-        toast('Erreur IA — texte brut ajouté');
+        // Both attempts failed — use raw transcript
         const ta = document.getElementById('note-area');
-        ta.value = transcript;
+        ta.value = normalizeTranscript(transcript);
         ta.dispatchEvent(new Event('input'));
+        toast('Mémo pret (sans IA)');
       } finally {
         btnAi.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg> Dicter + IA`;
         btnAi.disabled = false;
@@ -1383,20 +1390,31 @@ Format: {"text":"<note>","pingMs":<nombre ou null>}
     signal: AbortSignal.timeout(20000)
   });
   if (!resp.ok) throw new Error('API error');
-  const data = await resp.json();
-  const raw = data?.choices?.[0]?.message?.content ?? '';
+  const body = await resp.text();
+  let raw = '';
+  try {
+    const data = JSON.parse(body);
+    raw = data?.choices?.[0]?.message?.content ?? '';
+  } catch {
+    // Pollinations returned plain text instead of JSON envelope
+    raw = body;
+  }
 
-  const jsonMatch = raw.match(/\{[\s\S]*\}/);
+  const jsonMatch = raw.match(/\{[\s\S]*?\}/);
   if (jsonMatch) {
     try {
       const parsed = JSON.parse(jsonMatch[0]);
-      return {
-        text: normalizeTranscript(parsed.text || transcript),
-        pingMs: typeof parsed.pingMs === 'number' && parsed.pingMs > 0 ? parsed.pingMs : null
-      };
+      if (parsed.text) {
+        return {
+          text: normalizeTranscript(parsed.text),
+          pingMs: typeof parsed.pingMs === 'number' && parsed.pingMs > 0 ? parsed.pingMs : null
+        };
+      }
     } catch {}
   }
-  return { text: normalizeTranscript(raw || transcript), pingMs: null };
+  // raw is plain reformatted text — use it directly
+  const cleanRaw = normalizeTranscript(raw);
+  return { text: cleanRaw || normalizeTranscript(transcript), pingMs: null };
 }
 
 document.getElementById('btn-save').addEventListener('click', () => {
