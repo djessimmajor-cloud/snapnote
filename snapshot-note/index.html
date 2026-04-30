@@ -1361,24 +1361,31 @@ let pendingPingMs = null;
 // IA via Pollinations (gratuit, sans clé API)
 async function processWithAI(transcript) {
   const now = new Date();
-  const prompt = `Tu es un assistant de prise de notes vocales en français. Analyse ce texte dicté et réponds UNIQUEMENT avec un JSON valide, sans markdown, sans explication.
+  const h = now.getHours(), m = String(now.getMinutes()).padStart(2,'0');
 
-Format de réponse obligatoire:
-{"text":"<note reformatée>","pingMs":<millisecondes ou null>}
+  const messages = [
+    {
+      role: 'system',
+      content: `Tu es un assistant de prise de notes vocales en français. Heure actuelle: ${h}h${m}.
+Réponds UNIQUEMENT avec un objet JSON valide sur une seule ligne, sans markdown ni explication.
+Format: {"text":"<note>","pingMs":<nombre ou null>}
+- text: reformate clairement. Listes de courses → tirets un par ligne. Rappels → phrase claire.
+- pingMs: si délai mentionné (dans X heures/minutes, ce soir=20h, demain, semaine...) → millisecondes depuis maintenant. Sinon null.`
+    },
+    { role: 'user', content: transcript }
+  ];
 
-Règles:
-- "text": reformate clairement. Si liste de courses/achats → liste avec tirets (un par ligne). Si rappel/tâche → phrase claire. Sinon → texte propre.
-- "pingMs": si le texte mentionne un délai ("dans 2 heures", "dans 30 minutes", "ce soir", "demain", "dans une semaine", "à 14h", etc.) → calcule les millisecondes depuis maintenant. Sinon → null.
-- Heure actuelle: ${now.getHours()}h${String(now.getMinutes()).padStart(2,'0')} (pour calculer "à 14h", "ce soir" = 20h, etc.)
-
-Texte dicté: "${transcript}"`;
-
-  const url = `https://text.pollinations.ai/${encodeURIComponent(prompt)}`;
-  const resp = await fetch(url, { signal: AbortSignal.timeout(12000) });
+  // Pollinations chat API (plus stable que text/)
+  const resp = await fetch('https://text.pollinations.ai/openai', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model: 'openai', messages, jsonMode: true }),
+    signal: AbortSignal.timeout(20000)
+  });
   if (!resp.ok) throw new Error('API error');
-  const raw = (await resp.text()).trim();
+  const data = await resp.json();
+  const raw = data?.choices?.[0]?.message?.content ?? '';
 
-  // Parse JSON response from AI
   const jsonMatch = raw.match(/\{[\s\S]*\}/);
   if (jsonMatch) {
     try {
@@ -1389,8 +1396,7 @@ Texte dicté: "${transcript}"`;
       };
     } catch {}
   }
-  // Fallback: return raw text, no ping
-  return { text: normalizeTranscript(raw), pingMs: null };
+  return { text: normalizeTranscript(raw || transcript), pingMs: null };
 }
 
 document.getElementById('btn-save').addEventListener('click', () => {
