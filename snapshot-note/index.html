@@ -1373,11 +1373,10 @@ async function processWithAI(transcript) {
   const messages = [
     {
       role: 'system',
-      content: `Tu es un assistant de prise de notes vocales en français. Heure actuelle: ${h}h${m}.
-Réponds UNIQUEMENT avec un objet JSON valide sur une seule ligne, sans markdown ni explication.
-Format: {"text":"<note>","pingMs":<nombre ou null>}
-- text: reformate clairement. Listes de courses → tirets un par ligne. Rappels → phrase claire.
-- pingMs: si délai mentionné (dans X heures/minutes, ce soir=20h, demain, semaine...) → millisecondes depuis maintenant. Sinon null.`
+      content: `Assistant notes vocales. Heure: ${h}h${m}. Réponds UNIQUEMENT JSON une ligne, rien d'autre.
+Format: {"text":"<note>","pingMs":<ms ou null>}
+- text: note courte et claire. Liste courses → tirets un par ligne. Inclure le contenu important du message.
+- pingMs: si délai ("dans 2 heures"=7200000, "dans 30 min"=1800000, "demain"=86400000, "semaine"=604800000, "ce soir"=ms jusqu'à 20h, "à 14h"=ms jusqu'à 14h). Sinon null.`
     },
     { role: 'user', content: transcript }
   ];
