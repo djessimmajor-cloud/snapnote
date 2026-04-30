@@ -1360,32 +1360,37 @@ let pendingPingMs = null;
 
 // IA via Pollinations (gratuit, sans clé API)
 async function processWithAI(transcript) {
-  const lower = transcript.toLowerCase();
-  const pingMs = extractPingFromText(lower);
+  const now = new Date();
+  const prompt = `Tu es un assistant de prise de notes vocales en français. Analyse ce texte dicté et réponds UNIQUEMENT avec un JSON valide, sans markdown, sans explication.
 
-  const prompt = `Tu es un assistant de prise de notes. Reformate ce texte dicté en note claire et concise en français.
-Si c'est une liste de courses ou d'achats, présente-la comme une liste avec tirets.
-Si c'est un rappel ou une tâche, reformule clairement.
-Réponds UNIQUEMENT avec le texte reformaté, rien d'autre.
+Format de réponse obligatoire:
+{"text":"<note reformatée>","pingMs":<millisecondes ou null>}
+
+Règles:
+- "text": reformate clairement. Si liste de courses/achats → liste avec tirets (un par ligne). Si rappel/tâche → phrase claire. Sinon → texte propre.
+- "pingMs": si le texte mentionne un délai ("dans 2 heures", "dans 30 minutes", "ce soir", "demain", "dans une semaine", "à 14h", etc.) → calcule les millisecondes depuis maintenant. Sinon → null.
+- Heure actuelle: ${now.getHours()}h${String(now.getMinutes()).padStart(2,'0')} (pour calculer "à 14h", "ce soir" = 20h, etc.)
+
 Texte dicté: "${transcript}"`;
 
   const url = `https://text.pollinations.ai/${encodeURIComponent(prompt)}`;
-  const resp = await fetch(url, { signal: AbortSignal.timeout(8000) });
+  const resp = await fetch(url, { signal: AbortSignal.timeout(12000) });
   if (!resp.ok) throw new Error('API error');
-  const text = normalizeTranscript(await resp.text());
-  return { text, pingMs };
-}
+  const raw = (await resp.text()).trim();
 
-function extractPingFromText(text) {
-  if (/5\s*min/.test(text)) return 300000;
-  if (/15\s*min/.test(text)) return 900000;
-  if (/30\s*min/.test(text)) return 1800000;
-  if (/1\s*heure|dans\s*une\s*heure/.test(text)) return 3600000;
-  if (/2\s*heures/.test(text)) return 7200000;
-  if (/ce\s*soir/.test(text)) return 21600000;
-  if (/demain|1\s*jour/.test(text)) return 86400000;
-  if (/semaine|7\s*jour/.test(text)) return 604800000;
-  return null;
+  // Parse JSON response from AI
+  const jsonMatch = raw.match(/\{[\s\S]*\}/);
+  if (jsonMatch) {
+    try {
+      const parsed = JSON.parse(jsonMatch[0]);
+      return {
+        text: normalizeTranscript(parsed.text || transcript),
+        pingMs: typeof parsed.pingMs === 'number' && parsed.pingMs > 0 ? parsed.pingMs : null
+      };
+    } catch {}
+  }
+  // Fallback: return raw text, no ping
+  return { text: normalizeTranscript(raw), pingMs: null };
 }
 
 document.getElementById('btn-save').addEventListener('click', () => {
