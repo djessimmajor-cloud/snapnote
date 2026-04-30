@@ -65,7 +65,6 @@
       }
     }
 
-    /* ── SCREENS ── */
     .screen {
       position: absolute;
       inset: 0;
@@ -76,7 +75,6 @@
     }
     .screen.hidden { opacity: 0; pointer-events: none; transform: scale(.98); }
 
-    /* ── COMMON HEADER ── */
     .hd {
       display: flex;
       align-items: center;
@@ -86,7 +84,6 @@
     }
     .hd-title { font-weight: 500; font-size: 15px; color: var(--text2); }
 
-    /* ── BUTTONS ── */
     .btn-icon {
       background: none;
       border: none;
@@ -116,7 +113,7 @@
     .btn-primary:disabled { background: oklch(88% 0.01 60); color: var(--muted); cursor: default; }
     .btn-primary:not(:disabled):hover { opacity: .88; }
 
-    /* ── HOME ── */
+    /* HOME */
     #home { background: var(--bg); }
 
     .home-header {
@@ -132,6 +129,10 @@
       font-size: 13px;
       color: var(--muted);
       letter-spacing: .04em;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px 0;
     }
 
     .home-center {
@@ -212,7 +213,7 @@
     }
     .last-note-empty span { font-size: 13px; color: var(--muted); }
 
-    /* ── WRITE ── */
+    /* WRITE */
     .write-hd {
       display: flex;
       align-items: center;
@@ -241,7 +242,7 @@
     }
     #note-area::placeholder { color: var(--muted); }
 
-    /* ── VOICE BUTTONS ── */
+    /* VOICE */
     .voice-bar {
       display: flex;
       gap: 8px;
@@ -281,7 +282,7 @@
       50% { box-shadow: 0 0 0 4px oklch(58% 0.18 38 / 0); }
     }
 
-    /* ── LIST ── */
+    /* LIST */
     .list-stats {
       padding: 2px 20px 12px;
       display: flex;
@@ -390,7 +391,7 @@
       padding: 40px 0;
     }
 
-    /* ── VIEW ── */
+    /* VIEW */
     .view-hd {
       display: flex;
       align-items: center;
@@ -453,7 +454,7 @@
       white-space: pre-wrap;
     }
 
-    /* ── NOTE PING (grande modale) ── */
+    /* NOTE PING */
     .note-ping-card {
       margin: 0 16px 16px;
       background: var(--surface);
@@ -558,11 +559,15 @@
       transition: all .15s;
       text-align: center;
       line-height: 1.3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
     }
     .note-ping-after-btn.active { background: var(--accent-bg); border-color: var(--accent); color: var(--accent); font-weight: 500; }
     .note-ping-after-btn:hover { border-color: var(--border2); }
 
-    /* ── MENU DRAWER ── */
+    /* MENU DRAWER */
     #menu-overlay {
       position: absolute;
       inset: 0;
@@ -674,7 +679,7 @@
       border-radius: 8px; padding: 7px; font-size: 12px; cursor: pointer; font-family: var(--sans);
     }
 
-    /* ── INSTALL BANNER ── */
+    /* INSTALL BANNER */
     #install-banner {
       position: absolute;
       bottom: 0; left: 0; right: 0;
@@ -710,7 +715,7 @@
       color: var(--muted); padding: 4px;
     }
 
-    /* ── EASTER EGG ── */
+    /* EASTER EGG */
     #easter-screen {
       background: var(--bg);
       overflow-y: auto;
@@ -725,8 +730,10 @@
       overflow-y: auto;
     }
     .easter-heart {
-      font-size: 48px;
+      width: 56px;
+      height: 56px;
       margin-bottom: 20px;
+      color: var(--accent);
       animation: heartbeat 1.8s ease-in-out infinite;
     }
     @keyframes heartbeat {
@@ -751,6 +758,27 @@
       margin-bottom: 32px;
       letter-spacing: .03em;
     }
+    .easter-creator {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 18px;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+    .easter-creator-avatar {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      color: white;
+      flex-shrink: 0;
+    }
+    .easter-creator-name { font-size: 16px; font-weight: 600; color: var(--text2); }
+    .easter-creator-role { font-size: 12px; color: var(--muted); font-family: var(--mono); }
     .easter-section {
       width: 100%;
       background: var(--surface);
@@ -780,8 +808,8 @@
       border-radius: 50%;
       background: var(--accent-bg);
       display: flex; align-items: center; justify-content: center;
-      font-size: 16px;
       flex-shrink: 0;
+      color: var(--accent);
     }
     .easter-name { font-size: 14px; font-weight: 500; color: var(--text2); }
     .easter-role { font-size: 12px; color: var(--muted); }
@@ -817,7 +845,26 @@
     }
     .easter-claude-text { font-size: 13px; color: var(--accent); line-height: 1.5; }
 
-    /* ── TOAST ── */
+    /* AI loading */
+    .ai-thinking {
+      display: inline-flex;
+      gap: 4px;
+      align-items: center;
+    }
+    .ai-thinking span {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: blink 1.2s ease-in-out infinite;
+    }
+    .ai-thinking span:nth-child(2) { animation-delay: .2s; }
+    .ai-thinking span:nth-child(3) { animation-delay: .4s; }
+    @keyframes blink {
+      0%, 80%, 100% { opacity: .2; }
+      40% { opacity: 1; }
+    }
+
+    /* TOAST */
     #toast {
       position: fixed;
       bottom: 32px;
@@ -843,7 +890,7 @@
   <!-- HOME -->
   <div class="screen" id="home">
     <div class="home-header">
-      <button class="logo-wordmark" id="btn-easter" style="background:none;border:none;cursor:pointer;font-family:var(--mono);font-size:13px;color:var(--muted);letter-spacing:.04em;" aria-label="Easter egg">mémo</button>
+      <button class="logo-wordmark" id="btn-easter" aria-label="Easter egg">mémo</button>
       <button class="btn-icon" id="btn-open-menu" aria-label="Menu">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
           <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
@@ -856,7 +903,7 @@
           <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
         </svg>
       </button>
-      <span class="home-cta-label">nouvelle note</span>
+      <span class="home-cta-label">mémoter</span>
     </div>
     <div class="last-note-wrap">
       <div id="last-note-preview"></div>
@@ -871,22 +918,21 @@
       <span class="write-charcount" id="char-count">0</span>
       <button class="btn-primary" id="btn-save" disabled>Enregistrer</button>
     </div>
-    <textarea id="note-area" placeholder="Commence à écrire…" autocomplete="off" spellcheck="false"></textarea>
-    <!-- Boutons vocaux -->
+    <textarea id="note-area" placeholder="Commence à mémoter…" autocomplete="off" spellcheck="false"></textarea>
     <div class="voice-bar">
       <button class="btn-voice" id="btn-voice-raw" aria-label="Dicter">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+          <line x1="12" y1="19" x2="12" y2="23"/>
           <line x1="8" y1="23" x2="16" y2="23"/>
         </svg>
         Dicter
       </button>
       <button class="btn-voice btn-voice-ai" id="btn-voice-ai" aria-label="Dicter avec IA">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/>
-          <line x1="8" y1="23" x2="16" y2="23"/>
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/>
         </svg>
         Dicter + IA
       </button>
@@ -897,7 +943,7 @@
   <div class="screen hidden" id="list">
     <div class="hd">
       <button class="btn-icon btn-back" id="btn-back-list" aria-label="Retour"></button>
-      <span class="hd-title">Notes</span>
+      <span class="hd-title">Mes mémos</span>
     </div>
     <div class="list-stats" id="list-stats"></div>
     <div class="search-wrap">
@@ -938,7 +984,7 @@
     <div class="view-body" id="view-body"></div>
     <div class="note-ping-card" id="note-ping-card">
       <div class="note-ping-header">
-        <span class="note-ping-lbl">rappel de cette note</span>
+        <span class="note-ping-lbl">rappel de ce mémo</span>
         <span class="note-ping-val" id="note-ping-val">—</span>
       </div>
       <div class="note-ping-presets-grid" id="note-ping-presets"></div>
@@ -954,8 +1000,18 @@
         <button class="btn-note-ping-ok" id="btn-note-ping-ok">OK</button>
       </div>
       <div class="note-ping-after-row">
-        <button class="note-ping-after-btn" data-after="warn" id="npafter-warn">⚠️ Notif avant<br>suppression</button>
-        <button class="note-ping-after-btn" data-after="delete" id="npafter-delete">🗑️ Supprimer<br>après le ping</button>
+        <button class="note-ping-after-btn" data-after="warn" id="npafter-warn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          Notif avant suppression
+        </button>
+        <button class="note-ping-after-btn" data-after="delete" id="npafter-delete">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/>
+          </svg>
+          Supprimer après
+        </button>
       </div>
     </div>
   </div>
@@ -964,26 +1020,48 @@
   <div class="screen hidden" id="easter-screen">
     <div class="hd">
       <button class="btn-icon btn-back" id="btn-back-easter" aria-label="Retour"></button>
-      <span class="hd-title" style="font-family:var(--mono);font-size:12px;color:var(--muted);">✦ merci ✦</span>
+      <span class="hd-title" style="font-family:var(--mono);font-size:12px;color:var(--muted);">merci</span>
     </div>
     <div class="easter-body">
-      <div class="easter-heart">💛</div>
+      <svg class="easter-heart" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+      </svg>
       <div class="easter-title">Merci à vous</div>
       <div class="easter-sub">mémo — construit avec amour</div>
 
-      <p class="easter-msg">"Cette app n'existerait pas sans les gens qui comptent pour moi. Merci d'être là."</p>
+      <div class="easter-creator">
+        <div class="easter-creator-avatar">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+          </svg>
+        </div>
+        <div>
+          <div class="easter-creator-name">Djessim Major</div>
+          <div class="easter-creator-role">créateur de mémo</div>
+        </div>
+      </div>
+
+      <p class="easter-msg">"Cette app n'existerait pas sans les gens qui comptent pour moi."</p>
 
       <div class="easter-section">
         <div class="easter-section-title">Famille</div>
         <div class="easter-person">
-          <div class="easter-avatar">👨</div>
+          <div class="easter-avatar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+            </svg>
+          </div>
           <div>
             <div class="easter-name">Papa</div>
             <div class="easter-role">Merci pour tout ce que tu m'as appris</div>
           </div>
         </div>
         <div class="easter-person">
-          <div class="easter-avatar">👩</div>
+          <div class="easter-avatar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+            </svg>
+          </div>
           <div>
             <div class="easter-name">Maman</div>
             <div class="easter-role">Ta confiance m'a donné des ailes</div>
@@ -994,7 +1072,11 @@
       <div class="easter-section">
         <div class="easter-section-title">Amis</div>
         <div class="easter-person">
-          <div class="easter-avatar">🤝</div>
+          <div class="easter-avatar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </div>
           <div>
             <div class="easter-name">Mes amis</div>
             <div class="easter-role">Vous rendez tout plus léger</div>
@@ -1003,7 +1085,11 @@
       </div>
 
       <div class="easter-claude">
-        <div class="easter-claude-icon">AI</div>
+        <div class="easter-claude-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+          </svg>
+        </div>
         <div class="easter-claude-text">
           <strong style="display:block;margin-bottom:2px;">Claude Code</strong>
           Codé ensemble, ligne par ligne. Merci pour la patience et la créativité.
@@ -1024,13 +1110,13 @@
       </button>
     </div>
     <div class="menu-badges">
-      <span class="menu-badge" id="menu-note-count">0 note</span>
+      <span class="menu-badge" id="menu-note-count">0 mémo</span>
     </div>
     <div class="menu-divider"></div>
     <div class="menu-nav">
       <button class="menu-nav-btn" id="menu-home">Accueil</button>
-      <button class="menu-nav-btn" id="menu-new-note">Nouvelle note</button>
-      <button class="menu-nav-btn" id="menu-all-notes">Toutes les notes</button>
+      <button class="menu-nav-btn" id="menu-new-note">Nouveau mémo</button>
+      <button class="menu-nav-btn" id="menu-all-notes">Tous les mémos</button>
     </div>
     <div class="menu-divider"></div>
     <div class="menu-actions">
@@ -1141,26 +1227,26 @@ function msToLabel(ms) {
   return `${Math.round(s/31536000)}an`;
 }
 
-// ── HOME ──
+// HOME
 function updateHome() {
   const last = notes[0];
   const preview = document.getElementById('last-note-preview');
   if (last) {
     preview.innerHTML = `<button class="last-note-card" id="last-note-btn">
-      <div class="last-note-meta">dernière note · ${fmtDate(last.ts)}</div>
+      <div class="last-note-meta">dernier mémo · ${fmtDate(last.ts)}</div>
       <div class="last-note-text">${last.text.replace(/</g,'&lt;')}</div>
     </button>`;
     document.getElementById('last-note-btn').addEventListener('click', () => openViewNote(last.id, 'home'));
   } else {
-    preview.innerHTML = `<div class="last-note-empty"><span>aucune note pour l'instant</span></div>`;
+    preview.innerHTML = `<div class="last-note-empty"><span>aucun mémo pour l'instant</span></div>`;
   }
-  elMenuNoteCnt.textContent = `${notes.length} note${notes.length !== 1 ? 's' : ''}`;
+  elMenuNoteCnt.textContent = `${notes.length} mémo${notes.length !== 1 ? 's' : ''}`;
 }
 
 document.getElementById('btn-write').addEventListener('click', openWrite);
 document.getElementById('btn-back-write').addEventListener('click', () => show('home'));
 
-// Easter egg — clic sur le logo
+// Easter egg
 let easterTaps = 0, easterTimer;
 document.getElementById('btn-easter').addEventListener('click', () => {
   easterTaps++;
@@ -1170,7 +1256,7 @@ document.getElementById('btn-easter').addEventListener('click', () => {
 });
 document.getElementById('btn-back-easter').addEventListener('click', () => show('home'));
 
-// ── WRITE ──
+// WRITE
 function openWrite() {
   const ta = document.getElementById('note-area');
   ta.value = '';
@@ -1191,16 +1277,21 @@ document.getElementById('btn-save').addEventListener('click', () => {
   notes.unshift({ id: Date.now(), ts: Date.now(), text });
   saveNotes(notes);
   updateHome();
-  toast('Note enregistrée');
+  toast('Mémo enregistré');
   show('home');
 });
 
-// ── VOICE ──
+// VOICE
 let recognition = null;
-let voiceMode = null; // 'raw' | 'ai'
+let voiceMode = null;
 
 function supportsVoice() {
   return 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window;
+}
+
+function normalizeTranscript(t) {
+  // Collapse multiple spaces, trim
+  return t.replace(/\s+/g, ' ').trim();
 }
 
 function startVoice(mode) {
@@ -1212,30 +1303,43 @@ function startVoice(mode) {
   recognition.lang = 'fr-FR';
   recognition.continuous = false;
   recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
 
   voiceMode = mode;
   const btn = mode === 'raw' ? document.getElementById('btn-voice-raw') : document.getElementById('btn-voice-ai');
   btn.classList.add('recording');
-  btn.querySelector('span') && (btn.querySelector('span').textContent = 'Stop');
 
   recognition.onresult = async (e) => {
-    const transcript = e.results[0][0].transcript;
+    const raw = e.results[0][0].transcript;
+    const transcript = normalizeTranscript(raw);
     stopVoice();
     if (mode === 'raw') {
       const ta = document.getElementById('note-area');
       ta.value += (ta.value ? '\n' : '') + transcript;
       ta.dispatchEvent(new Event('input'));
     } else {
-      toast('✨ IA en cours…');
-      const result = await processWithAI(transcript);
-      const ta = document.getElementById('note-area');
-      ta.value = result.text;
-      ta.dispatchEvent(new Event('input'));
-      if (result.pingMs) {
-        notes[0] && setNotePingForCurrent(result.pingMs);
-        toast('Note IA prête — rappel : ' + msToLabel(result.pingMs));
-      } else {
-        toast('Note IA prête');
+      const btnAi = document.getElementById('btn-voice-ai');
+      btnAi.innerHTML = `<span class="ai-thinking"><span></span><span></span><span></span></span> IA...`;
+      btnAi.disabled = true;
+      try {
+        const result = await processWithAI(transcript);
+        const ta = document.getElementById('note-area');
+        ta.value = result.text;
+        ta.dispatchEvent(new Event('input'));
+        if (result.pingMs) {
+          toast('Mémo pret — rappel : ' + msToLabel(result.pingMs));
+          pendingPingMs = result.pingMs;
+        } else {
+          toast('Mémo pret');
+        }
+      } catch {
+        toast('Erreur IA — texte brut ajouté');
+        const ta = document.getElementById('note-area');
+        ta.value = transcript;
+        ta.dispatchEvent(new Event('input'));
+      } finally {
+        btnAi.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg> Dicter + IA`;
+        btnAi.disabled = false;
       }
     }
   };
@@ -1252,57 +1356,59 @@ function stopVoice() {
   document.getElementById('btn-voice-ai').classList.remove('recording');
 }
 
-// IA locale — reformate le texte vocal intelligemment
+let pendingPingMs = null;
+
+// IA via Pollinations (gratuit, sans clé API)
 async function processWithAI(transcript) {
   const lower = transcript.toLowerCase();
-
-  // Détection liste de courses
-  const isShoppingList = /course|acheter|supermarché|epicerie|magasin|frigo|marché/.test(lower);
-  // Détection rappel dans le texte
   const pingMs = extractPingFromText(lower);
 
-  if (isShoppingList) {
-    const items = extractShoppingItems(transcript);
-    return {
-      text: '🛒 Liste de courses\n\n' + items.map(i => '• ' + i).join('\n'),
-      pingMs: pingMs || 3600000
-    };
-  }
+  const prompt = `Tu es un assistant de prise de notes. Reformate ce texte dicté en note claire et concise en français.
+Si c'est une liste de courses ou d'achats, présente-la comme une liste avec tirets.
+Si c'est un rappel ou une tâche, reformule clairement.
+Réponds UNIQUEMENT avec le texte reformaté, rien d'autre.
+Texte dicté: "${transcript}"`;
 
-  // Reformatage général : capitalise, ponctue
-  let text = transcript.trim();
-  text = text.charAt(0).toUpperCase() + text.slice(1);
-  if (!/[.!?]$/.test(text)) text += '.';
-
+  const url = `https://text.pollinations.ai/${encodeURIComponent(prompt)}`;
+  const resp = await fetch(url, { signal: AbortSignal.timeout(8000) });
+  if (!resp.ok) throw new Error('API error');
+  const text = normalizeTranscript(await resp.text());
   return { text, pingMs };
 }
 
-function extractShoppingItems(text) {
-  // Retire les mots de liaison et coupe sur "et", virgules, "puis", "aussi"
-  const cleaned = text
-    .replace(/\b(acheter|il faut|j'ai besoin de|du|de la|des|un|une|le|la|les|aussi|puis|et puis)\b/gi, ' ')
-    .replace(/[,;]/g, ' et ');
-  return cleaned.split(/\s+et\s+/i)
-    .map(s => s.trim())
-    .filter(s => s.length > 1);
-}
-
 function extractPingFromText(text) {
-  const m5 = /5\s*min/.test(text) ? 300000 : null;
-  const m30 = /30\s*min/.test(text) ? 1800000 : null;
-  const h1 = /1\s*heure|dans\s*une\s*heure/.test(text) ? 3600000 : null;
-  const h2 = /2\s*heures/.test(text) ? 7200000 : null;
-  const d1 = /demain|1\s*jour|ce\s*soir/.test(text) ? 86400000 : null;
-  const w1 = /semaine|7\s*jour/.test(text) ? 604800000 : null;
-  return m5 || m30 || h1 || h2 || d1 || w1;
+  if (/5\s*min/.test(text)) return 300000;
+  if (/15\s*min/.test(text)) return 900000;
+  if (/30\s*min/.test(text)) return 1800000;
+  if (/1\s*heure|dans\s*une\s*heure/.test(text)) return 3600000;
+  if (/2\s*heures/.test(text)) return 7200000;
+  if (/ce\s*soir/.test(text)) return 21600000;
+  if (/demain|1\s*jour/.test(text)) return 86400000;
+  if (/semaine|7\s*jour/.test(text)) return 604800000;
+  return null;
 }
 
-// Ping assigné juste après sauvegarde IA
+document.getElementById('btn-save').addEventListener('click', () => {
+  // handled above — pendingPingMs applied after save
+}, { once: false });
+
+// Apply pending ping after save
+const origSaveListener = document.getElementById('btn-save').onclick;
+document.getElementById('btn-save').addEventListener('click', () => {
+  if (pendingPingMs && notes.length > 0) {
+    setTimeout(() => {
+      setNotePingForCurrent(pendingPingMs);
+      pendingPingMs = null;
+    }, 50);
+  }
+});
+
 function setNotePingForCurrent(ms) {
   const note = notes[0];
   if (!note) return;
   note.ping = ms;
   note.pingAfter = 'warn';
+  note.pingDeadline = Date.now() + ms;
   saveNotes(notes);
   scheduleNotePing(note);
 }
@@ -1310,20 +1416,20 @@ function setNotePingForCurrent(ms) {
 document.getElementById('btn-voice-raw').addEventListener('click', () => startVoice('raw'));
 document.getElementById('btn-voice-ai').addEventListener('click', () => startVoice('ai'));
 
-// ── LIST ──
+// LIST
 function openList() { refreshList(notes); show('list'); }
 
 function refreshList(list = notes) {
   renderList(list);
   const chars = notes.reduce((a, n) => a + n.text.length, 0);
-  elListStats.innerHTML = `<div class="stat-col"><span class="stat-val">${notes.length}</span><span class="stat-lbl">notes</span></div>
+  elListStats.innerHTML = `<div class="stat-col"><span class="stat-val">${notes.length}</span><span class="stat-lbl">mémos</span></div>
     <div class="stat-col"><span class="stat-val">${chars.toLocaleString('fr')}</span><span class="stat-lbl">caractères</span></div>`;
 }
 
 function renderList(list) {
   if (!list.length) {
     const q = document.getElementById('search-input').value;
-    elNotesList.innerHTML = `<div class="list-empty">${q ? 'Aucun résultat' : 'Aucune note'}</div>`;
+    elNotesList.innerHTML = `<div class="list-empty">${q ? 'Aucun résultat' : 'Aucun mémo'}</div>`;
     return;
   }
   const items = list.map(n => {
@@ -1371,10 +1477,10 @@ function deleteNote(id) {
   saveNotes(notes);
   updateHome();
   if (!screens.list.classList.contains('hidden')) refreshList(notes);
-  toast('Note supprimée');
+  toast('Mémo supprimé');
 }
 
-// ── VIEW ──
+// VIEW
 function openViewNote(id, from) {
   const note = notes.find(n => n.id === id);
   if (!note) return;
@@ -1454,12 +1560,12 @@ function fireNotePing(note) {
   const body = current.text.slice(0, 60) + (current.text.length > 60 ? '…' : '');
   if (current.pingAfter === 'delete') {
     if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification('Note supprimée — Mémo', { body, icon: 'icons/icon-192.png' });
+      new Notification('Mémo supprimé', { body, icon: 'icons/icon-192.png' });
     }
     deleteNote(current.id);
   } else {
     if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification('⚠️ Ta note va être supprimée dans 5 min — Mémo', { body, icon: 'icons/icon-192.png' });
+      new Notification('Ton mémo va être supprimé dans 5 min', { body, icon: 'icons/icon-192.png' });
     }
     current.pingAfter = 'delete';
     current.ping = 300000;
@@ -1491,13 +1597,13 @@ document.getElementById('btn-dl-note').addEventListener('click', function() {
   const blob = new Blob([`[${fmtDate(note.ts)}]\n\n${note.text}`], { type: 'text/plain;charset=utf-8' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `note-${new Date(note.ts).toISOString().slice(0,10)}.txt`;
+  a.download = `memo-${new Date(note.ts).toISOString().slice(0,10)}.txt`;
   a.click();
   URL.revokeObjectURL(a.href);
-  toast('Note téléchargée');
+  toast('Mémo téléchargé');
 });
 
-// ── MENU ──
+// MENU
 function setMenu(open) {
   menuOverlay.classList.toggle('open', open);
   menuDrawer.classList.toggle('open', open);
@@ -1512,14 +1618,14 @@ document.getElementById('menu-all-notes').addEventListener('click', () => { setM
 
 document.getElementById('menu-export').addEventListener('click', () => {
   setMenu(false);
-  if (!notes.length) { toast('Aucune note à exporter'); return; }
+  if (!notes.length) { toast('Aucun mémo à exporter'); return; }
   const lines = notes.map(n => `[${fmtDate(n.ts)}]\n${n.text}`);
   const blob = new Blob([lines.join('\n\n---\n\n')], { type: 'text/plain' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `notes-${new Date().toISOString().slice(0,10)}.txt`;
+  a.download = `memos-${new Date().toISOString().slice(0,10)}.txt`;
   a.click();
-  toast('Notes exportées !');
+  toast('Mémos exportés');
 });
 
 document.getElementById('menu-clear').addEventListener('click', function handleClear() {
@@ -1527,7 +1633,7 @@ document.getElementById('menu-clear').addEventListener('click', function handleC
   confirmingClear = true;
   const zone = document.getElementById('clear-zone');
   zone.innerHTML = `<div class="confirm-clear">
-    <div class="confirm-clear-msg">Effacer toutes les notes et données ?</div>
+    <div class="confirm-clear-msg">Effacer tous les mémos et données ?</div>
     <div class="confirm-clear-row">
       <button class="btn-cancel-clear" id="btn-cancel-clear">Annuler</button>
       <button class="btn-confirm-clear" id="btn-confirm-clear">Confirmer</button>
@@ -1544,7 +1650,6 @@ document.getElementById('menu-clear').addEventListener('click', function handleC
     document.getElementById('menu-clear').addEventListener('click', handleClear);
   });
   document.getElementById('btn-confirm-clear').addEventListener('click', () => {
-    // Supprime tout le localStorage de l'app
     localStorage.removeItem(NOTES_KEY);
     notes = [];
     updateHome();
@@ -1561,14 +1666,14 @@ document.getElementById('menu-clear').addEventListener('click', function handleC
   });
 });
 
-// ── NOTIFICATIONS ──
+// NOTIFICATIONS
 function requestNotifPermission() {
   if ('Notification' in window && Notification.permission === 'default') {
     Notification.requestPermission();
   }
 }
 
-// ── PWA / INSTALL ──
+// PWA / INSTALL
 let deferredInstall = null;
 const installBanner = document.getElementById('install-banner');
 
@@ -1590,10 +1695,9 @@ document.getElementById('btn-install-close').addEventListener('click', () => {
   installBanner.classList.remove('show');
 });
 
-// iOS : affiche instructions d'installation si pas installée
 if (/iphone|ipad|ipod/i.test(navigator.userAgent) && !window.navigator.standalone) {
   setTimeout(() => {
-    toast('iOS : "Partager" → "Sur l\'écran d\'accueil" pour installer');
+    toast('iOS : "Partager" puis "Sur l\'ecran d\'accueil"');
   }, 3000);
 }
 
