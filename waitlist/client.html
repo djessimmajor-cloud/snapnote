@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WaitList — Ma position</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#6c47ff">
+</head>
+<body class="client-page">
+
+  <div class="client-container">
+
+    <div class="client-logo">⏳ WaitList</div>
+
+    <!-- Vue : pas encore inscrit -->
+    <div id="viewJoin">
+      <h1 class="client-title">Rejoindre la file</h1>
+      <p class="client-subtitle">Entrez votre nom pour vous inscrire</p>
+      <form id="joinForm">
+        <input type="text" id="joinName" placeholder="Votre prénom" required autocomplete="off">
+        <select id="joinQueue"></select>
+        <button type="submit" class="btn btn-primary btn-lg">Rejoindre</button>
+      </form>
+    </div>
+
+    <!-- Vue : en attente -->
+    <div id="viewWaiting" class="hidden">
+      <div class="client-position-wrap">
+        <div class="client-position-label">Votre position</div>
+        <div class="client-position" id="clientPosition">—</div>
+        <div class="client-position-sub">dans la file</div>
+      </div>
+
+      <div class="client-info-card">
+        <div class="client-info-row">
+          <span class="ci-label">Nom</span>
+          <span class="ci-value" id="clientNameDisplay">—</span>
+        </div>
+        <div class="client-info-row">
+          <span class="ci-label">File</span>
+          <span class="ci-value" id="clientQueueDisplay">—</span>
+        </div>
+        <div class="client-info-row">
+          <span class="ci-label">Devant vous</span>
+          <span class="ci-value" id="clientBefore">—</span>
+        </div>
+      </div>
+
+      <div class="client-notif-section">
+        <p class="notif-hint" id="notifHint">Activez les notifications pour être prévenu quand c'est votre tour.</p>
+        <button class="btn btn-outline" id="btnEnableNotif">🔔 Activer les notifications</button>
+      </div>
+
+      <button class="btn btn-danger btn-sm" id="btnLeaveQueue">Quitter la file</button>
+    </div>
+
+    <!-- Vue : c'est votre tour ! -->
+    <div id="viewYourTurn" class="hidden">
+      <div class="your-turn-anim">🎉</div>
+      <h2 class="your-turn-title">C'est votre tour !</h2>
+      <p class="your-turn-sub">Veuillez vous présenter à l'accueil.</p>
+      <button class="btn btn-primary" id="btnDone">Terminé</button>
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="register-sw.js"></script>
+  <script src="app.js"></script>
+  <script>
+    initClient();
+  </script>
+</body>
+</html>

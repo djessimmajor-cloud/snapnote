@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WaitList — Affichage</title>
+  <link rel="stylesheet" href="style.css">
+  <meta name="theme-color" content="#6c47ff">
+</head>
+<body class="display-page">
+
+  <div class="display-container">
+
+    <div class="display-header">
+      <div class="display-logo">⏳ WaitList</div>
+      <div class="display-queue-name" id="displayQueueName">File d'attente</div>
+      <div class="display-count">
+        <span id="displayCount">0</span> en attente
+      </div>
+    </div>
+
+    <!-- Nom actuel en grand -->
+    <div class="display-current">
+      <div class="display-label">Prochain client</div>
+      <div class="display-name" id="displayCurrentName">—</div>
+      <div class="display-service" id="displayCurrentService"></div>
+    </div>
+
+    <!-- Défilement des suivants -->
+    <div class="display-next-label">Suivants</div>
+    <div class="display-carousel" id="displayCarousel">
+      <div class="carousel-track" id="carouselTrack"></div>
+    </div>
+
+    <!-- Sélecteur de file (coin bas droite) -->
+    <div class="display-controls">
+      <select id="displayQueueSelect" class="display-select"></select>
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="app.js"></script>
+  <script>
+    initDisplay();
+  </script>
+</body>
+</html>
