@@ -1,56 +1,27 @@
-// ── STOCKAGE & SYNC ─────────────────────────────────────────────────────────
-// Toutes les données vivent dans localStorage.
-// BroadcastChannel synchronise les onglets/fenêtres ouverts sur le même origin.
+// ── GUN.JS CONFIG ────────────────────────────────────────────────────────────
+// Relays publics gratuits, zéro compte requis
+const RELAYS = [
+  'https://gun-manhattan.herokuapp.com/gun',
+  'https://relay.peer.ooo/gun',
+];
 
-const bc = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('waitlist') : null;
+// Préfixe unique pour isoler cette app sur les relays publics
+const APP_KEY = 'waitlist-app-v1';
 
-function save(key, value) {
-  localStorage.setItem(key, JSON.stringify(value));
-  bc?.postMessage({ key, value });
+let gun;
+function getGun() {
+  if (!gun) gun = Gun(RELAYS);
+  return gun;
+}
+function db() { return getGun().get(APP_KEY); }
+
+// ── UTILITAIRES ───────────────────────────────────────────────────────────────
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-function load(key, fallback) {
-  try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; }
-}
-
-function onSync(cb) {
-  bc?.addEventListener('message', e => cb(e.data.key, e.data.value));
-  window.addEventListener('storage', e => {
-    try { cb(e.key, JSON.parse(e.newValue)); } catch {}
-  });
-}
-
-// ── QUEUES ───────────────────────────────────────────────────────────────────
-function getQueues()         { return load('wl_queues', []); }
-function saveQueues(queues)  { save('wl_queues', queues); }
-
-function getClients()        { return load('wl_clients', []); }
-function saveClients(c)      { save('wl_clients', c); }
-
-function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
-
-// Retourne tous les ids de files liées (même groupe)
-function resolveGroup(queues, queueId) {
-  const q = queues.find(q => q.id === queueId);
-  if (!q) return [queueId];
-  const root = q.linkedTo || q.id;
-  return queues.filter(q => q.id === root || q.linkedTo === root).map(q => q.id);
-}
-
-// Clients en attente d'un groupe de files, triés par position
-function waitingClients(queues, queueId) {
-  const ids = resolveGroup(queues, queueId);
-  return getClients()
-    .filter(c => ids.includes(c.queueId) && c.status === 'waiting')
-    .sort((a, b) => a.position - b.position);
-}
-
-function nextPosition(queues, queueId) {
-  const list = waitingClients(queues, queueId);
-  return list.length > 0 ? list[list.length - 1].position + 1 : 1;
-}
-
-// ── BIP ──────────────────────────────────────────────────────────────────────
 function beep() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -67,16 +38,25 @@ function beep() {
   } catch {}
 }
 
-// ── TOKEN CLIENT ─────────────────────────────────────────────────────────────
-const getToken  = () => localStorage.getItem('wl_my_token');
-const setToken  = t  => localStorage.setItem('wl_my_token', t);
-const clearToken = () => localStorage.removeItem('wl_my_token');
+// Gun stocke des objets plats — on sérialise les tableaux en objets indexés
+function gunToArray(obj) {
+  if (!obj) return [];
+  return Object.entries(obj)
+    .filter(([k, v]) => k !== '_' && v && typeof v === 'object')
+    .map(([, v]) => v);
+}
+
+const getToken  = () => localStorage.getItem('wl_token');
+const setToken  = t  => localStorage.setItem('wl_token', t);
+const clearToken = () => localStorage.removeItem('wl_token');
 
 // ════════════════════════════════════════════════════════════════════════════
 //  DASHBOARD  (index.html)
 // ════════════════════════════════════════════════════════════════════════════
 function initDashboard() {
   let currentQueueId = null;
+  let queues = [];
+  let clients = [];
 
   const queueTabs      = document.getElementById('queueTabs');
   const queueList      = document.getElementById('queueList');
@@ -90,8 +70,44 @@ function initDashboard() {
   const newQueueName   = document.getElementById('newQueueName');
   const linkSelect     = document.getElementById('linkQueue');
 
+  // Écoute les files en temps réel
+  db().get('queues').map().on((data, id) => {
+    if (!data) return;
+    const idx = queues.findIndex(q => q.id === id);
+    if (idx !== -1) queues[idx] = { ...data, id };
+    else queues.push({ ...data, id });
+    render();
+  });
+
+  // Écoute les clients en temps réel
+  db().get('clients').map().on((data, id) => {
+    if (!data) return;
+    const idx = clients.findIndex(c => c.id === id);
+    if (idx !== -1) clients[idx] = { ...data, id };
+    else clients.push({ ...data, id });
+    render();
+  });
+
+  function resolveGroup(queueId) {
+    const q = queues.find(q => q.id === queueId);
+    if (!q) return [queueId];
+    const root = q.linkedTo || q.id;
+    return queues.filter(q => q.id === root || q.linkedTo === root).map(q => q.id);
+  }
+
+  function waitingIn(queueId) {
+    const ids = resolveGroup(queueId);
+    return clients
+      .filter(c => ids.includes(c.queueId) && c.status === 'waiting')
+      .sort((a, b) => a.position - b.position);
+  }
+
+  function nextPosition(queueId) {
+    const list = waitingIn(queueId);
+    return list.length > 0 ? list[list.length - 1].position + 1 : 1;
+  }
+
   function render() {
-    const queues = getQueues();
     // Tabs
     queueTabs.innerHTML = '';
     queues.forEach(q => {
@@ -101,10 +117,9 @@ function initDashboard() {
       btn.onclick = () => { currentQueueId = q.id; render(); };
       queueTabs.appendChild(btn);
     });
-    // Auto-select first
     if (!currentQueueId && queues.length > 0) { currentQueueId = queues[0].id; render(); return; }
 
-    // Link select in modal
+    // Modal link select
     linkSelect.innerHTML = '<option value="">— Indépendante —</option>';
     queues.forEach(q => {
       const o = document.createElement('option');
@@ -112,17 +127,24 @@ function initDashboard() {
       linkSelect.appendChild(o);
     });
 
-    if (!currentQueueId) { queueList.innerHTML = '<li class="empty-state">Créez une file d\'attente</li>'; return; }
+    if (!currentQueueId) {
+      queueList.innerHTML = '<li class="empty-state">Créez une file d\'attente</li>';
+      return;
+    }
+
     const q = queues.find(q => q.id === currentQueueId);
     queueLabel.textContent = q?.name || '';
 
-    const clients = waitingClients(queues, currentQueueId);
-    countBadge.textContent = clients.length;
+    const list = waitingIn(currentQueueId);
+    countBadge.textContent = list.length;
     queueList.innerHTML = '';
-    if (clients.length === 0) {
-      queueList.innerHTML = '<li class="empty-state">Aucun client en attente</li>'; return;
+
+    if (list.length === 0) {
+      queueList.innerHTML = '<li class="empty-state">Aucun client en attente</li>';
+      return;
     }
-    clients.forEach((c, i) => {
+
+    list.forEach((c, i) => {
       const li = document.createElement('li');
       li.className = 'queue-item';
       li.innerHTML = `
@@ -139,14 +161,12 @@ function initDashboard() {
   queueList.addEventListener('click', e => {
     const btn = e.target.closest('[data-action]');
     if (!btn) return;
-    const clients = getClients();
+    const id = btn.dataset.id;
     if (btn.dataset.action === 'remove') {
-      saveClients(clients.filter(c => c.id !== btn.dataset.id));
+      db().get('clients').get(id).put({ status: 'done' });
     } else if (btn.dataset.action === 'call') {
-      const idx = clients.findIndex(c => c.id === btn.dataset.id);
-      if (idx !== -1) { clients[idx].status = 'called'; saveClients(clients); }
+      db().get('clients').get(id).put({ status: 'called' });
     }
-    render();
   });
 
   addForm.addEventListener('submit', e => {
@@ -154,11 +174,11 @@ function initDashboard() {
     const name    = document.getElementById('clientName').value.trim();
     const service = document.getElementById('clientService').value.trim();
     if (!name || !currentQueueId) return;
-    const queues = getQueues();
-    const client = { id: uid(), name, service, queueId: currentQueueId, position: nextPosition(queues, currentQueueId), status: 'waiting', token: uid() };
-    saveClients([...getClients(), client]);
+    const id    = uid();
+    const token = uid();
+    const client = { id, name, service, queueId: currentQueueId, position: nextPosition(currentQueueId), status: 'waiting', token };
+    db().get('clients').get(id).put(client);
     addForm.reset();
-    render();
   });
 
   btnNewQueue.onclick    = () => { modalOverlay.classList.add('open'); newQueueName.focus(); };
@@ -168,25 +188,21 @@ function initDashboard() {
   btnCreateQueue.onclick = () => {
     const name = newQueueName.value.trim();
     if (!name) return;
-    const queues = getQueues();
-    queues.push({ id: uid(), name, linkedTo: linkSelect.value || null });
-    saveQueues(queues);
+    const id = uid();
+    db().get('queues').get(id).put({ id, name, linkedTo: linkSelect.value || '' });
     newQueueName.value = ''; linkSelect.value = '';
     modalOverlay.classList.remove('open');
-    render();
   };
-
-  onSync(() => render());
-  render();
 }
 
 // ════════════════════════════════════════════════════════════════════════════
 //  DISPLAY / DIAPO  (display.html)
 // ════════════════════════════════════════════════════════════════════════════
 function initDisplay() {
+  let queues = [];
+  let clients = [];
   let currentQueueId = null;
   let slideIndex = 0;
-  let timer = null;
 
   const queueSelect    = document.getElementById('displayQueueSelect');
   const displayName    = document.getElementById('displayQueueName');
@@ -195,72 +211,108 @@ function initDisplay() {
   const currentService = document.getElementById('displayCurrentService');
   const track          = document.getElementById('carouselTrack');
 
+  db().get('queues').map().on((data, id) => {
+    if (!data) return;
+    const idx = queues.findIndex(q => q.id === id);
+    if (idx !== -1) queues[idx] = { ...data, id };
+    else queues.push({ ...data, id });
+    populateSelect();
+    render();
+  });
+
+  db().get('clients').map().on((data, id) => {
+    if (!data) return;
+    const idx = clients.findIndex(c => c.id === id);
+    if (idx !== -1) clients[idx] = { ...data, id };
+    else clients.push({ ...data, id });
+    render();
+  });
+
+  function resolveGroup(queueId) {
+    const q = queues.find(q => q.id === queueId);
+    if (!q) return [queueId];
+    const root = q.linkedTo || q.id;
+    return queues.filter(q => q.id === root || q.linkedTo === root).map(q => q.id);
+  }
+
+  function waitingIn(queueId) {
+    const ids = resolveGroup(queueId);
+    return clients
+      .filter(c => ids.includes(c.queueId) && c.status === 'waiting')
+      .sort((a, b) => a.position - b.position);
+  }
+
   function populateSelect() {
-    const queues = getQueues();
+    const val = queueSelect.value;
     queueSelect.innerHTML = '';
     queues.forEach(q => {
       const o = document.createElement('option');
       o.value = q.id; o.textContent = q.name;
       queueSelect.appendChild(o);
     });
+    if (val) queueSelect.value = val;
     if (!currentQueueId && queues.length > 0) currentQueueId = queues[0].id;
     queueSelect.value = currentQueueId || '';
   }
 
   function render() {
-    populateSelect();
-    const queues = getQueues();
     const q = queues.find(q => q.id === currentQueueId);
     displayName.textContent = q?.name || 'File d\'attente';
 
-    const clients = currentQueueId ? waitingClients(queues, currentQueueId) : [];
-    displayCount.textContent = clients.length;
+    const list = currentQueueId ? waitingIn(currentQueueId) : [];
+    displayCount.textContent = list.length;
 
-    if (clients.length === 0) {
+    if (list.length === 0) {
       currentName.textContent = '—'; currentService.textContent = '';
       track.innerHTML = '<div class="carousel-empty">Aucun client en attente</div>';
       return;
     }
-    if (slideIndex >= clients.length) slideIndex = 0;
-    const main = clients[slideIndex];
-    currentName.textContent = main.name;
+    if (slideIndex >= list.length) slideIndex = 0;
+    const main = list[slideIndex];
+    currentName.textContent    = main.name;
     currentService.textContent = main.service || '';
 
     track.innerHTML = '';
-    clients.filter((_, i) => i !== slideIndex).slice(0, 6).forEach((c, i) => {
+    list.filter((_, i) => i !== slideIndex).slice(0, 6).forEach((c, i) => {
       const div = document.createElement('div');
       div.className = 'carousel-item';
       div.style.animationDelay = (i * 0.08) + 's';
-      div.innerHTML = `<span class="ci-pos">${clients.indexOf(c) + 1}</span><span class="ci-n">${escHtml(c.name)}</span>`;
+      div.innerHTML = `<span class="ci-pos">${list.indexOf(c) + 1}</span><span class="ci-n">${escHtml(c.name)}</span>`;
       track.appendChild(div);
     });
   }
 
-  function startCarousel() {
-    if (timer) clearInterval(timer);
-    timer = setInterval(() => {
-      const queues = getQueues();
-      const clients = currentQueueId ? waitingClients(queues, currentQueueId) : [];
-      if (clients.length > 1) { slideIndex = (slideIndex + 1) % clients.length; render(); }
-    }, 3000);
+  setInterval(() => {
+    const list = currentQueueId ? (() => {
+      const ids = resolveGroup2(queues, currentQueueId);
+      return clients.filter(c => ids.includes(c.queueId) && c.status === 'waiting').sort((a,b) => a.position - b.position);
+    })() : [];
+    if (list.length > 1) { slideIndex = (slideIndex + 1) % list.length; render(); }
+  }, 3000);
+
+  function resolveGroup2(queues, queueId) {
+    const q = queues.find(q => q.id === queueId);
+    if (!q) return [queueId];
+    const root = q.linkedTo || q.id;
+    return queues.filter(q => q.id === root || q.linkedTo === root).map(q => q.id);
   }
 
   queueSelect.addEventListener('change', () => { currentQueueId = queueSelect.value; slideIndex = 0; render(); });
-  onSync(() => render());
-  render();
-  startCarousel();
 }
 
 // ════════════════════════════════════════════════════════════════════════════
 //  CLIENT  (client.html)
 // ════════════════════════════════════════════════════════════════════════════
 function initClient() {
+  let queues = [];
+  let clients = [];
+  let prevStatus = null;
+
   const viewJoin     = document.getElementById('viewJoin');
   const viewWaiting  = document.getElementById('viewWaiting');
   const viewYourTurn = document.getElementById('viewYourTurn');
   const joinForm     = document.getElementById('joinForm');
   const joinQueue    = document.getElementById('joinQueue');
-
   const elPos        = document.getElementById('clientPosition');
   const elName       = document.getElementById('clientNameDisplay');
   const elQueue      = document.getElementById('clientQueueDisplay');
@@ -270,9 +322,29 @@ function initClient() {
   const btnLeave     = document.getElementById('btnLeaveQueue');
   const btnDone      = document.getElementById('btnDone');
 
+  db().get('queues').map().on((data, id) => {
+    if (!data) return;
+    const idx = queues.findIndex(q => q.id === id);
+    if (idx !== -1) queues[idx] = { ...data, id };
+    else queues.push({ ...data, id });
+    populateQueues();
+  });
+
+  db().get('clients').map().on((data, id) => {
+    if (!data) return;
+    const idx = clients.findIndex(c => c.id === id);
+    if (idx !== -1) clients[idx] = { ...data, id };
+    else clients.push({ ...data, id });
+    const mine = getMyClient();
+    if (mine) {
+      if (mine.status === 'called' && prevStatus !== 'called') { prevStatus = 'called'; showTurn(); }
+      else if (mine.status === 'waiting') updateWaiting();
+    }
+  });
+
   function populateQueues() {
     joinQueue.innerHTML = '';
-    getQueues().forEach(q => {
+    queues.forEach(q => {
       const o = document.createElement('option');
       o.value = q.id; o.textContent = q.name;
       joinQueue.appendChild(o);
@@ -282,12 +354,18 @@ function initClient() {
   function getMyClient() {
     const token = getToken();
     if (!token) return null;
-    return getClients().find(c => c.token === token) || null;
+    return clients.find(c => c.token === token) || null;
   }
 
-  function showJoin()    { viewJoin.classList.remove('hidden'); viewWaiting.classList.add('hidden'); viewYourTurn.classList.add('hidden'); }
-  function showWaiting() { viewJoin.classList.add('hidden'); viewWaiting.classList.remove('hidden'); viewYourTurn.classList.add('hidden'); updateWaiting(); }
-  function showTurn()    {
+  function resolveGroup(queueId) {
+    const q = queues.find(q => q.id === queueId);
+    if (!q) return [queueId];
+    const root = q.linkedTo || q.id;
+    return queues.filter(q => q.id === root || q.linkedTo === root).map(q => q.id);
+  }
+
+  function showJoin()   { viewJoin.classList.remove('hidden'); viewWaiting.classList.add('hidden'); viewYourTurn.classList.add('hidden'); }
+  function showTurn()   {
     viewJoin.classList.add('hidden'); viewWaiting.classList.add('hidden'); viewYourTurn.classList.remove('hidden');
     beep();
     if (Notification.permission === 'granted')
@@ -297,24 +375,15 @@ function initClient() {
   function updateWaiting() {
     const c = getMyClient();
     if (!c) { clearToken(); showJoin(); return; }
-    if (c.status === 'called') { showTurn(); return; }
-    if (c.status === 'done')   { clearToken(); showJoin(); return; }
+    viewJoin.classList.add('hidden'); viewWaiting.classList.remove('hidden'); viewYourTurn.classList.add('hidden');
 
-    const queues  = getQueues();
-    const ids     = resolveGroup(queues, c.queueId);
-    const all     = getClients().filter(cl => ids.includes(cl.queueId) && cl.status === 'waiting').sort((a,b) => a.position - b.position);
-    const pos     = all.findIndex(cl => cl.id === c.id) + 1;
+    const ids  = resolveGroup(c.queueId);
+    const all  = clients.filter(cl => ids.includes(cl.queueId) && cl.status === 'waiting').sort((a,b) => a.position - b.position);
+    const pos  = all.findIndex(cl => cl.id === c.id) + 1;
     elPos.textContent    = pos || '—';
     elName.textContent   = c.name;
     elQueue.textContent  = queues.find(q => q.id === c.queueId)?.name || '—';
     elBefore.textContent = Math.max(0, pos - 1);
-  }
-
-  function restore() {
-    const c = getMyClient();
-    if (!c) { showJoin(); return; }
-    if (c.status === 'called') showTurn();
-    else showWaiting();
   }
 
   joinForm.addEventListener('submit', e => {
@@ -322,27 +391,27 @@ function initClient() {
     const name    = document.getElementById('joinName').value.trim();
     const queueId = joinQueue.value;
     if (!name || !queueId) return;
-    const queues = getQueues();
-    const token  = uid();
-    const client = { id: uid(), name, service: '', queueId, position: nextPosition(queues, queueId), status: 'waiting', token };
-    saveClients([...getClients(), client]);
+    const ids     = resolveGroup(queueId);
+    const waiting = clients.filter(c => ids.includes(c.queueId) && c.status === 'waiting').sort((a,b) => a.position - b.position);
+    const pos     = waiting.length > 0 ? waiting[waiting.length - 1].position + 1 : 1;
+    const id      = uid();
+    const token   = uid();
+    const client  = { id, name, service: '', queueId, position: pos, status: 'waiting', token };
+    db().get('clients').get(id).put(client);
     setToken(token);
-    showWaiting();
+    prevStatus = 'waiting';
+    updateWaiting();
   });
 
   btnLeave.addEventListener('click', () => {
     const c = getMyClient();
-    if (c) saveClients(getClients().filter(cl => cl.id !== c.id));
+    if (c) db().get('clients').get(c.id).put({ status: 'done' });
     clearToken(); showJoin();
   });
 
   btnDone.addEventListener('click', () => {
     const c = getMyClient();
-    if (c) {
-      const clients = getClients();
-      const idx = clients.findIndex(cl => cl.id === c.id);
-      if (idx !== -1) { clients[idx].status = 'done'; saveClients(clients); }
-    }
+    if (c) db().get('clients').get(c.id).put({ status: 'done' });
     clearToken(); showJoin();
   });
 
@@ -353,18 +422,8 @@ function initClient() {
 
   if (Notification.permission === 'granted') { notifHint.textContent = '✅ Notifications activées !'; btnNotif.style.display = 'none'; }
 
-  onSync(() => {
-    const c = getMyClient();
-    if (!c) return;
-    if (c.status === 'called' && !viewYourTurn.classList.contains('hidden') === false) showTurn();
-    else updateWaiting();
-  });
-
-  populateQueues();
-  restore();
-}
-
-// ── HELPER ───────────────────────────────────────────────────────────────────
-function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  // Restore session
+  const mine = getMyClient();
+  if (mine) { prevStatus = mine.status; if (mine.status === 'called') showTurn(); else updateWaiting(); }
+  else showJoin();
 }
