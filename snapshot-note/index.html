@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="theme-color" content="#f5f0eb">
+  <meta name="theme-color" content="#faf8f5">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Mémo">
@@ -12,1026 +12,586 @@
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="icon" href="icons/icon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600&family=Instrument+Sans:wght@400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
     :root {
-      --bg:      oklch(97% 0.008 60);
-      --bg2:     oklch(94% 0.012 60);
-      --surface: #ffffff;
-      --border:  oklch(90% 0.008 60);
-      --border2: oklch(82% 0.01 60);
-      --text:    oklch(18% 0.01 60);
-      --text2:   oklch(22% 0.01 60);
-      --muted:   oklch(62% 0.01 60);
-      --muted2:  oklch(50% 0.01 60);
-      --accent:  oklch(58% 0.18 38);
-      --accent-bg: oklch(58% 0.18 38 / 0.12);
-      --danger:  oklch(48% 0.15 20);
-      --danger-bg: oklch(95% 0.01 20);
+      --paper:    #faf8f5;
+      --paper2:   #f3f0ea;
+      --surface:  #ffffff;
+      --ink:      #1c1a16;
+      --ink2:     #3a3630;
+      --faint:    #9a9590;
+      --faint2:   #706c66;
+      --line:     #e8e4db;
+      --line2:    #d4cfc5;
+      --rust:     #c85a2a;
+      --rust2:    #a84820;
+      --rust-bg:  rgba(200,90,42,.07);
+      --red:      #b83030;
+      --red-bg:   #fdf0f0;
+      --hand:     'Caveat', cursive;
+      --ui:       'Instrument Sans', system-ui, sans-serif;
+      --mono:     'JetBrains Mono', monospace;
+      --r:        16px;
+      --r-sm:     10px;
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bot: env(safe-area-inset-bottom, 0px);
-      --mono: 'DM Mono', monospace;
-      --sans: 'DM Sans', system-ui, sans-serif;
     }
 
     html, body {
       width: 100%; height: 100%;
-      background: var(--bg2);
-      font-family: var(--sans);
-      color: var(--text);
+      background: var(--paper2);
+      font-family: var(--ui);
+      color: var(--ink);
       overflow: hidden;
+      -webkit-font-smoothing: antialiased;
     }
 
-    .app-shell {
+    .shell {
       position: relative;
       width: 100%; height: 100%;
-      background: var(--bg);
+      background: var(--paper);
       overflow: hidden;
       padding-top: var(--safe-top);
       padding-bottom: var(--safe-bot);
     }
 
     @media (min-width: 600px) {
-      body { display: flex; align-items: center; justify-content: center; background: oklch(92% 0.015 60); }
-      .app-shell {
+      body { display: flex; align-items: center; justify-content: center; background: #ddd9d0; }
+      .shell {
         width: 390px;
         height: min(844px, 96vh);
-        border-radius: 24px;
-        box-shadow: 0 24px 80px rgba(0,0,0,0.18), 0 4px 16px rgba(0,0,0,0.08);
-        padding-top: 0;
-        padding-bottom: 0;
+        border-radius: 32px;
+        box-shadow: 0 40px 100px rgba(0,0,0,.18), 0 8px 28px rgba(0,0,0,.08);
+        padding-top: 0; padding-bottom: 0;
       }
     }
 
+    /* ── SCREENS ──────────────────────────── */
     .screen {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      background: var(--bg);
-      transition: opacity .2s, transform .2s;
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      background: var(--paper);
+      transition: opacity .16s ease, transform .16s ease;
     }
-    .screen.hidden { opacity: 0; pointer-events: none; transform: scale(.98); }
+    .screen.hidden { opacity: 0; pointer-events: none; transform: translateY(8px); }
 
-    .hd {
-      display: flex;
-      align-items: center;
-      padding: 12px 16px 8px;
-      gap: 8px;
-      flex-shrink: 0;
+    /* ── COMMON HEADER ────────────────────── */
+    .bar {
+      display: flex; align-items: center;
+      padding: 14px 18px 12px;
+      gap: 8px; flex-shrink: 0;
     }
-    .hd-title { font-weight: 500; font-size: 15px; color: var(--text2); }
+    .bar-title {
+      font-family: var(--ui); font-size: 15px; font-weight: 500;
+      color: var(--ink2); flex: 1;
+    }
 
+    /* ── ICON BUTTON ──────────────────────── */
     .btn-icon {
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: var(--muted2);
-      padding: 4px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background .15s;
-    }
-    .btn-icon:hover { background: var(--bg2); }
-
-    .btn-primary {
-      background: var(--accent);
-      color: white;
-      border: none;
+      background: none; border: none; cursor: pointer;
+      color: var(--faint2); padding: 7px;
       border-radius: 10px;
-      padding: 8px 18px;
-      font-size: 13px;
-      font-weight: 500;
-      font-family: var(--sans);
-      cursor: pointer;
-      transition: opacity .15s;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .12s, color .12s;
     }
-    .btn-primary:disabled { background: oklch(88% 0.01 60); color: var(--muted); cursor: default; }
-    .btn-primary:not(:disabled):hover { opacity: .88; }
+    .btn-icon:hover { background: var(--paper2); color: var(--ink2); }
 
-    /* HOME */
-    #home { background: var(--bg); }
+    /* ── PRIMARY BUTTON ───────────────────── */
+    .btn-primary {
+      background: var(--rust); color: #fff;
+      border: none; border-radius: var(--r-sm);
+      padding: 8px 20px; font-size: 13.5px; font-weight: 500;
+      font-family: var(--ui); cursor: pointer;
+      transition: background .12s;
+    }
+    .btn-primary:disabled { background: var(--line2); color: var(--faint); cursor: default; }
+    .btn-primary:not(:disabled):hover { background: var(--rust2); }
 
+    /* ── ═══════════════════════════════════ */
+    /* ── HOME ─────────────────────────────── */
+    /* ── ═══════════════════════════════════ */
     .home-header {
-      padding: 16px 20px 0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 22px 22px 0; flex-shrink: 0;
+    }
+    .home-logo {
+      font-family: var(--hand); font-size: 22px; font-weight: 600;
+      color: var(--rust); letter-spacing: .01em;
+      user-select: none;
     }
 
-    .logo-wordmark {
-      font-family: var(--mono);
-      font-size: 13px;
-      color: var(--muted);
-      letter-spacing: .04em;
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 4px 0;
-    }
-
-    .home-center {
+    .home-body {
       flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
       gap: 16px;
+      padding-bottom: 20px;
     }
 
-    .btn-new-note {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      background: var(--accent);
-      border: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      box-shadow: 0 8px 32px oklch(58% 0.18 38 / 0.35);
-      transition: transform .15s, box-shadow .15s;
+    .btn-new {
+      width: 76px; height: 76px; border-radius: 50%;
+      background: var(--rust); border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff;
+      box-shadow: 0 8px 28px rgba(200,90,42,.28);
+      transition: transform .14s, box-shadow .14s;
     }
-    .btn-new-note:hover { transform: scale(1.07); }
-    .btn-new-note:active { transform: scale(.96); box-shadow: 0 4px 16px oklch(58% 0.18 38 / 0.2); }
+    .btn-new:hover { transform: scale(1.07); box-shadow: 0 12px 36px rgba(200,90,42,.36); }
+    .btn-new:active { transform: scale(.93); box-shadow: 0 4px 14px rgba(200,90,42,.2); }
 
-    .home-cta-label {
-      font-size: 13px;
-      color: var(--muted);
-      letter-spacing: .02em;
+    .home-hint {
+      font-family: var(--hand); font-size: 17px; font-weight: 400;
+      color: var(--faint); letter-spacing: .01em;
     }
 
-    .last-note-wrap {
-      padding: 0 20px 32px;
-      flex-shrink: 0;
-    }
+    .home-footer { padding: 0 22px 32px; flex-shrink: 0; }
 
-    .last-note-card {
-      width: 100%;
+    .last-card {
+      width: 100%; text-align: left; cursor: pointer;
       background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 16px 18px;
-      text-align: left;
-      cursor: pointer;
-      transition: border-color .15s;
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      padding: 18px 20px;
+      transition: border-color .14s, box-shadow .14s;
+      /* subtle ruled paper lines */
+      background-image: repeating-linear-gradient(
+        transparent, transparent 27px,
+        rgba(200,90,42,.06) 28px
+      );
+      background-size: 100% 28px;
+      background-position: 0 18px;
     }
-    .last-note-card:hover { border-color: var(--accent); }
+    .last-card:hover { border-color: var(--line2); box-shadow: 0 4px 20px rgba(0,0,0,.06); }
+    .last-card-meta {
+      font-family: var(--mono); font-size: 10.5px; color: var(--faint);
+      margin-bottom: 10px; letter-spacing: .02em;
+    }
+    .last-card-text {
+      font-family: var(--hand); font-size: 18px; font-weight: 400;
+      color: var(--ink2); line-height: 1.6;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .last-empty {
+      width: 100%; background: var(--paper2);
+      border: 1px dashed var(--line2); border-radius: var(--r);
+      padding: 22px; text-align: center;
+    }
+    .last-empty span { font-family: var(--hand); font-size: 16px; color: var(--faint); }
 
-    .last-note-meta {
-      font-size: 11px;
-      font-family: var(--mono);
-      color: var(--muted);
-      margin-bottom: 8px;
-      letter-spacing: .03em;
+    /* ── ═══════════════════════════════════ */
+    /* ── WRITE ────────────────────────────── */
+    /* ── ═══════════════════════════════════ */
+    .write-bar {
+      display: flex; align-items: center;
+      padding: 12px 18px; gap: 10px; flex-shrink: 0;
     }
-
-    .last-note-text {
-      font-size: 14px;
-      color: oklch(25% 0.01 60);
-      line-height: 1.55;
-      font-weight: 300;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-
-    .last-note-empty {
-      width: 100%;
-      background: oklch(95% 0.007 60);
-      border: 1px dashed oklch(85% 0.008 60);
-      border-radius: 16px;
-      padding: 20px 18px;
-      text-align: center;
-    }
-    .last-note-empty span { font-size: 13px; color: var(--muted); }
-
-    /* WRITE */
-    .write-hd {
-      display: flex;
-      align-items: center;
-      padding: 12px 16px;
-      gap: 8px;
-      flex-shrink: 0;
-    }
-    .write-charcount {
-      font-family: var(--mono);
-      font-size: 12px;
-      color: var(--muted);
-    }
+    .write-count { font-family: var(--mono); font-size: 11px; color: var(--faint); }
 
     #note-area {
-      flex: 1;
-      border: none;
-      outline: none;
-      resize: none;
+      flex: 1; border: none; outline: none; resize: none;
       background: transparent;
-      padding: 12px 22px 24px;
-      font-size: 15px;
-      line-height: 1.7;
-      color: var(--text);
-      font-family: var(--sans);
-      font-weight: 300;
+      padding: 8px 24px 20px;
+      font-family: var(--hand); font-size: 20px; font-weight: 400;
+      line-height: 1.75; color: var(--ink);
+      /* ruled lines matching line-height */
+      background-image: repeating-linear-gradient(
+        transparent, transparent 34px,
+        rgba(200,90,42,.08) 35px
+      );
+      background-size: 100% 35px;
+      background-position: 0 8px;
     }
-    #note-area::placeholder { color: var(--muted); }
+    #note-area::placeholder { color: var(--faint); font-family: var(--hand); font-size: 20px; }
 
-    /* VOICE */
+    /* ── VOICE BAR ────────────────────────── */
     .voice-bar {
-      display: flex;
-      gap: 8px;
-      padding: 0 16px 12px;
-      flex-shrink: 0;
+      position: absolute; left: 0; right: 0; bottom: 0;
+      display: flex; gap: 8px; padding: 8px 18px 18px;
+      background: linear-gradient(transparent, var(--paper) 28px);
     }
+    .voice-bar.hidden { display: none; }
+
     .btn-voice {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 7px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 10px 8px;
-      background: var(--surface);
-      color: var(--text2);
-      font-size: 12px;
-      font-family: var(--sans);
-      cursor: pointer;
-      transition: all .15s;
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      gap: 6px; border: 1px solid var(--line);
+      border-radius: var(--r-sm); padding: 10px 8px;
+      background: var(--surface); color: var(--ink2);
+      font-size: 12.5px; font-family: var(--ui);
+      cursor: pointer; transition: border-color .12s, color .12s, background .12s;
     }
-    .btn-voice:hover { border-color: var(--accent); color: var(--accent); }
-    .btn-voice.recording {
-      background: oklch(58% 0.18 38 / 0.1);
-      border-color: var(--accent);
-      color: var(--accent);
-      animation: pulse-border 1.2s ease-in-out infinite;
-    }
-    .btn-voice-ai {
-      border-color: oklch(58% 0.18 38 / 0.4);
-      color: var(--accent);
-    }
-    .btn-voice-ai:hover { background: var(--accent-bg); }
-    @keyframes pulse-border {
-      0%, 100% { box-shadow: 0 0 0 0 oklch(58% 0.18 38 / 0.3); }
-      50% { box-shadow: 0 0 0 4px oklch(58% 0.18 38 / 0); }
-    }
+    .btn-voice:hover { border-color: var(--line2); }
+    .btn-voice.recording { background: var(--rust-bg); border-color: var(--rust); color: var(--rust); }
+    .btn-voice-ai { color: var(--rust); border-color: rgba(200,90,42,.28); }
+    .btn-voice-ai:hover { background: var(--rust-bg); border-color: var(--rust); }
 
-    /* LIST */
+    @keyframes pulse-ring {
+      0%,100% { box-shadow: 0 0 0 0 rgba(200,90,42,.22); }
+      50%      { box-shadow: 0 0 0 5px rgba(200,90,42,.0); }
+    }
+    .recording { animation: pulse-ring 1.4s ease-in-out infinite; }
+
+    /* ── ═══════════════════════════════════ */
+    /* ── LIST ─────────────────────────────── */
+    /* ── ═══════════════════════════════════ */
     .list-stats {
-      padding: 2px 20px 12px;
-      display: flex;
-      gap: 20px;
-      flex-shrink: 0;
+      padding: 2px 22px 16px;
+      display: flex; gap: 28px; flex-shrink: 0;
     }
-    .stat-col { display: flex; flex-direction: column; gap: 1px; }
-    .stat-val { font-family: var(--mono); font-size: 18px; font-weight: 300; color: var(--accent); }
-    .stat-lbl { font-size: 11px; color: var(--muted); letter-spacing: .03em; }
+    .stat { display: flex; flex-direction: column; gap: 2px; }
+    .stat-val { font-family: var(--hand); font-size: 26px; font-weight: 600; color: var(--rust); line-height: 1; }
+    .stat-lbl { font-size: 11px; color: var(--faint); letter-spacing: .03em; }
 
-    .search-wrap {
-      padding: 0 20px 14px;
-      flex-shrink: 0;
-    }
+    .search-wrap { padding: 0 22px 14px; flex-shrink: 0; }
     .search-inner {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 9px 14px;
+      display: flex; align-items: center; gap: 8px;
+      background: var(--surface); border: 1px solid var(--line);
+      border-radius: var(--r-sm); padding: 10px 14px;
+      transition: border-color .12s;
     }
+    .search-inner:focus-within { border-color: var(--line2); }
     .search-inner input {
-      flex: 1;
-      border: none;
-      outline: none;
-      background: transparent;
-      font-size: 14px;
-      color: var(--text2);
-      font-family: var(--sans);
+      flex: 1; border: none; outline: none; background: transparent;
+      font-size: 14px; color: var(--ink2); font-family: var(--ui);
     }
-    .search-inner input::placeholder { color: var(--muted); }
-    .btn-search-clear {
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: var(--muted);
-      padding: 0;
-      line-height: 1;
-      display: flex;
-    }
+    .search-inner input::placeholder { color: var(--faint); }
+    .btn-search-clear { background: none; border: none; cursor: pointer; color: var(--faint); padding: 0; display: flex; }
 
     .notes-list {
-      flex: 1;
-      overflow-y: auto;
-      padding: 0 20px 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+      flex: 1; overflow-y: auto;
+      padding: 0 22px 28px;
+      display: flex; flex-direction: column; gap: 8px;
     }
     .notes-list::-webkit-scrollbar { width: 3px; }
-    .notes-list::-webkit-scrollbar-thumb { background: oklch(85% 0.01 60); border-radius: 4px; }
+    .notes-list::-webkit-scrollbar-thumb { background: var(--line2); border-radius: 4px; }
 
     .note-row { position: relative; }
-
     .note-card {
-      width: 100%;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 13px 16px;
-      text-align: left;
-      cursor: pointer;
-      transition: border-color .15s;
+      width: 100%; background: var(--surface);
+      border: 1px solid var(--line); border-radius: var(--r-sm);
+      padding: 14px 18px; text-align: left; cursor: pointer;
+      transition: border-color .12s, box-shadow .12s;
+      background-image: repeating-linear-gradient(
+        transparent, transparent 22px,
+        rgba(200,90,42,.05) 23px
+      );
+      background-size: 100% 23px;
+      background-position: 0 14px;
     }
-    .note-card:hover { border-color: var(--border2); }
+    .note-card:hover { border-color: var(--line2); box-shadow: 0 3px 14px rgba(0,0,0,.05); }
+    .note-card-date { font-family: var(--mono); font-size: 10.5px; color: var(--faint); margin-bottom: 6px; }
+    .note-card-text { font-family: var(--hand); font-size: 18px; color: var(--ink2); line-height: 1.5; }
 
-    .note-card-date {
-      font-size: 11px;
-      font-family: var(--mono);
-      color: var(--muted);
-      margin-bottom: 5px;
-    }
-    .note-card-text {
-      font-size: 13.5px;
-      color: var(--text2);
-      line-height: 1.55;
-      font-weight: 300;
-    }
-
-    .note-del-btn {
-      position: absolute;
-      right: 12px;
-      top: 50%;
+    .note-del {
+      position: absolute; right: 10px; top: 50%;
       transform: translateY(-50%);
-      background: var(--danger-bg);
-      border: none;
-      border-radius: 8px;
-      width: 32px;
-      height: 32px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      color: var(--danger);
-      opacity: 0;
-      transition: opacity .15s;
+      background: var(--red-bg); border: none; border-radius: 8px;
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--red); opacity: 0;
+      transition: opacity .12s;
     }
-    .note-row:hover .note-del-btn { opacity: 1; }
+    .note-row:hover .note-del { opacity: 1; }
+    .list-empty { text-align: center; color: var(--faint); font-family: var(--hand); font-size: 18px; padding: 52px 0; }
 
-    .list-empty {
-      text-align: center;
-      color: var(--muted);
-      font-size: 13px;
-      padding: 40px 0;
+    /* ── ═══════════════════════════════════ */
+    /* ── VIEW ─────────────────────────────── */
+    /* ── ═══════════════════════════════════ */
+    .view-bar {
+      display: flex; align-items: center;
+      padding: 12px 18px 10px; gap: 8px; flex-shrink: 0;
     }
+    .btn-danger-sm {
+      background: var(--red-bg); border: none; border-radius: var(--r-sm);
+      padding: 7px 12px; cursor: pointer; color: var(--red);
+      display: flex; align-items: center; gap: 5px;
+      font-size: 12px; font-family: var(--ui);
+      transition: background .12s;
+    }
+    .btn-danger-sm:hover { background: #f5d4d4; }
+    .btn-dl {
+      background: var(--rust-bg); border: none; border-radius: var(--r-sm);
+      padding: 7px 12px; cursor: pointer; color: var(--rust);
+      display: flex; align-items: center; gap: 5px;
+      font-size: 12px; font-family: var(--ui);
+      transition: background .12s;
+    }
+    .btn-dl:hover { background: rgba(200,90,42,.14); }
 
-    /* VIEW */
-    .view-hd {
-      display: flex;
-      align-items: center;
-      padding: 12px 16px 8px;
-      gap: 8px;
-      flex-shrink: 0;
-    }
-
-    .btn-delete-note {
-      background: var(--danger-bg);
-      border: none;
-      border-radius: 10px;
-      padding: 7px 12px;
-      cursor: pointer;
-      color: var(--danger);
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 12px;
-      font-family: var(--sans);
-      transition: background .15s;
-    }
-    .btn-delete-note:hover { background: oklch(92% 0.015 20); }
-
-    .btn-dl-note {
-      background: var(--accent-bg);
-      border: none;
-      border-radius: 10px;
-      padding: 7px 12px;
-      cursor: pointer;
-      color: var(--accent);
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 12px;
-      font-family: var(--sans);
-      transition: background .15s;
-    }
-    .btn-dl-note:hover { background: oklch(92% 0.015 38); }
-
-    .view-meta {
-      padding: 8px 22px 4px;
-      flex-shrink: 0;
-    }
-    .view-date {
-      font-size: 11px;
-      font-family: var(--mono);
-      color: var(--muted);
-      letter-spacing: .03em;
-    }
+    .view-meta { padding: 6px 24px 2px; flex-shrink: 0; }
+    .view-date { font-family: var(--mono); font-size: 10.5px; color: var(--faint); }
 
     .view-body {
-      flex: 1;
-      overflow-y: auto;
-      padding: 16px 22px 32px;
-      font-size: 15px;
-      line-height: 1.75;
-      color: var(--text);
-      font-weight: 300;
-      white-space: pre-wrap;
+      flex: 1; overflow-y: auto;
+      padding: 16px 24px 28px;
+      font-family: var(--hand); font-size: 20px; font-weight: 400;
+      line-height: 1.75; color: var(--ink); white-space: pre-wrap;
+      background-image: repeating-linear-gradient(
+        transparent, transparent 34px,
+        rgba(200,90,42,.07) 35px
+      );
+      background-size: 100% 35px;
+      background-position: 0 16px;
     }
 
-    /* NOTE PING */
-    .note-ping-card {
+    /* ── PING CARD ────────────────────────── */
+    .ping-card {
       margin: 0 16px 16px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 18px 18px 14px;
-      flex-shrink: 0;
+      background: var(--surface); border: 1px solid var(--line);
+      border-radius: var(--r); padding: 16px 18px 14px; flex-shrink: 0;
     }
-    .note-ping-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 14px;
+    .ping-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 12px;
     }
-    .note-ping-lbl {
-      font-size: 11px;
-      font-family: var(--mono);
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: .06em;
+    .ping-lbl {
+      font-size: 11px; font-family: var(--mono); color: var(--faint);
+      text-transform: uppercase; letter-spacing: .07em;
     }
-    .note-ping-val {
-      font-size: 17px;
-      font-family: var(--mono);
-      font-weight: 400;
-      color: var(--accent);
+    .ping-val { font-family: var(--hand); font-size: 18px; font-weight: 600; color: var(--rust); }
+    .ping-presets {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 6px; margin-bottom: 10px;
     }
-    .note-ping-presets-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-bottom: 10px;
+    .ping-preset {
+      background: var(--paper2); border: 1px solid var(--line);
+      border-radius: 10px; padding: 9px 6px;
+      font-family: var(--hand); font-size: 15px; color: var(--ink2);
+      cursor: pointer; text-align: center;
+      transition: border-color .12s, color .12s, background .12s;
     }
-    .note-ping-preset {
-      background: oklch(95% 0.008 60);
-      border: 1.5px solid var(--border);
-      border-radius: 12px;
-      padding: 12px 8px;
-      font-size: 13px;
-      font-family: var(--mono);
-      color: oklch(30% 0.01 60);
-      cursor: pointer;
-      transition: all .15s;
-      text-align: center;
-    }
-    .note-ping-preset:hover { border-color: var(--accent); color: var(--accent); }
-    .note-ping-preset.active { background: var(--accent); border-color: var(--accent); color: white; font-weight: 500; }
+    .ping-preset:hover { border-color: var(--line2); }
+    .ping-preset.active { background: var(--rust); border-color: var(--rust); color: #fff; }
 
-    .note-ping-custom-row {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 10px;
+    .ping-custom { display: flex; gap: 8px; margin-bottom: 10px; }
+    .ping-custom input[type=number] {
+      flex: 1; border: 1px solid var(--line); border-radius: var(--r-sm);
+      padding: 9px 12px; font-size: 14px; font-family: var(--ui);
+      background: var(--paper2); color: var(--ink2); outline: none;
+      transition: border-color .12s;
     }
-    .note-ping-custom-row input[type=number] {
-      flex: 1;
-      border: 1.5px solid var(--border);
-      border-radius: 10px;
-      padding: 10px 12px;
-      font-size: 14px;
-      font-family: var(--sans);
-      background: oklch(95% 0.008 60);
-      color: var(--text2);
-      outline: none;
+    .ping-custom input:focus { border-color: var(--line2); }
+    .ping-custom select {
+      border: 1px solid var(--line); border-radius: var(--r-sm);
+      padding: 9px 10px; font-size: 13px; font-family: var(--ui);
+      background: var(--paper2); color: var(--ink2); outline: none; cursor: pointer;
     }
-    .note-ping-custom-row select {
-      border: 1.5px solid var(--border);
-      border-radius: 10px;
-      padding: 10px 10px;
-      font-size: 13px;
-      font-family: var(--sans);
-      background: oklch(95% 0.008 60);
-      color: var(--text2);
-      outline: none;
-      cursor: pointer;
+    .btn-ping-ok {
+      background: var(--rust); color: #fff; border: none;
+      border-radius: var(--r-sm); padding: 9px 14px; font-size: 13px;
+      cursor: pointer; font-family: var(--ui); white-space: nowrap;
+      transition: background .12s;
     }
-    .btn-note-ping-ok {
-      background: var(--accent);
-      color: white;
-      border: none;
-      border-radius: 10px;
-      padding: 10px 14px;
-      font-size: 13px;
-      cursor: pointer;
-      font-family: var(--sans);
-      white-space: nowrap;
-    }
+    .btn-ping-ok:hover { background: var(--rust2); }
 
-    .note-ping-after-row {
-      display: flex;
-      gap: 8px;
+    .ping-after { display: flex; gap: 8px; }
+    .ping-after-btn {
+      flex: 1; background: var(--paper2); border: 1px solid var(--line);
+      border-radius: 10px; padding: 9px 6px; font-size: 12px; font-family: var(--ui);
+      color: var(--faint2); cursor: pointer; text-align: center;
+      line-height: 1.35; display: flex; align-items: center; justify-content: center; gap: 5px;
+      transition: border-color .12s, color .12s, background .12s;
     }
-    .note-ping-after-btn {
-      flex: 1;
-      background: oklch(95% 0.008 60);
-      border: 1.5px solid var(--border);
-      border-radius: 12px;
-      padding: 11px 6px;
-      font-size: 12px;
-      font-family: var(--sans);
-      color: oklch(35% 0.01 60);
-      cursor: pointer;
-      transition: all .15s;
-      text-align: center;
-      line-height: 1.3;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-    .note-ping-after-btn.active { background: var(--accent-bg); border-color: var(--accent); color: var(--accent); font-weight: 500; }
-    .note-ping-after-btn:hover { border-color: var(--border2); }
+    .ping-after-btn.active { background: var(--rust-bg); border-color: var(--rust); color: var(--rust); }
+    .ping-after-btn:hover:not(.active) { border-color: var(--line2); }
 
-    /* MENU DRAWER */
+    /* ── MENU DRAWER ──────────────────────── */
     #menu-overlay {
-      position: absolute;
-      inset: 0;
-      background: rgba(0,0,0,.25);
-      backdrop-filter: blur(2px);
-      z-index: 50;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity .25s;
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,.18);
+      backdrop-filter: blur(4px);
+      z-index: 50; opacity: 0; pointer-events: none;
+      transition: opacity .22s;
     }
     #menu-overlay.open { opacity: 1; pointer-events: all; }
 
     #menu-drawer {
-      position: absolute;
-      top: 0; right: 0; bottom: 0;
-      width: 78%;
-      background: oklch(97.5% 0.008 60);
-      z-index: 51;
-      display: flex;
-      flex-direction: column;
-      box-shadow: -8px 0 40px rgba(0,0,0,.12);
+      position: absolute; top: 0; right: 0; bottom: 0; width: 74%;
+      background: var(--paper); z-index: 51;
+      display: flex; flex-direction: column;
+      box-shadow: -16px 0 60px rgba(0,0,0,.1);
       transform: translateX(100%);
-      transition: transform .25s cubic-bezier(.22,.68,0,1.2);
+      transition: transform .26s cubic-bezier(.22,.68,0,1.12);
+      border-left: 1px solid var(--line);
     }
     #menu-drawer.open { transform: translateX(0); }
 
     .menu-top {
-      padding: 20px 20px 12px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-shrink: 0;
+      padding: 22px 20px 14px;
+      display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
     }
-    .menu-wordmark {
-      font-family: var(--mono);
-      font-size: 12px;
-      color: var(--muted);
-      letter-spacing: .06em;
-    }
+    .menu-logo { font-family: var(--hand); font-size: 20px; font-weight: 600; color: var(--rust); }
 
-    .menu-badges {
-      padding: 0 20px 16px;
-      display: flex;
-      gap: 8px;
-      flex-shrink: 0;
-    }
+    .menu-badges { padding: 0 20px 16px; display: flex; gap: 8px; flex-shrink: 0; }
     .menu-badge {
-      background: var(--accent-bg);
-      border-radius: 20px;
-      padding: 4px 10px;
-      font-size: 12px;
-      font-family: var(--mono);
-      color: var(--accent);
+      background: var(--rust-bg); border-radius: 20px;
+      padding: 4px 10px; font-family: var(--hand); font-size: 14px; color: var(--rust);
     }
 
-    .menu-divider { height: 1px; background: var(--border); margin: 0 20px 8px; flex-shrink: 0; }
+    .menu-div { height: 1px; background: var(--line); margin: 0 20px 8px; flex-shrink: 0; }
 
-    .menu-nav { flex: 1; overflow-y: auto; padding: 8px 12px; }
-    .menu-nav-btn {
-      width: 100%;
-      background: none;
-      border: none;
-      border-radius: 10px;
-      padding: 13px 12px;
-      text-align: left;
-      cursor: pointer;
-      font-size: 15px;
-      color: var(--text2);
-      font-family: var(--sans);
-      transition: background .12s;
-      display: block;
+    .menu-nav { flex: 1; overflow-y: auto; padding: 4px 12px; }
+    .menu-btn {
+      width: 100%; background: none; border: none; border-radius: var(--r-sm);
+      padding: 13px 12px; text-align: left; cursor: pointer;
+      font-family: var(--hand); font-size: 18px; color: var(--ink2);
+      transition: background .1s; display: block;
     }
-    .menu-nav-btn:hover { background: oklch(92% 0.008 60); }
+    .menu-btn:hover { background: var(--paper2); }
 
-    .menu-actions { padding: 8px 12px 32px; display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
-    .menu-action-btn {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      width: 100%;
-      background: none;
-      border: none;
-      border-radius: 10px;
-      padding: 13px 12px;
-      text-align: left;
-      cursor: pointer;
-      font-size: 14px;
-      color: oklch(35% 0.01 60);
-      font-family: var(--sans);
-      transition: background .12s;
+    .menu-actions { padding: 6px 12px 32px; display: flex; flex-direction: column; gap: 2px; flex-shrink: 0; }
+    .menu-action {
+      display: flex; align-items: center; gap: 10px; width: 100%;
+      background: none; border: none; border-radius: var(--r-sm);
+      padding: 12px 12px; text-align: left; cursor: pointer;
+      font-size: 13.5px; color: var(--faint2); font-family: var(--ui);
+      transition: background .1s, color .1s;
     }
-    .menu-action-btn:hover { background: oklch(92% 0.008 60); }
-    .menu-action-btn.danger { color: var(--danger); }
-    .menu-action-btn.danger:hover { background: var(--danger-bg); }
+    .menu-action:hover { background: var(--paper2); color: var(--ink2); }
+    .menu-action.danger { color: var(--red); }
+    .menu-action.danger:hover { background: var(--red-bg); }
 
-    .confirm-clear {
-      padding: 8px 12px;
-      background: var(--danger-bg);
-      border-radius: 10px;
+    .confirm-clear { padding: 10px 12px; background: var(--red-bg); border-radius: var(--r-sm); }
+    .confirm-msg { font-size: 13px; color: #7a2020; margin-bottom: 10px; line-height: 1.45; }
+    .confirm-row { display: flex; gap: 8px; }
+    .btn-cancel {
+      flex: 1; background: #fff; border: 1px solid var(--line2);
+      border-radius: 8px; padding: 8px; font-size: 12.5px; cursor: pointer; font-family: var(--ui);
     }
-    .confirm-clear-msg { font-size: 13px; color: oklch(35% 0.12 20); margin-bottom: 8px; }
-    .confirm-clear-row { display: flex; gap: 8px; }
-    .btn-cancel-clear {
-      flex: 1; background: white; border: 1px solid oklch(88% 0.01 60);
-      border-radius: 8px; padding: 7px; font-size: 12px; cursor: pointer; font-family: var(--sans);
-    }
-    .btn-confirm-clear {
-      flex: 1; background: oklch(48% 0.15 20); color: white; border: none;
-      border-radius: 8px; padding: 7px; font-size: 12px; cursor: pointer; font-family: var(--sans);
+    .btn-confirm-del {
+      flex: 1; background: var(--red); color: #fff; border: none;
+      border-radius: 8px; padding: 8px; font-size: 12.5px; cursor: pointer; font-family: var(--ui);
     }
 
-    /* INSTALL BANNER */
+    /* ── INSTALL BANNER ───────────────────── */
     #install-banner {
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      background: var(--surface);
-      border-top: 1px solid var(--border);
-      padding: 14px 20px calc(28px + var(--safe-bot));
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      z-index: 100;
-      transform: translateY(100%);
-      transition: transform .3s cubic-bezier(.22,.68,0,1.2);
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: var(--surface); border-top: 1px solid var(--line);
+      padding: 14px 20px calc(24px + var(--safe-bot));
+      display: flex; align-items: center; gap: 12px;
+      z-index: 100; transform: translateY(100%);
+      transition: transform .28s cubic-bezier(.22,.68,0,1.15);
     }
     #install-banner.show { transform: translateY(0); }
     .install-icon {
-      width: 44px; height: 44px; border-radius: 12px;
-      background: var(--accent-bg);
-      display: flex; align-items: center; justify-content: center;
-      color: var(--accent); flex-shrink: 0;
+      width: 42px; height: 42px; border-radius: 12px;
+      background: var(--rust-bg); display: flex; align-items: center; justify-content: center;
+      color: var(--rust); flex-shrink: 0;
     }
     .install-text { flex: 1; }
-    .install-text strong { font-size: 13px; font-weight: 500; color: var(--text2); display: block; }
-    .install-text span { font-size: 12px; color: var(--muted); }
+    .install-text strong { font-size: 13px; font-weight: 500; color: var(--ink2); display: block; font-family: var(--ui); }
+    .install-text span { font-size: 12px; color: var(--faint); font-family: var(--ui); }
     .btn-install {
-      background: var(--accent); color: white; border: none;
-      border-radius: 10px; padding: 9px 16px; font-size: 13px;
-      font-weight: 500; font-family: var(--sans); cursor: pointer;
-      white-space: nowrap; transition: opacity .15s;
+      background: var(--rust); color: #fff; border: none;
+      border-radius: var(--r-sm); padding: 9px 16px; font-size: 13px; font-weight: 500;
+      font-family: var(--ui); cursor: pointer; white-space: nowrap; transition: background .12s;
     }
-    .btn-install:hover { opacity: .88; }
-    .btn-install-close {
-      background: none; border: none; cursor: pointer;
-      color: var(--muted); padding: 4px;
-    }
+    .btn-install:hover { background: var(--rust2); }
+    .btn-install-close { background: none; border: none; cursor: pointer; color: var(--faint); padding: 4px; }
 
-    /* EASTER EGG */
-    #easter-screen {
-      background: var(--bg);
-      overflow-y: auto;
-    }
-    .easter-body {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 24px 28px 48px;
-      gap: 0;
-      overflow-y: auto;
-    }
-    .easter-heart {
-      width: 56px;
-      height: 56px;
-      margin-bottom: 20px;
-      color: var(--accent);
-      animation: heartbeat 1.8s ease-in-out infinite;
-    }
-    @keyframes heartbeat {
-      0%, 100% { transform: scale(1); }
-      14% { transform: scale(1.12); }
-      28% { transform: scale(1); }
-      42% { transform: scale(1.08); }
-      56% { transform: scale(1); }
-    }
-    .easter-title {
-      font-size: 22px;
-      font-weight: 600;
-      color: var(--accent);
-      margin-bottom: 8px;
-      text-align: center;
-    }
-    .easter-sub {
-      font-size: 13px;
-      color: var(--muted);
-      text-align: center;
-      font-family: var(--mono);
-      margin-bottom: 32px;
-      letter-spacing: .03em;
-    }
-    .easter-creator {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 14px 18px;
-      width: 100%;
-      margin-bottom: 20px;
-    }
-    .easter-creator-avatar {
-      width: 44px; height: 44px;
-      border-radius: 50%;
-      background: var(--accent);
-      display: flex; align-items: center; justify-content: center;
-      color: white;
-      flex-shrink: 0;
-    }
-    .easter-creator-name { font-size: 16px; font-weight: 600; color: var(--text2); }
-    .easter-creator-role { font-size: 12px; color: var(--muted); font-family: var(--mono); }
-    .easter-section {
-      width: 100%;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 18px 20px;
-      margin-bottom: 14px;
-    }
-    .easter-section-title {
-      font-size: 10px;
-      font-family: var(--mono);
-      text-transform: uppercase;
-      letter-spacing: .08em;
-      color: var(--muted);
-      margin-bottom: 12px;
-    }
-    .easter-person {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 0;
-      border-bottom: 1px solid var(--border);
-    }
-    .easter-person:last-child { border-bottom: none; }
-    .easter-avatar {
-      width: 36px; height: 36px;
-      border-radius: 50%;
-      background: var(--accent-bg);
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-      color: var(--accent);
-    }
-    .easter-name { font-size: 14px; font-weight: 500; color: var(--text2); }
-    .easter-role { font-size: 12px; color: var(--muted); }
-    .easter-msg {
-      font-size: 14px;
-      color: oklch(30% 0.01 60);
-      line-height: 1.6;
-      font-weight: 300;
-      text-align: center;
-      font-style: italic;
-      margin-bottom: 24px;
-    }
-    .easter-claude {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: var(--accent-bg);
-      border: 1px solid oklch(58% 0.18 38 / 0.2);
-      border-radius: 14px;
-      padding: 14px 16px;
-      width: 100%;
-    }
-    .easter-claude-icon {
-      width: 40px; height: 40px;
-      border-radius: 50%;
-      background: var(--accent);
-      display: flex; align-items: center; justify-content: center;
-      color: white;
-      font-family: var(--mono);
-      font-size: 14px;
-      font-weight: 400;
-      flex-shrink: 0;
-    }
-    .easter-claude-text { font-size: 13px; color: var(--accent); line-height: 1.5; }
-    /* Easter egg dans l'easter egg */
-    #easter-secret {
-      position: fixed;
-      inset: 0;
-      background: #0a0a0f;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 999;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity .4s;
-    }
-    #easter-secret.visible { opacity: 1; pointer-events: all; }
-    .secret-close {
-      position: absolute;
-      top: 16px; right: 16px;
-      background: none; border: none; cursor: pointer;
-      color: #555; font-size: 20px; padding: 8px;
-    }
-    .secret-stars {
-      position: absolute;
-      inset: 0;
-      overflow: hidden;
-      pointer-events: none;
-    }
-    .secret-star {
-      position: absolute;
-      width: 2px; height: 2px;
-      background: white;
-      border-radius: 50%;
-      animation: twinkle var(--d, 3s) ease-in-out infinite var(--delay, 0s);
-    }
-    @keyframes twinkle {
-      0%,100% { opacity: .2; transform: scale(1); }
-      50% { opacity: 1; transform: scale(1.5); }
-    }
-    .secret-badge {
-      font-family: var(--mono);
-      font-size: 10px;
-      color: #b45a3c;
-      letter-spacing: .15em;
-      text-transform: uppercase;
-      margin-bottom: 16px;
-    }
-    .secret-title {
-      font-size: 28px;
-      font-weight: 700;
-      color: #f5f0eb;
-      text-align: center;
-      margin-bottom: 8px;
-    }
-    .secret-sub {
-      font-size: 13px;
-      color: #555;
-      font-family: var(--mono);
-      text-align: center;
-      margin-bottom: 40px;
-    }
-    .secret-code {
-      font-family: var(--mono);
-      font-size: 11px;
-      color: #b45a3c;
-      background: #1a1a2e;
-      border: 1px solid #2a2a3e;
-      border-radius: 10px;
-      padding: 16px 20px;
-      text-align: center;
-      line-height: 1.8;
-      max-width: 280px;
-    }
-    .secret-version {
-      margin-top: 32px;
-      font-family: var(--mono);
-      font-size: 10px;
-      color: #333;
-    }
-
-    /* AI loading */
-    .ai-thinking {
-      display: inline-flex;
-      gap: 4px;
-      align-items: center;
-    }
-    .ai-thinking span {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: var(--accent);
+    /* ── AI THINKING ──────────────────────── */
+    .thinking { display: inline-flex; gap: 4px; align-items: center; }
+    .thinking span {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--rust);
       animation: blink 1.2s ease-in-out infinite;
     }
-    .ai-thinking span:nth-child(2) { animation-delay: .2s; }
-    .ai-thinking span:nth-child(3) { animation-delay: .4s; }
-    @keyframes blink {
-      0%, 80%, 100% { opacity: .2; }
-      40% { opacity: 1; }
-    }
+    .thinking span:nth-child(2) { animation-delay: .2s; }
+    .thinking span:nth-child(3) { animation-delay: .4s; }
+    @keyframes blink { 0%,80%,100%{ opacity:.18 } 40%{ opacity:1 } }
 
-    /* TOAST */
+    /* ── TOAST ────────────────────────────── */
     #toast {
-      position: fixed;
-      bottom: 32px;
-      left: 50%;
-      transform: translateX(-50%) translateY(20px);
-      background: var(--text);
-      color: var(--bg);
-      border-radius: 20px;
-      padding: 10px 20px;
-      font-size: 13px;
-      z-index: 200;
-      opacity: 0;
-      transition: opacity .22s, transform .22s;
-      pointer-events: none;
-      white-space: nowrap;
+      position: fixed; bottom: 38px; left: 50%;
+      transform: translateX(-50%) translateY(16px);
+      background: var(--ink); color: #fff;
+      border-radius: 22px; padding: 10px 22px;
+      font-family: var(--ui); font-size: 13px;
+      z-index: 300; opacity: 0;
+      transition: opacity .2s, transform .2s;
+      pointer-events: none; white-space: nowrap;
     }
     #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   </style>
 </head>
 <body>
-<div class="app-shell" id="app-shell">
+<div class="shell" id="shell">
 
-  <!-- HOME -->
+  <!-- ══ HOME ══════════════════════════════ -->
   <div class="screen" id="home">
     <div class="home-header">
-      <button class="logo-wordmark" id="btn-easter" aria-label="Easter egg">mémo</button>
-      <button class="btn-icon" id="btn-open-menu" aria-label="Menu">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+      <span class="home-logo">mémo</span>
+      <button class="btn-icon" id="btn-menu" aria-label="Menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
         </svg>
       </button>
     </div>
-    <div class="home-center">
-      <button class="btn-new-note" id="btn-write" aria-label="Nouvelle note">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+    <div class="home-body">
+      <button class="btn-new" id="btn-write" aria-label="Nouvelle note">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
         </svg>
       </button>
-      <span class="home-cta-label">mémoter</span>
+      <span class="home-hint">nouveau mémo</span>
     </div>
-    <div class="last-note-wrap">
-      <div id="last-note-preview"></div>
+    <div class="home-footer">
+      <div id="last-preview"></div>
     </div>
   </div>
 
-  <!-- WRITE -->
+  <!-- ══ WRITE ══════════════════════════════ -->
   <div class="screen hidden" id="write">
-    <div class="write-hd">
-      <button class="btn-icon btn-back" id="btn-back-write" aria-label="Retour"></button>
+    <div class="write-bar">
+      <button class="btn-icon btn-back" id="back-write" aria-label="Retour"></button>
       <span style="flex:1"></span>
-      <span class="write-charcount" id="char-count">0</span>
+      <span class="write-count" id="char-count">0</span>
       <button class="btn-primary" id="btn-save" disabled>Enregistrer</button>
     </div>
-    <textarea id="note-area" placeholder="Commence à mémoter…" autocomplete="off" spellcheck="false"></textarea>
-    <div class="voice-bar">
-      <button class="btn-voice" id="btn-voice-raw" aria-label="Dicter">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-          <line x1="12" y1="19" x2="12" y2="23"/>
-          <line x1="8" y1="23" x2="16" y2="23"/>
-        </svg>
-        Dicter
-      </button>
-      <button class="btn-voice btn-voice-ai" id="btn-voice-ai" aria-label="Dicter avec IA">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="3"/>
-          <path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/>
-        </svg>
-        Dicter + IA
-      </button>
-    </div>
+    <textarea id="note-area" placeholder="Commence à écrire…" autocomplete="off" spellcheck="true"></textarea>
+    <div style="height:68px;flex-shrink:0"></div>
   </div>
 
-  <!-- LIST -->
+  <!-- Voice bar -->
+  <div class="voice-bar hidden" id="voice-bar">
+    <button class="btn-voice" id="btn-voice-raw">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+        <line x1="12" y1="19" x2="12" y2="23"/>
+        <line x1="8" y1="23" x2="16" y2="23"/>
+      </svg>
+      Dicter
+    </button>
+    <button class="btn-voice btn-voice-ai" id="btn-voice-ai">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/>
+      </svg>
+      Dicter + IA
+    </button>
+  </div>
+
+  <!-- ══ LIST ═══════════════════════════════ -->
   <div class="screen hidden" id="list">
-    <div class="hd">
-      <button class="btn-icon btn-back" id="btn-back-list" aria-label="Retour"></button>
-      <span class="hd-title">Mes mémos</span>
+    <div class="bar">
+      <button class="btn-icon btn-back" id="back-list" aria-label="Retour"></button>
+      <span class="bar-title">Mes mémos</span>
     </div>
     <div class="list-stats" id="list-stats"></div>
     <div class="search-wrap">
       <div class="search-inner">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
           <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
         </svg>
         <input type="text" id="search-input" placeholder="Rechercher…">
         <button class="btn-search-clear" id="btn-search-clear" style="display:none">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
             <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
           </svg>
         </button>
@@ -1040,53 +600,58 @@
     <div class="notes-list" id="notes-list"></div>
   </div>
 
-  <!-- VIEW -->
-  <div class="screen hidden" id="view-screen">
-    <div class="view-hd">
-      <button class="btn-icon btn-back" id="btn-back-view" aria-label="Retour"></button>
+  <!-- ══ VIEW ════════════════════════════════ -->
+  <div class="screen hidden" id="view">
+    <div class="view-bar">
+      <button class="btn-icon btn-back" id="back-view" aria-label="Retour"></button>
       <span style="flex:1"></span>
-      <button class="btn-dl-note" id="btn-dl-note" aria-label="Télécharger">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+      <button class="btn-dl" id="btn-dl">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
         </svg>
-        Télécharger
+        Exporter
       </button>
-      <button class="btn-delete-note" id="btn-delete-note">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+      <button class="btn-danger-sm" id="btn-delete">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/>
         </svg>
         Supprimer
       </button>
     </div>
     <div class="view-meta"><div class="view-date" id="view-date"></div></div>
     <div class="view-body" id="view-body"></div>
-    <div class="note-ping-card" id="note-ping-card">
-      <div class="note-ping-header">
-        <span class="note-ping-lbl">rappel de ce mémo</span>
-        <span class="note-ping-val" id="note-ping-val">—</span>
+    <div class="ping-card" id="ping-card">
+      <div class="ping-header">
+        <span class="ping-lbl">Rappel</span>
+        <span class="ping-val" id="ping-val">—</span>
       </div>
-      <div class="note-ping-presets-grid" id="note-ping-presets"></div>
-      <div class="note-ping-custom-row">
-        <input type="number" id="note-custom-val" min="1" max="999" placeholder="ex. 3">
-        <select id="note-custom-unit">
+      <div class="ping-presets" id="ping-presets"></div>
+      <div class="ping-custom">
+        <input type="number" id="ping-custom-val" min="1" max="999" placeholder="ex. 3">
+        <select id="ping-custom-unit">
           <option value="min">min</option>
           <option value="h">heures</option>
           <option value="d">jours</option>
           <option value="w">semaines</option>
           <option value="mo">mois</option>
         </select>
-        <button class="btn-note-ping-ok" id="btn-note-ping-ok">OK</button>
+        <button class="btn-ping-ok" id="btn-ping-ok">OK</button>
       </div>
-      <div class="note-ping-after-row">
-        <button class="note-ping-after-btn" data-after="warn" id="npafter-warn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-            <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+      <div class="ping-after">
+        <button class="ping-after-btn" data-after="warn" id="pa-warn">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
           </svg>
           Notif avant suppression
         </button>
-        <button class="note-ping-after-btn" data-after="delete" id="npafter-delete">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/>
+        <button class="ping-after-btn" data-after="delete" id="pa-delete">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14H6L5 6"/>
           </svg>
           Supprimer après
         </button>
@@ -1094,111 +659,11 @@
     </div>
   </div>
 
-  <!-- EASTER EGG -->
-  <div class="screen hidden" id="easter-screen">
-    <div class="hd">
-      <button class="btn-icon btn-back" id="btn-back-easter" aria-label="Retour"></button>
-      <span class="hd-title" style="font-family:var(--mono);font-size:12px;color:var(--muted);">merci</span>
-    </div>
-    <div class="easter-body">
-      <svg class="easter-heart" id="easter-heart-btn" viewBox="0 0 24 24" fill="currentColor" style="cursor:pointer;" title="...">
-        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-      </svg>
-      <div class="easter-title">Merci à vous</div>
-      <div class="easter-sub">mémo — construit avec amour</div>
-
-      <div class="easter-creator">
-        <div class="easter-creator-avatar">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-          </svg>
-        </div>
-        <div>
-          <div class="easter-creator-name">Djessim Major</div>
-          <div class="easter-creator-role">créateur de mémo</div>
-        </div>
-      </div>
-
-      <p class="easter-msg">"Cette app n'existerait pas sans les gens qui comptent pour moi."</p>
-
-      <div class="easter-section">
-        <div class="easter-section-title">Famille</div>
-        <div class="easter-person">
-          <div class="easter-avatar">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-            </svg>
-          </div>
-          <div>
-            <div class="easter-name">Papa</div>
-            <div class="easter-role">Merci pour tout ce que tu m'as appris</div>
-          </div>
-        </div>
-        <div class="easter-person">
-          <div class="easter-avatar">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-            </svg>
-          </div>
-          <div>
-            <div class="easter-name">Maman</div>
-            <div class="easter-role">Ta confiance m'a donné des ailes</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="easter-section">
-        <div class="easter-section-title">Amis</div>
-        <div class="easter-person">
-          <div class="easter-avatar">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-            </svg>
-          </div>
-          <div>
-            <div class="easter-name">Mes amis</div>
-            <div class="easter-role">Vous rendez tout plus léger</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="easter-claude">
-        <div class="easter-claude-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-            <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
-          </svg>
-        </div>
-        <div class="easter-claude-text">
-          <strong style="display:block;margin-bottom:2px;">Claude Code</strong>
-          Codé ensemble, ligne par ligne. Merci pour la patience et la créativité.
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- EASTER EGG SECRET (dans l'easter egg) -->
-  <div id="easter-secret">
-    <div class="secret-stars" id="secret-stars"></div>
-    <button class="secret-close" id="btn-secret-close">✕</button>
-    <div class="secret-badge">// secret unlocked</div>
-    <div class="secret-title">Djessim Major</div>
-    <div class="secret-sub">le vrai boss derrière mémo</div>
-    <div class="secret-code">
-      const memo = {<br>
-      &nbsp;&nbsp;created: "2025",<br>
-      &nbsp;&nbsp;by: "Djessim Major",<br>
-      &nbsp;&nbsp;stack: "HTML + IA",<br>
-      &nbsp;&nbsp;mood: "builder 🔥",<br>
-      }
-    </div>
-    <div class="secret-version">memo v1.0 — 🤫</div>
-  </div>
-
-  <!-- MENU OVERLAY + DRAWER -->
+  <!-- ══ MENU ════════════════════════════════ -->
   <div id="menu-overlay"></div>
   <div id="menu-drawer">
     <div class="menu-top">
-      <span class="menu-wordmark">MENU</span>
+      <span class="menu-logo">mémo</span>
       <button class="btn-icon" id="btn-close-menu" aria-label="Fermer">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
           <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -1206,38 +671,58 @@
       </button>
     </div>
     <div class="menu-badges">
-      <span class="menu-badge" id="menu-note-count">0 mémo</span>
+      <span class="menu-badge" id="menu-count">0 mémo</span>
     </div>
-    <div class="menu-divider"></div>
+    <div class="menu-div"></div>
     <div class="menu-nav">
-      <button class="menu-nav-btn" id="menu-home">Accueil</button>
-      <button class="menu-nav-btn" id="menu-new-note">Nouveau mémo</button>
-      <button class="menu-nav-btn" id="menu-all-notes">Tous les mémos</button>
+      <button class="menu-btn" id="mn-home">Accueil</button>
+      <button class="menu-btn" id="mn-new">Nouveau mémo</button>
+      <button class="menu-btn" id="mn-list">Tous les mémos</button>
     </div>
-    <div class="menu-divider"></div>
+    <div class="menu-div"></div>
     <div class="menu-actions">
-      <button class="menu-action-btn" id="menu-export">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+      <button class="menu-action" id="mn-install">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2v13M8 11l4 4 4-4"/>
+          <rect x="3" y="17" width="18" height="4" rx="2"/>
+        </svg>
+        Installer l'application
+      </button>
+      <button class="menu-action" id="mn-export">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
         </svg>
         Exporter en .txt
       </button>
       <div id="clear-zone">
-        <button class="menu-action-btn danger" id="menu-clear">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+        <button class="menu-action danger" id="mn-clear">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2"/>
           </svg>
           Supprimer toutes les données
         </button>
       </div>
+      <button class="menu-action danger" id="mn-uninstall">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>
+          <line x1="10" y1="11" x2="10" y2="17"/>
+          <line x1="14" y1="11" x2="14" y2="17"/>
+        </svg>
+        Désinstaller
+      </button>
     </div>
   </div>
 
-  <!-- INSTALL BANNER -->
+  <!-- ══ INSTALL BANNER ════════════════════ -->
   <div id="install-banner">
     <div class="install-icon">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
       </svg>
     </div>
     <div class="install-text">
@@ -1246,65 +731,33 @@
     </div>
     <button class="btn-install" id="btn-install">Installer</button>
     <button class="btn-install-close" id="btn-install-close" aria-label="Fermer">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
         <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
       </svg>
     </button>
   </div>
 
-</div><!-- /app-shell -->
-
+</div>
 <div id="toast"></div>
 
 <script>
-const NOTES_KEY = 'sn_notes';
-const NOTE_PING_PRESETS = [
-  { label: '5 min', ms: 300000 }, { label: '30 min', ms: 1800000 },
-  { label: '1 h',   ms: 3600000 }, { label: '6 h',   ms: 21600000 },
-  { label: '1 j',   ms: 86400000 }, { label: '1 sem', ms: 604800000 },
+const NOTES_KEY = 'memo_notes_v1';
+const PRESETS = [
+  { label: '5 min',  ms: 300000 },
+  { label: '30 min', ms: 1800000 },
+  { label: '1 h',    ms: 3600000 },
+  { label: '6 h',    ms: 21600000 },
+  { label: '1 j',    ms: 86400000 },
+  { label: '1 sem',  ms: 604800000 },
 ];
-const UNIT_MAP = { min: 60000, h: 3600000, d: 86400000, w: 604800000, mo: 2629800000 };
+const UNIT_MS = { min: 60000, h: 3600000, d: 86400000, w: 604800000, mo: 2629800000 };
 
-function loadNotes() {
-  try { return JSON.parse(localStorage.getItem(NOTES_KEY)) || []; } catch { return []; }
-}
-function saveNotes(n) { localStorage.setItem(NOTES_KEY, JSON.stringify(n)); }
-
-let notes = loadNotes();
-let previousScreen = 'home';
+let notes = (() => { try { return JSON.parse(localStorage.getItem(NOTES_KEY)) || []; } catch { return []; } })();
+let prevScreen = 'home';
+let pingTimers = {};
 let confirmingClear = false;
-let notePingTimers = {};
 
-const screens = {
-  home:   document.getElementById('home'),
-  write:  document.getElementById('write'),
-  list:   document.getElementById('list'),
-  view:   document.getElementById('view-screen'),
-  easter: document.getElementById('easter-screen'),
-};
-
-const toastEl       = document.getElementById('toast');
-const elMenuNoteCnt = document.getElementById('menu-note-count');
-const elNotesList   = document.getElementById('notes-list');
-const elListStats   = document.getElementById('list-stats');
-const menuOverlay   = document.getElementById('menu-overlay');
-const menuDrawer    = document.getElementById('menu-drawer');
-
-const BACK_SVG = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`;
-document.querySelectorAll('.btn-back').forEach(b => { b.innerHTML = BACK_SVG; });
-
-function show(name) {
-  Object.values(screens).forEach(s => s.classList.add('hidden'));
-  screens[name].classList.remove('hidden');
-}
-
-let toastTimer;
-function toast(msg) {
-  toastEl.textContent = msg;
-  toastEl.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2200);
-}
+function persist() { localStorage.setItem(NOTES_KEY, JSON.stringify(notes)); }
 
 function fmtDate(ts) {
   const d = new Date(ts);
@@ -1312,77 +765,59 @@ function fmtDate(ts) {
     + ' · ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 }
 
-function msToLabel(ms) {
+function msLabel(ms) {
   const s = ms / 1000;
-  if (s < 60) return `${Math.round(s)}s`;
-  if (s < 3600) return `${Math.round(s/60)}min`;
-  if (s < 86400) return `${Math.round(s/3600)}h`;
-  if (s < 604800) return `${Math.round(s/86400)}j`;
-  if (s < 2592000) return `${Math.round(s/604800)}sem`;
+  if (s < 60)       return `${Math.round(s)}s`;
+  if (s < 3600)     return `${Math.round(s/60)}min`;
+  if (s < 86400)    return `${Math.round(s/3600)}h`;
+  if (s < 604800)   return `${Math.round(s/86400)}j`;
+  if (s < 2592000)  return `${Math.round(s/604800)}sem`;
   if (s < 31536000) return `${Math.round(s/2592000)}mois`;
   return `${Math.round(s/31536000)}an`;
 }
 
-// HOME
-function updateHome() {
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+let toastTimer;
+const toastEl = document.getElementById('toast');
+function toast(msg) {
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2400);
+}
+
+const SCREENS = { home: 'home', write: 'write', list: 'list', view: 'view' };
+const BACK_SVG = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`;
+document.querySelectorAll('.btn-back').forEach(b => b.innerHTML = BACK_SVG);
+
+function show(name) {
+  Object.keys(SCREENS).forEach(k => {
+    document.getElementById(k).classList.toggle('hidden', k !== name);
+  });
+  const vb = document.getElementById('voice-bar');
+  if (name === 'write') { vb.classList.remove('hidden'); }
+  else { vb.classList.add('hidden'); stopVoice(); }
+}
+
+function renderHome() {
   const last = notes[0];
-  const preview = document.getElementById('last-note-preview');
+  const el = document.getElementById('last-preview');
   if (last) {
-    preview.innerHTML = `<button class="last-note-card" id="last-note-btn">
-      <div class="last-note-meta">dernier mémo · ${fmtDate(last.ts)}</div>
-      <div class="last-note-text">${last.text.replace(/</g,'&lt;')}</div>
+    el.innerHTML = `<button class="last-card" id="last-card-btn">
+      <div class="last-card-meta">Dernier mémo · ${fmtDate(last.ts)}</div>
+      <div class="last-card-text">${esc(last.text)}</div>
     </button>`;
-    document.getElementById('last-note-btn').addEventListener('click', () => openViewNote(last.id, 'home'));
+    document.getElementById('last-card-btn').onclick = () => openView(last.id, 'home');
   } else {
-    preview.innerHTML = `<div class="last-note-empty"><span>aucun mémo pour l'instant</span></div>`;
+    el.innerHTML = `<div class="last-empty"><span>Aucun mémo pour l'instant</span></div>`;
   }
-  elMenuNoteCnt.textContent = `${notes.length} mémo${notes.length !== 1 ? 's' : ''}`;
+  document.getElementById('menu-count').textContent = `${notes.length} mémo${notes.length !== 1 ? 's' : ''}`;
 }
 
-document.getElementById('btn-write').addEventListener('click', openWrite);
-document.getElementById('btn-back-write').addEventListener('click', () => show('home'));
+document.getElementById('btn-write').onclick = openWrite;
+document.getElementById('back-write').onclick = () => show('home');
 
-// Easter egg
-let easterTaps = 0, easterTimer;
-document.getElementById('btn-easter').addEventListener('click', () => {
-  easterTaps++;
-  clearTimeout(easterTimer);
-  if (easterTaps >= 3) { easterTaps = 0; show('easter'); return; }
-  easterTimer = setTimeout(() => { easterTaps = 0; }, 800);
-});
-document.getElementById('btn-back-easter').addEventListener('click', () => show('home'));
-
-// Easter egg dans l'easter egg — triple clic sur le cœur
-let heartClicks = 0, heartTimer;
-document.getElementById('easter-heart-btn').addEventListener('click', () => {
-  heartClicks++;
-  clearTimeout(heartTimer);
-  if (heartClicks >= 3) {
-    heartClicks = 0;
-    openSecret();
-    return;
-  }
-  heartTimer = setTimeout(() => { heartClicks = 0; }, 700);
-});
-
-function openSecret() {
-  const s = document.getElementById('easter-secret');
-  // Generate stars
-  const container = document.getElementById('secret-stars');
-  container.innerHTML = '';
-  for (let i = 0; i < 80; i++) {
-    const star = document.createElement('div');
-    star.className = 'secret-star';
-    star.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${2+Math.random()*4}s;--delay:${Math.random()*3}s;opacity:${Math.random()*.8}`;
-    container.appendChild(star);
-  }
-  s.classList.add('visible');
-}
-document.getElementById('btn-secret-close').addEventListener('click', () => {
-  document.getElementById('easter-secret').classList.remove('visible');
-});
-
-// WRITE
 function openWrite() {
   const ta = document.getElementById('note-area');
   ta.value = '';
@@ -1397,448 +832,379 @@ document.getElementById('note-area').addEventListener('input', function() {
   document.getElementById('btn-save').disabled = !this.value.trim();
 });
 
-document.getElementById('btn-save').addEventListener('click', () => {
+let pendingPingMs = null;
+
+function saveNote() {
   const text = document.getElementById('note-area').value.trim();
   if (!text) return;
-  notes.unshift({ id: Date.now(), ts: Date.now(), text });
-  saveNotes(notes);
-  updateHome();
-  toast('Mémo enregistré');
+  const note = { id: Date.now(), ts: Date.now(), text };
+  if (pendingPingMs) {
+    note.ping = pendingPingMs; note.pingAfter = 'warn';
+    note.pingDeadline = Date.now() + pendingPingMs;
+    pendingPingMs = null;
+  }
+  notes.unshift(note); persist(); renderHome();
+  if (note.ping) { schedulePing(note); toast('Mémo enregistré — rappel dans ' + msLabel(note.ping)); }
+  else toast('Mémo enregistré');
   show('home');
-});
-
-// VOICE
-let recognition = null;
-let voiceMode = null;
-
-function supportsVoice() {
-  return 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window;
 }
+document.getElementById('btn-save').onclick = saveNote;
 
-function normalizeTranscript(t) {
-  // Collapse multiple spaces, trim
-  return t.replace(/\s+/g, ' ').trim();
-}
+let recognition = null, voiceMode = null, silenceTimer = null, accumulated = '';
+const SILENCE_MS = 10000;
 
 function startVoice(mode) {
-  if (!supportsVoice()) { toast('Vocal non supporté sur ce navigateur'); return; }
-  if (voiceMode) { stopVoice(); return; }
-
-  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-  recognition = new SpeechRec();
-  recognition.lang = 'fr-FR';
-  recognition.continuous = false;
-  recognition.interimResults = false;
-  recognition.maxAlternatives = 1;
-
-  voiceMode = mode;
-  const btn = mode === 'raw' ? document.getElementById('btn-voice-raw') : document.getElementById('btn-voice-ai');
-  btn.classList.add('recording');
-
-  recognition.onresult = async (e) => {
-    const raw = e.results[0][0].transcript;
-    const transcript = normalizeTranscript(raw);
-    stopVoice();
-    if (mode === 'raw') {
-      const ta = document.getElementById('note-area');
-      ta.value += (ta.value ? '\n' : '') + transcript;
-      ta.dispatchEvent(new Event('input'));
-    } else {
-      const btnAi = document.getElementById('btn-voice-ai');
-      btnAi.innerHTML = `<span class="ai-thinking"><span></span><span></span><span></span></span> IA...`;
-      btnAi.disabled = true;
-      try {
-        let result;
-        try {
-          result = await processWithAI(transcript);
-        } catch {
-          // Retry once before giving up
-          result = await processWithAI(transcript);
-        }
-        const ta = document.getElementById('note-area');
-        ta.value = result.text;
-        ta.dispatchEvent(new Event('input'));
-        if (result.pingMs) {
-          toast('Mémo pret — rappel : ' + msToLabel(result.pingMs));
-          pendingPingMs = result.pingMs;
-        } else {
-          toast('Mémo pret');
-        }
-      } catch {
-        // Both attempts failed — use raw transcript
-        const ta = document.getElementById('note-area');
-        ta.value = normalizeTranscript(transcript);
-        ta.dispatchEvent(new Event('input'));
-        toast('Mémo pret (sans IA)');
-      } finally {
-        btnAi.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg> Dicter + IA`;
-        btnAi.disabled = false;
+  if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+    toast('Dictée non supportée sur ce navigateur'); return;
+  }
+  if (voiceMode) { finishVoice(); return; }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.lang = 'fr-FR'; recognition.continuous = true; recognition.interimResults = false;
+  voiceMode = mode; accumulated = '';
+  setVoiceUI(mode, true);
+  recognition.onresult = e => {
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) {
+        const part = e.results[i][0].transcript.replace(/\s+/g,' ').trim();
+        accumulated += (accumulated ? ' ' : '') + part;
       }
     }
+    clearTimeout(silenceTimer);
+    silenceTimer = setTimeout(finishVoice, SILENCE_MS);
   };
-
-  recognition.onerror = () => { stopVoice(); toast('Erreur microphone'); };
-  recognition.onend = () => stopVoice();
+  recognition.onerror = e => { if (e.error !== 'no-speech') { stopVoice(); toast('Erreur microphone'); } };
+  recognition.onend = () => { if (voiceMode) recognition.start(); };
   recognition.start();
+  silenceTimer = setTimeout(finishVoice, SILENCE_MS);
+}
+
+async function finishVoice() {
+  clearTimeout(silenceTimer);
+  const mode = voiceMode, text = accumulated;
+  stopVoice();
+  if (!text) return;
+  if (mode === 'raw') {
+    const ta = document.getElementById('note-area');
+    ta.value += (ta.value ? '\n' : '') + text;
+    ta.dispatchEvent(new Event('input'));
+  } else {
+    const btnAi = document.getElementById('btn-voice-ai');
+    btnAi.innerHTML = `<span class="thinking"><span></span><span></span><span></span></span> IA…`;
+    btnAi.disabled = true;
+    try {
+      const result = await callAI(text);
+      const ta = document.getElementById('note-area');
+      ta.value = result.text; ta.dispatchEvent(new Event('input'));
+      if (result.pingMs) { pendingPingMs = result.pingMs; toast('Mémo prêt — rappel dans ' + msLabel(result.pingMs)); }
+      else toast('Mémo prêt');
+    } catch {
+      const ta = document.getElementById('note-area');
+      ta.value = text; ta.dispatchEvent(new Event('input'));
+      toast('Mémo prêt');
+    } finally { setVoiceUI(null, false); }
+  }
 }
 
 function stopVoice() {
+  clearTimeout(silenceTimer);
   if (recognition) { try { recognition.stop(); } catch {} recognition = null; }
-  voiceMode = null;
-  document.getElementById('btn-voice-raw').classList.remove('recording');
-  document.getElementById('btn-voice-ai').classList.remove('recording');
+  voiceMode = null; accumulated = '';
+  setVoiceUI(null, false);
 }
 
-let pendingPingMs = null;
+const MIC_SVG  = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>`;
+const AI_SVG   = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>`;
+const STOP_SVG = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>`;
 
-// IA via Puter.js (GPT-4o gratuit, sans clé, sans limite)
-function extractPingFromText(text) {
-  const t = text.toLowerCase();
-  const now = Date.now();
-  const h = new Date().getHours();
-  const minMatch = t.match(/dans\s+(\d+)\s*min/);
-  if (minMatch) return parseInt(minMatch[1]) * 60000;
-  const hMatch = t.match(/dans\s+(\d+)\s*h/);
-  if (hMatch) return parseInt(hMatch[1]) * 3600000;
-  if (/ce\s*soir/.test(t)) return Math.max(0, (20 - h) * 3600000);
-  if (/demain/.test(t)) return 86400000;
-  if (/semaine/.test(t)) return 604800000;
-  const aHMatch = t.match(/à\s+(\d{1,2})h/);
-  if (aHMatch) { const diff = (parseInt(aHMatch[1]) - h) * 3600000; return diff > 0 ? diff : null; }
+function setVoiceUI(mode, recording) {
+  const raw = document.getElementById('btn-voice-raw');
+  const ai  = document.getElementById('btn-voice-ai');
+  raw.classList.remove('recording'); ai.classList.remove('recording');
+  raw.disabled = false; ai.disabled = false;
+  if (recording && mode === 'raw') {
+    raw.innerHTML = STOP_SVG + ' Arrêter'; raw.classList.add('recording'); ai.disabled = true;
+  } else if (recording && mode === 'ai') {
+    ai.innerHTML = STOP_SVG + ' Arrêter'; ai.classList.add('recording'); raw.disabled = true;
+  } else {
+    raw.innerHTML = MIC_SVG + ' Dicter';
+    ai.innerHTML  = AI_SVG  + ' Dicter + IA';
+  }
+}
+
+function extractPingMs(text) {
+  const t = text.toLowerCase(), h = new Date().getHours();
+  const mMin = t.match(/dans\s+(\d+)\s*min/); if (mMin) return +mMin[1]*60000;
+  const mH   = t.match(/dans\s+(\d+)\s*(?:heure?s?|h\b)/); if (mH) return +mH[1]*3600000;
+  const mAt  = t.match(/[àa]\s+(\d{1,2})\s*h/); if (mAt) { const d = (+mAt[1]-h)*3600000; return d>0?d:null; }
+  if (/ce\s*soir/.test(t))  return Math.max(0,(20-h)*3600000);
+  if (/demain/.test(t))     return 86400000;
+  if (/semaine\s*prochaine|la\s*semaine/.test(t)) return 604800000;
   return null;
 }
 
-async function processWithAI(transcript) {
-  const prompt = `Tu es un outil de mise en forme de notes. Règle unique : reprendre exactement ce que l'utilisateur a dit, juste avec la ponctuation et les majuscules corrigées. Si c'est une liste d'éléments, mettre chaque élément sur une nouvelle ligne précédé d'un tiret. Ne jamais ajouter de mots, ne jamais répondre, ne jamais commenter. Sortir uniquement le texte mis en forme.
-
-Texte: ${transcript}`;
-
-  const resp = await fetch(`https://text.pollinations.ai/${encodeURIComponent(prompt)}`, {
+async function callAI(transcript) {
+  const resp = await fetch('/api/ai', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ transcript }),
     signal: AbortSignal.timeout(15000)
   });
   if (!resp.ok) throw new Error('API error');
-  const text = normalizeTranscript(await resp.text());
-  const pingMs = extractPingFromText(transcript);
-  return { text: text || normalizeTranscript(transcript), pingMs };
+  const data = await resp.json();
+  return { text: (data.text || transcript).replace(/\s+/g,' ').trim(), pingMs: extractPingMs(transcript) };
 }
 
-document.getElementById('btn-save').addEventListener('click', () => {
-  // handled above — pendingPingMs applied after save
-}, { once: false });
+document.getElementById('btn-voice-raw').onclick = () => startVoice('raw');
+document.getElementById('btn-voice-ai').onclick  = () => startVoice('ai');
 
-// Apply pending ping after save
-const origSaveListener = document.getElementById('btn-save').onclick;
-document.getElementById('btn-save').addEventListener('click', () => {
-  if (pendingPingMs && notes.length > 0) {
-    setTimeout(() => {
-      setNotePingForCurrent(pendingPingMs);
-      pendingPingMs = null;
-    }, 50);
-  }
-});
+function openList() { renderList(notes); show('list'); }
 
-function setNotePingForCurrent(ms) {
-  const note = notes[0];
-  if (!note) return;
-  note.ping = ms;
-  note.pingAfter = 'warn';
-  note.pingDeadline = Date.now() + ms;
-  saveNotes(notes);
-  scheduleNotePing(note);
-}
-
-document.getElementById('btn-voice-raw').addEventListener('click', () => startVoice('raw'));
-document.getElementById('btn-voice-ai').addEventListener('click', () => startVoice('ai'));
-
-// LIST
-function openList() { refreshList(notes); show('list'); }
-
-function refreshList(list = notes) {
-  renderList(list);
+function renderList(list = notes) {
   const chars = notes.reduce((a, n) => a + n.text.length, 0);
-  elListStats.innerHTML = `<div class="stat-col"><span class="stat-val">${notes.length}</span><span class="stat-lbl">mémos</span></div>
-    <div class="stat-col"><span class="stat-val">${chars.toLocaleString('fr')}</span><span class="stat-lbl">caractères</span></div>`;
-}
-
-function renderList(list) {
+  document.getElementById('list-stats').innerHTML = `
+    <div class="stat"><span class="stat-val">${notes.length}</span><span class="stat-lbl">mémos</span></div>
+    <div class="stat"><span class="stat-val">${chars.toLocaleString('fr')}</span><span class="stat-lbl">caractères</span></div>`;
+  const el = document.getElementById('notes-list');
   if (!list.length) {
     const q = document.getElementById('search-input').value;
-    elNotesList.innerHTML = `<div class="list-empty">${q ? 'Aucun résultat' : 'Aucun mémo'}</div>`;
+    el.innerHTML = `<div class="list-empty">${q ? 'Aucun résultat' : 'Aucun mémo'}</div>`;
     return;
   }
-  const items = list.map(n => {
-    const excerpt = n.text.length > 80 ? n.text.slice(0, 80).trimEnd() + '…' : n.text;
+  el.innerHTML = list.map(n => {
+    const ex = n.text.length > 80 ? n.text.slice(0,80).trimEnd() + '…' : n.text;
     return `<div class="note-row" data-id="${n.id}">
       <button class="note-card" data-id="${n.id}">
         <div class="note-card-date">${fmtDate(n.ts)}</div>
-        <div class="note-card-text">${excerpt.replace(/</g,'&lt;')}</div>
+        <div class="note-card-text">${esc(ex)}</div>
       </button>
-      <button class="note-del-btn" data-del="${n.id}" aria-label="Supprimer">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+      <button class="note-del" data-del="${n.id}" aria-label="Supprimer">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6"/>
         </svg>
       </button>
     </div>`;
-  });
-  elNotesList.innerHTML = items.join('');
-  elNotesList.querySelectorAll('.note-card').forEach(card =>
-    card.addEventListener('click', () => openViewNote(Number(card.dataset.id), 'list'))
-  );
-  elNotesList.querySelectorAll('.note-del-btn').forEach(btn =>
-    btn.addEventListener('click', (e) => { e.stopPropagation(); deleteNote(Number(btn.dataset.del)); })
-  );
+  }).join('');
+  el.querySelectorAll('.note-card').forEach(c => c.onclick = () => openView(+c.dataset.id, 'list'));
+  el.querySelectorAll('.note-del').forEach(b => b.onclick = e => { e.stopPropagation(); deleteNote(+b.dataset.del); });
 }
 
-let searchDebounce;
-const elSearchInput = document.getElementById('search-input');
-const elSearchClear = document.getElementById('btn-search-clear');
-elSearchInput.addEventListener('input', function() {
-  clearTimeout(searchDebounce);
-  elSearchClear.style.display = this.value ? 'flex' : 'none';
+let searchTimer;
+document.getElementById('search-input').addEventListener('input', function() {
+  clearTimeout(searchTimer);
+  document.getElementById('btn-search-clear').style.display = this.value ? 'flex' : 'none';
   const q = this.value.toLowerCase();
-  searchDebounce = setTimeout(() => renderList(q ? notes.filter(n => n.text.toLowerCase().includes(q)) : notes), 150);
+  searchTimer = setTimeout(() => renderList(q ? notes.filter(n => n.text.toLowerCase().includes(q)) : notes), 150);
 });
-elSearchClear.addEventListener('click', () => {
-  elSearchInput.value = '';
-  elSearchClear.style.display = 'none';
+document.getElementById('btn-search-clear').onclick = () => {
+  document.getElementById('search-input').value = '';
+  document.getElementById('btn-search-clear').style.display = 'none';
   renderList(notes);
-});
-document.getElementById('btn-back-list').addEventListener('click', () => show('home'));
+};
+document.getElementById('back-list').onclick = () => show('home');
 
 function deleteNote(id) {
-  if (notePingTimers[id]) { clearTimeout(notePingTimers[id].timer); delete notePingTimers[id]; }
+  if (pingTimers[id]) { clearTimeout(pingTimers[id]); delete pingTimers[id]; }
   notes = notes.filter(n => n.id !== id);
-  saveNotes(notes);
-  updateHome();
-  if (!screens.list.classList.contains('hidden')) refreshList(notes);
+  persist(); renderHome();
+  if (!document.getElementById('list').classList.contains('hidden')) renderList(notes);
   toast('Mémo supprimé');
 }
 
-// VIEW
-function openViewNote(id, from) {
+function openView(id, from) {
   const note = notes.find(n => n.id === id);
   if (!note) return;
-  previousScreen = from;
+  prevScreen = from;
   document.getElementById('view-date').textContent = fmtDate(note.ts);
   document.getElementById('view-body').textContent = note.text;
-  document.getElementById('btn-delete-note').dataset.id = id;
-  document.getElementById('btn-dl-note').dataset.id = id;
-  renderNotePingCard(note);
+  document.getElementById('btn-delete').dataset.id = id;
+  document.getElementById('btn-dl').dataset.id = id;
+  renderPingCard(note);
   show('view');
 }
 
-function renderNotePingCard(note) {
-  const ping = note.ping || null;
-  const after = note.pingAfter || 'warn';
-  document.getElementById('note-ping-val').textContent = ping ? msToLabel(ping) : 'aucun';
-
-  const presetsEl = document.getElementById('note-ping-presets');
-  presetsEl.innerHTML = NOTE_PING_PRESETS.map(p =>
-    `<button class="note-ping-preset${ping === p.ms ? ' active' : ''}" data-ms="${p.ms}">${p.label}</button>`
+function renderPingCard(note) {
+  const ping = note.ping || null, after = note.pingAfter || 'warn';
+  document.getElementById('ping-val').textContent = ping ? msLabel(ping) : '—';
+  document.getElementById('ping-presets').innerHTML = PRESETS.map(p =>
+    `<button class="ping-preset${ping===p.ms?' active':''}" data-ms="${p.ms}">${p.label}</button>`
   ).join('');
-  presetsEl.querySelectorAll('.note-ping-preset').forEach(btn => {
-    btn.addEventListener('click', () => {
-      setNotePing(note.id, Number(btn.dataset.ms), after);
-      renderNotePingCard(notes.find(n => n.id === note.id));
-    });
+  document.querySelectorAll('.ping-preset').forEach(b => b.onclick = () => {
+    setPing(note.id, +b.dataset.ms, after);
+    renderPingCard(notes.find(n => n.id === note.id));
   });
-
-  document.getElementById('npafter-warn').classList.toggle('active', after === 'warn');
-  document.getElementById('npafter-delete').classList.toggle('active', after === 'delete');
-  document.getElementById('npafter-warn').onclick = () => { setNotePingAfter(note.id, 'warn'); renderNotePingCard(notes.find(n => n.id === note.id)); };
-  document.getElementById('npafter-delete').onclick = () => { setNotePingAfter(note.id, 'delete'); renderNotePingCard(notes.find(n => n.id === note.id)); };
+  document.getElementById('pa-warn').classList.toggle('active', after === 'warn');
+  document.getElementById('pa-delete').classList.toggle('active', after === 'delete');
+  document.getElementById('pa-warn').onclick   = () => { setPingAfter(note.id, 'warn');   renderPingCard(notes.find(n=>n.id===note.id)); };
+  document.getElementById('pa-delete').onclick = () => { setPingAfter(note.id, 'delete'); renderPingCard(notes.find(n=>n.id===note.id)); };
 }
 
-document.getElementById('btn-note-ping-ok').addEventListener('click', () => {
-  const val = Number(document.getElementById('note-custom-val').value);
-  const unit = document.getElementById('note-custom-unit').value;
+document.getElementById('btn-ping-ok').onclick = () => {
+  const val = +document.getElementById('ping-custom-val').value;
+  const unit = document.getElementById('ping-custom-unit').value;
   if (!val || val <= 0) return;
-  const ms = val * (UNIT_MAP[unit] || 60000);
-  const noteId = Number(document.getElementById('btn-delete-note').dataset.id);
-  const note = notes.find(n => n.id === noteId);
-  if (!note) return;
-  setNotePing(noteId, ms, note.pingAfter || 'warn');
-  renderNotePingCard(notes.find(n => n.id === noteId));
-  document.getElementById('note-custom-val').value = '';
-});
+  const ms = val * (UNIT_MS[unit] || 60000);
+  const id = +document.getElementById('btn-delete').dataset.id;
+  const note = notes.find(n => n.id === id); if (!note) return;
+  setPing(id, ms, note.pingAfter || 'warn');
+  renderPingCard(notes.find(n => n.id === id));
+  document.getElementById('ping-custom-val').value = '';
+};
 
-function setNotePing(id, ms, after) {
-  const note = notes.find(n => n.id === id);
-  if (!note) return;
-  note.ping = ms;
-  note.pingAfter = after || note.pingAfter || 'warn';
-  note.pingDeadline = Date.now() + ms;
-  saveNotes(notes);
-  scheduleNotePing(note);
-  toast('Rappel : ' + msToLabel(ms));
+function setPing(id, ms, after) {
+  const note = notes.find(n => n.id === id); if (!note) return;
+  note.ping = ms; note.pingAfter = after || 'warn'; note.pingDeadline = Date.now() + ms;
+  persist(); schedulePing(note); toast('Rappel : ' + msLabel(ms));
 }
 
-function setNotePingAfter(id, after) {
-  const note = notes.find(n => n.id === id);
-  if (!note) return;
-  note.pingAfter = after;
-  saveNotes(notes);
+function setPingAfter(id, after) {
+  const note = notes.find(n => n.id === id); if (!note) return;
+  note.pingAfter = after; persist();
 }
 
-function scheduleNotePing(note) {
-  if (notePingTimers[note.id]) clearTimeout(notePingTimers[note.id].timer);
+function schedulePing(note) {
+  if (pingTimers[note.id]) clearTimeout(pingTimers[note.id]);
   if (!note.ping) return;
   const delay = note.pingDeadline ? Math.max(0, note.pingDeadline - Date.now()) : note.ping;
-  if (delay <= 0) { fireNotePing(note); return; }
-  notePingTimers[note.id] = { timer: setTimeout(() => fireNotePing(note), delay) };
+  if (delay <= 0) { firePing(note); return; }
+  pingTimers[note.id] = setTimeout(() => firePing(note), delay);
 }
 
-function fireNotePing(note) {
-  const current = notes.find(n => n.id === note.id);
-  if (!current) return;
-  const body = current.text.slice(0, 60) + (current.text.length > 60 ? '…' : '');
-  if (current.pingAfter === 'delete') {
-    if ('Notification' in window && Notification.permission === 'granted') {
+function firePing(note) {
+  const n = notes.find(x => x.id === note.id); if (!n) return;
+  const body = n.text.slice(0, 60) + (n.text.length > 60 ? '…' : '');
+  if (n.pingAfter === 'delete') {
+    if ('Notification' in window && Notification.permission === 'granted')
       new Notification('Mémo supprimé', { body, icon: 'icons/icon-192.png' });
-    }
-    deleteNote(current.id);
+    deleteNote(n.id);
   } else {
-    if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification('Ton mémo va être supprimé dans 5 min', { body, icon: 'icons/icon-192.png' });
-    }
-    current.pingAfter = 'delete';
-    current.ping = 300000;
-    current.pingDeadline = Date.now() + 300000;
-    saveNotes(notes);
-    scheduleNotePing(current);
+    if ('Notification' in window && Notification.permission === 'granted')
+      new Notification('Rappel mémo', { body: 'Sera supprimé dans 5 min — ' + body, icon: 'icons/icon-192.png' });
+    n.pingAfter = 'delete'; n.ping = 300000; n.pingDeadline = Date.now() + 300000;
+    persist(); schedulePing(n);
   }
 }
 
-function restoreNotePingTimers() {
-  notes.forEach(note => { if (note.ping && note.pingDeadline) scheduleNotePing(note); });
-}
-
-document.getElementById('btn-back-view').addEventListener('click', () => {
-  if (previousScreen === 'list') openList(); else show('home');
-});
-
-document.getElementById('btn-delete-note').addEventListener('click', function() {
-  const id = Number(this.dataset.id);
-  if (!id) return;
+document.getElementById('back-view').onclick = () => { if (prevScreen === 'list') openList(); else show('home'); };
+document.getElementById('btn-delete').onclick = function() {
+  const id = +this.dataset.id; if (!id) return;
   deleteNote(id);
-  if (previousScreen === 'list') openList(); else show('home');
-});
-
-document.getElementById('btn-dl-note').addEventListener('click', function() {
-  const id = Number(this.dataset.id);
-  const note = notes.find(n => n.id === id);
-  if (!note) return;
+  if (prevScreen === 'list') openList(); else show('home');
+};
+document.getElementById('btn-dl').onclick = function() {
+  const id = +this.dataset.id;
+  const note = notes.find(n => n.id === id); if (!note) return;
   const blob = new Blob([`[${fmtDate(note.ts)}]\n\n${note.text}`], { type: 'text/plain;charset=utf-8' });
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `memo-${new Date(note.ts).toISOString().slice(0,10)}.txt`;
-  a.click();
-  URL.revokeObjectURL(a.href);
-  toast('Mémo téléchargé');
-});
+  a.href = URL.createObjectURL(blob); a.download = `memo-${new Date(note.ts).toISOString().slice(0,10)}.txt`;
+  a.click(); URL.revokeObjectURL(a.href);
+  toast('Mémo exporté');
+};
 
-// MENU
 function setMenu(open) {
-  menuOverlay.classList.toggle('open', open);
-  menuDrawer.classList.toggle('open', open);
+  document.getElementById('menu-overlay').classList.toggle('open', open);
+  document.getElementById('menu-drawer').classList.toggle('open', open);
 }
+document.getElementById('btn-menu').onclick        = () => setMenu(true);
+document.getElementById('btn-close-menu').onclick  = () => setMenu(false);
+document.getElementById('menu-overlay').onclick    = () => setMenu(false);
+document.getElementById('mn-home').onclick  = () => { setMenu(false); show('home'); };
+document.getElementById('mn-new').onclick   = () => { setMenu(false); openWrite(); };
+document.getElementById('mn-list').onclick  = () => { setMenu(false); openList(); };
 
-document.getElementById('btn-open-menu').addEventListener('click', () => setMenu(true));
-document.getElementById('btn-close-menu').addEventListener('click', () => setMenu(false));
-menuOverlay.addEventListener('click', () => setMenu(false));
-document.getElementById('menu-home').addEventListener('click',      () => { setMenu(false); show('home'); });
-document.getElementById('menu-new-note').addEventListener('click',  () => { setMenu(false); openWrite(); });
-document.getElementById('menu-all-notes').addEventListener('click', () => { setMenu(false); openList(); });
-
-document.getElementById('menu-export').addEventListener('click', () => {
+document.getElementById('mn-export').onclick = () => {
   setMenu(false);
   if (!notes.length) { toast('Aucun mémo à exporter'); return; }
-  const lines = notes.map(n => `[${fmtDate(n.ts)}]\n${n.text}`);
-  const blob = new Blob([lines.join('\n\n---\n\n')], { type: 'text/plain' });
+  const content = notes.map(n => `[${fmtDate(n.ts)}]\n${n.text}`).join('\n\n---\n\n');
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
+  a.href = URL.createObjectURL(new Blob([content], { type: 'text/plain' }));
   a.download = `memos-${new Date().toISOString().slice(0,10)}.txt`;
-  a.click();
-  toast('Mémos exportés');
-});
+  a.click(); toast('Mémos exportés');
+};
 
-document.getElementById('menu-clear').addEventListener('click', function handleClear() {
+document.getElementById('mn-clear').onclick = function handleClear() {
   if (confirmingClear) return;
   confirmingClear = true;
   const zone = document.getElementById('clear-zone');
   zone.innerHTML = `<div class="confirm-clear">
-    <div class="confirm-clear-msg">Effacer tous les mémos et données ?</div>
-    <div class="confirm-clear-row">
-      <button class="btn-cancel-clear" id="btn-cancel-clear">Annuler</button>
-      <button class="btn-confirm-clear" id="btn-confirm-clear">Confirmer</button>
+    <div class="confirm-msg">Effacer tous les mémos et données ?</div>
+    <div class="confirm-row">
+      <button class="btn-cancel" id="btn-cancel-clear">Annuler</button>
+      <button class="btn-confirm-del" id="btn-confirm-clear">Confirmer</button>
     </div>
   </div>`;
-  document.getElementById('btn-cancel-clear').addEventListener('click', () => {
-    confirmingClear = false;
-    zone.innerHTML = `<button class="menu-action-btn danger" id="menu-clear">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
-      </svg>
-      Supprimer toutes les données
-    </button>`;
-    document.getElementById('menu-clear').addEventListener('click', handleClear);
-  });
-  document.getElementById('btn-confirm-clear').addEventListener('click', () => {
+  document.getElementById('btn-cancel-clear').onclick = () => {
+    confirmingClear = false; resetClearZone(handleClear);
+  };
+  document.getElementById('btn-confirm-clear').onclick = () => {
     localStorage.removeItem(NOTES_KEY);
-    notes = [];
-    updateHome();
-    setMenu(false);
-    confirmingClear = false;
+    notes = []; persist(); renderHome();
+    setMenu(false); confirmingClear = false;
     toast('Toutes les données supprimées');
-    zone.innerHTML = `<button class="menu-action-btn danger" id="menu-clear">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
-      </svg>
-      Supprimer toutes les données
-    </button>`;
-    document.getElementById('menu-clear').addEventListener('click', handleClear);
-  });
-});
+    resetClearZone(handleClear);
+  };
+};
 
-// NOTIFICATIONS
-function requestNotifPermission() {
-  if ('Notification' in window && Notification.permission === 'default') {
-    Notification.requestPermission();
-  }
+function resetClearZone(handler) {
+  document.getElementById('clear-zone').innerHTML = `<button class="menu-action danger" id="mn-clear">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="3 6 5 6 21 6"/>
+      <path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2"/>
+    </svg>
+    Supprimer toutes les données
+  </button>`;
+  document.getElementById('mn-clear').onclick = handler;
 }
 
-// PWA / INSTALL
+document.getElementById('mn-uninstall').onclick = async () => {
+  localStorage.clear();
+  if ('serviceWorker' in navigator) {
+    const regs = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(regs.map(r => r.unregister()));
+  }
+  if ('caches' in window) {
+    const keys = await caches.keys();
+    await Promise.all(keys.map(k => caches.delete(k)));
+  }
+  toast('Application désinstallée');
+  setTimeout(() => location.reload(), 1800);
+};
+
 let deferredInstall = null;
 const installBanner = document.getElementById('install-banner');
-
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredInstall = e;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault(); deferredInstall = e;
   installBanner.classList.add('show');
 });
 
-document.getElementById('btn-install').addEventListener('click', async () => {
-  if (!deferredInstall) return;
-  deferredInstall.prompt();
-  const { outcome } = await deferredInstall.userChoice;
-  if (outcome === 'accepted') installBanner.classList.remove('show');
-  deferredInstall = null;
-});
+async function triggerInstall() {
+  if (deferredInstall) {
+    deferredInstall.prompt();
+    const { outcome } = await deferredInstall.userChoice;
+    if (outcome === 'accepted') installBanner.classList.remove('show');
+    deferredInstall = null;
+  } else if (window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches) {
+    toast('Application déjà installée');
+  } else if (/iphone|ipad|ipod/i.test(navigator.userAgent)) {
+    toast('iOS : "Partager" puis "Sur l\'écran d\'accueil"');
+  } else {
+    toast('Cliquez sur ⊕ dans la barre d\'adresse');
+  }
+}
 
-document.getElementById('btn-install-close').addEventListener('click', () => {
-  installBanner.classList.remove('show');
-});
+document.getElementById('btn-install').onclick      = triggerInstall;
+document.getElementById('mn-install').onclick       = () => { setMenu(false); triggerInstall(); };
+document.getElementById('btn-install-close').onclick = () => installBanner.classList.remove('show');
 
-if (/iphone|ipad|ipod/i.test(navigator.userAgent) && !window.navigator.standalone) {
-  setTimeout(() => {
-    toast('iOS : "Partager" puis "Sur l\'ecran d\'accueil"');
-  }, 3000);
+if ('Notification' in window && Notification.permission === 'default') {
+  Notification.requestPermission();
 }
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
-requestNotifPermission();
-updateHome();
-restoreNotePingTimers();
+
+notes.forEach(n => { if (n.ping && n.pingDeadline) schedulePing(n); });
+renderHome();
 </script>
 </body>
 </html>
