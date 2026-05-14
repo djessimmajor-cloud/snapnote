@@ -3,6 +3,7 @@
   "short_name": "Mémo",
   "description": "Capture tes pensées en un instant",
   "start_url": "/snapshot-note/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#f5f0eb",
   "theme_color": "#f5f0eb",
