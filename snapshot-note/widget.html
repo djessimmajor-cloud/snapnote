@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Mémo Widget</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --paper: #faf8f5;
+      --ink:   #2c2416;
+      --ink2:  #6b5c48;
+      --rust:  #b85c3a;
+      --line:  #e8e0d6;
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      background: var(--paper);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      overflow: hidden;
+    }
+
+    .widget {
+      width: 100%; height: 100vh;
+      display: flex; flex-direction: column;
+      padding: 18px 20px 14px;
+      background: var(--paper);
+      border-radius: 20px;
+      position: relative;
+    }
+
+    .widget-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .widget-logo {
+      font-size: 13px; font-weight: 600; color: var(--rust);
+      letter-spacing: 0.04em; text-transform: uppercase;
+    }
+
+    .widget-date {
+      font-size: 12px; color: var(--ink2);
+    }
+
+    .widget-text {
+      flex: 1;
+      font-size: 18px; line-height: 1.5;
+      color: var(--ink);
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 6;
+      -webkit-box-orient: vertical;
+      word-break: break-word;
+    }
+
+    .widget-empty {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 8px;
+    }
+
+    .widget-empty-icon {
+      font-size: 32px; opacity: 0.3;
+    }
+
+    .widget-empty-text {
+      font-size: 14px; color: var(--ink2); text-align: center;
+    }
+
+    .widget-footer {
+      margin-top: 10px;
+      font-size: 11px; color: var(--ink2);
+      opacity: 0.6;
+    }
+
+    a.widget-link {
+      position: absolute; inset: 0;
+      border-radius: 20px;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+  <div class="widget" id="widget">
+    <div class="widget-header">
+      <span class="widget-logo">Mémo</span>
+      <span class="widget-date" id="w-date"></span>
+    </div>
+    <div id="w-content"></div>
+    <div class="widget-footer" id="w-footer"></div>
+    <a class="widget-link" href="/snapshot-note/" id="w-link"></a>
+  </div>
+
+  <script>
+    function getNotes() {
+      try { return JSON.parse(localStorage.getItem('memo_notes_v1') || '[]'); }
+      catch { return []; }
+    }
+
+    function fmt(ts) {
+      const d = new Date(ts);
+      return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+    }
+
+    function render() {
+      const notes = getNotes().sort((a, b) => b.ts - a.ts);
+      const content = document.getElementById('w-content');
+      const footer = document.getElementById('w-footer');
+      const dateEl = document.getElementById('w-date');
+
+      const now = new Date();
+      dateEl.textContent = now.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
+
+      if (!notes.length) {
+        content.innerHTML = `
+          <div class="widget-empty">
+            <div class="widget-empty-icon">📝</div>
+            <div class="widget-empty-text">Aucun mémo</div>
+          </div>`;
+        footer.textContent = '';
+        return;
+      }
+
+      const last = notes[0];
+      content.innerHTML = `<div class="widget-text">${last.text.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')}</div>`;
+      footer.textContent = fmt(last.ts) + (notes.length > 1 ? ` · ${notes.length} mémos` : '');
+    }
+
+    render();
+
+    // Rafraîchit si focus retrouvé (retour depuis l'app)
+    window.addEventListener('focus', render);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) render();
+    });
+  </script>
+</body>
+</html>
