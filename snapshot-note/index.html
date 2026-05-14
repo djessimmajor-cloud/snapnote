@@ -681,7 +681,7 @@
     </div>
     <div class="home-body">
       <button class="btn-new" id="btn-write" aria-label="Nouvelle note">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
           <line x1="12" y1="5" x2="12" y2="19"/>
           <line x1="5" y1="12" x2="19" y2="12"/>
         </svg>
@@ -1332,9 +1332,7 @@ function openList() { renderList(notes); show('list'); }
 
 function renderList(list = notes) {
   const chars = notes.reduce((a, n) => a + n.text.length, 0);
-  document.getElementById('list-stats').innerHTML = `
-    <div class="stat"><span class="stat-val">${notes.length}</span><span class="stat-lbl">mémos</span></div>
-    <div class="stat"><span class="stat-val">${chars.toLocaleString('fr')}</span><span class="stat-lbl">caractères</span></div>`;
+  document.getElementById('list-stats').innerHTML = '';
   const el = document.getElementById('notes-list');
   if (!list.length) {
     const q = document.getElementById('search-input').value;
