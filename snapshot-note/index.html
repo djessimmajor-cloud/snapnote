@@ -209,12 +209,12 @@
     /* ── BELL BUTTON (dans voice-bar) ──────── */
     .btn-write-bell {
       flex-shrink: 0;
-      height: 40px; border-radius: 20px;
-      padding: 0 16px; gap: 7px;
+      height: auto; border-radius: 12px;
+      padding: 14px 20px; gap: 8px;
       background: var(--surface); border: 1.5px solid var(--line);
       display: flex; align-items: center; justify-content: center;
       cursor: pointer; color: var(--faint2);
-      font-family: var(--ui); font-size: 14px; font-weight: 500;
+      font-family: var(--ui); font-size: 15px; font-weight: 500;
       transition: border-color .14s, color .14s, background .14s;
     }
     .btn-write-bell:hover { border-color: var(--rust); color: var(--rust); background: var(--rust-bg); }
@@ -300,10 +300,10 @@
 
     .btn-voice {
       flex: 1; display: flex; align-items: center; justify-content: center;
-      gap: 6px; border: 1px solid var(--line);
-      border-radius: var(--r-sm); padding: 10px 8px;
+      gap: 8px; border: 1px solid var(--line);
+      border-radius: var(--r-sm); padding: 14px 8px;
       background: var(--surface); color: var(--ink2);
-      font-size: 12.5px; font-family: var(--ui);
+      font-size: 15px; font-family: var(--ui); font-weight: 500;
       cursor: pointer; transition: border-color .12s, color .12s, background .12s;
     }
     .btn-voice:hover { border-color: var(--line2); }
@@ -686,7 +686,6 @@
           <line x1="5" y1="12" x2="19" y2="12"/>
         </svg>
       </button>
-      <span class="home-hint">nouveau mémo</span>
     </div>
     <div class="home-footer">
       <div id="last-preview"></div>
@@ -924,7 +923,7 @@
           <button class="set-opt set-opt-wide" id="set-export-all">Exporter tous les mémos (.txt)</button>
           <button class="set-opt set-opt-wide set-opt-danger" id="set-clear-all">Effacer tous les mémos</button>
         </div>
-        <div class="settings-storage" id="set-storage"></div>
+        <div class="settings-storage" id="set-storage" style="display:none"></div>
       </div>
     </div>
   </div>
