@@ -12,7 +12,7 @@
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="icon" href="icons/icon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600&family=Instrument+Sans:wght@400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500&family=Caveat:wght@400;600&family=Kalam:wght@400&family=Patrick+Hand&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
@@ -31,7 +31,7 @@
       --rust-bg:  rgba(200,90,42,.07);
       --red:      #b83030;
       --red-bg:   #fdf0f0;
-      --hand:     'Caveat', cursive;
+      --hand:     'Instrument Sans', sans-serif;
       --ui:       'Instrument Sans', system-ui, sans-serif;
       --mono:     'JetBrains Mono', monospace;
       --r:        16px;
@@ -79,7 +79,7 @@
     .screen.hidden { opacity: 0; pointer-events: none; transform: translateY(8px); }
 
     /* ── COMMON HEADER ────────────────────── */
-    .bar {
+    .bar, .top-bar {
       display: flex; align-items: center;
       padding: 14px 18px 12px;
       gap: 8px; flex-shrink: 0;
@@ -114,12 +114,13 @@
     /* ── HOME ─────────────────────────────── */
     /* ── ═══════════════════════════════════ */
     .home-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 22px 22px 0; flex-shrink: 0;
+      display: flex; align-items: center;
+      padding: 14px 18px 0; gap: 8px; flex-shrink: 0;
     }
     .home-logo {
-      font-family: var(--hand); font-size: 22px; font-weight: 600;
+      font-family: 'Kalam', cursive; font-size: 36px; font-weight: 400;
       color: var(--rust); letter-spacing: .01em;
+      flex: 1; text-align: center;
       user-select: none;
     }
 
@@ -132,18 +133,17 @@
     }
 
     .btn-new {
-      width: 76px; height: 76px; border-radius: 50%;
+      width: 96px; height: 96px; border-radius: 50%;
       background: var(--rust); border: none; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
       color: #fff;
-      box-shadow: 0 8px 28px rgba(200,90,42,.28);
-      transition: transform .14s, box-shadow .14s;
+      transition: transform .14s;
     }
-    .btn-new:hover { transform: scale(1.07); box-shadow: 0 12px 36px rgba(200,90,42,.36); }
-    .btn-new:active { transform: scale(.93); box-shadow: 0 4px 14px rgba(200,90,42,.2); }
+    .btn-new:hover { transform: scale(1.07); }
+    .btn-new:active { transform: scale(.93); }
 
     .home-hint {
-      font-family: var(--hand); font-size: 17px; font-weight: 400;
+      font-family: var(--ui); font-size: 13px; font-weight: 400;
       color: var(--faint); letter-spacing: .01em;
     }
 
@@ -170,7 +170,7 @@
       margin-bottom: 10px; letter-spacing: .02em;
     }
     .last-card-text {
-      font-family: var(--hand); font-size: 18px; font-weight: 400;
+      font-family: var(--hand); font-size: 21px; font-weight: 400;
       color: var(--ink2); line-height: 1.6;
       display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
@@ -179,7 +179,7 @@
       border: 1px dashed var(--line2); border-radius: var(--r);
       padding: 22px; text-align: center;
     }
-    .last-empty span { font-family: var(--hand); font-size: 16px; color: var(--faint); }
+    .last-empty span { font-family: var(--ui); font-size: 13px; color: var(--faint); }
 
     /* ── ═══════════════════════════════════ */
     /* ── WRITE ────────────────────────────── */
@@ -194,7 +194,7 @@
       flex: 1; border: none; outline: none; resize: none;
       background: transparent;
       padding: 8px 24px 20px;
-      font-family: var(--hand); font-size: 20px; font-weight: 400;
+      font-family: var(--user-font, var(--hand)); font-size: var(--user-size, 24px); font-weight: 400;
       line-height: 1.75; color: var(--ink);
       /* ruled lines matching line-height */
       background-image: repeating-linear-gradient(
@@ -204,7 +204,91 @@
       background-size: 100% 35px;
       background-position: 0 8px;
     }
-    #note-area::placeholder { color: var(--faint); font-family: var(--hand); font-size: 20px; }
+    #note-area::placeholder { color: var(--faint); font-family: var(--ui); font-size: 16px; }
+
+    /* ── BELL BUTTON (dans voice-bar) ──────── */
+    .btn-write-bell {
+      flex-shrink: 0;
+      height: 40px; border-radius: 20px;
+      padding: 0 16px; gap: 7px;
+      background: var(--surface); border: 1.5px solid var(--line);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--faint2);
+      font-family: var(--ui); font-size: 14px; font-weight: 500;
+      transition: border-color .14s, color .14s, background .14s;
+    }
+    .btn-write-bell:hover { border-color: var(--rust); color: var(--rust); background: var(--rust-bg); }
+    .btn-write-bell.active { background: var(--rust); border-color: var(--rust); color: #fff; }
+
+    /* ── BELL PANEL ───────────────────────── */
+    #bell-panel {
+      position: absolute; left: 0; right: 0; bottom: 0;
+      background: var(--surface); border-top: 1px solid var(--line2);
+      border-radius: 20px 20px 0 0; padding: 16px 16px 24px;
+      box-shadow: 0 -8px 32px rgba(0,0,0,.10);
+      z-index: 30;
+      transform: translateY(100%); opacity: 0; pointer-events: none;
+      transform-origin: bottom center;
+      transition: transform .22s cubic-bezier(.22,.68,0,1.15), opacity .18s;
+    }
+    #bell-panel.open { transform: translateY(0); opacity: 1; pointer-events: all; }
+
+    .bell-panel-title {
+      font-family: var(--mono); font-size: 10px; color: var(--faint);
+      text-transform: uppercase; letter-spacing: .07em;
+      margin-bottom: 10px; padding: 0 2px;
+    }
+    .bell-presets {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-bottom: 10px;
+    }
+    .bell-preset {
+      background: var(--paper2); border: 1px solid var(--line);
+      border-radius: 20px; padding: 11px 4px;
+      font-family: var(--ui); font-size: 14px; color: var(--ink2);
+      cursor: pointer; text-align: center;
+      transition: border-color .1s, color .1s, background .1s;
+    }
+    .bell-custom {
+      display: flex; gap: 6px; margin-top: 6px; margin-bottom: 10px;
+    }
+    .bell-custom input {
+      flex: 1; border: 1px solid var(--line); border-radius: 10px;
+      padding: 9px 12px; font-size: 14px; font-family: var(--ui);
+      background: var(--paper2); color: var(--ink); outline: none;
+    }
+    .bell-custom select {
+      border: 1px solid var(--line); border-radius: 10px;
+      padding: 9px 8px; font-size: 14px; font-family: var(--ui);
+      background: var(--paper2); color: var(--ink2); outline: none; cursor: pointer;
+    }
+    .bell-custom-ok {
+      background: var(--rust); color: #fff; border: none;
+      border-radius: 10px; padding: 9px 14px; font-size: 14px;
+      cursor: pointer; font-family: var(--ui); white-space: nowrap;
+      transition: background .12s;
+    }
+    .bell-custom-ok:hover { background: var(--rust2); }
+    .bell-preset:hover { border-color: var(--line2); }
+    .bell-preset.active { background: var(--rust); border-color: var(--rust); color: #fff; }
+
+    .bell-div { height: 1px; background: var(--line); margin: 8px 0; }
+
+    .bell-mode-title {
+      font-family: var(--mono); font-size: 10px; color: var(--faint);
+      text-transform: uppercase; letter-spacing: .07em;
+      margin-bottom: 8px; padding: 0 2px;
+    }
+    .bell-modes { display: flex; flex-direction: column; gap: 5px; }
+    .bell-mode {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--paper2); border: 1px solid var(--line);
+      border-radius: 10px; padding: 8px 10px; cursor: pointer;
+      font-size: 12px; font-family: var(--ui); color: var(--faint2);
+      transition: border-color .1s, color .1s, background .1s;
+    }
+    .bell-mode:hover { border-color: var(--line2); color: var(--ink2); }
+    .bell-mode.active { background: var(--rust-bg); border-color: var(--rust); color: var(--rust); }
+    .bell-mode svg { flex-shrink: 0; }
 
     /* ── VOICE BAR ────────────────────────── */
     .voice-bar {
@@ -282,10 +366,10 @@
     }
     .note-card:hover { border-color: var(--line2); box-shadow: 0 3px 14px rgba(0,0,0,.05); }
     .note-card-date { font-family: var(--mono); font-size: 10.5px; color: var(--faint); margin-bottom: 6px; }
-    .note-card-text { font-family: var(--hand); font-size: 18px; color: var(--ink2); line-height: 1.5; }
+    .note-card-text { font-family: var(--user-font, var(--hand)); font-size: calc(var(--user-size, 21px) * 0.88); color: var(--ink2); line-height: 1.5; }
 
     .note-del {
-      position: absolute; right: 10px; top: 50%;
+      position: absolute; right: 48px; top: 50%;
       transform: translateY(-50%);
       background: var(--red-bg); border: none; border-radius: 8px;
       width: 32px; height: 32px;
@@ -294,7 +378,20 @@
       transition: opacity .12s;
     }
     .note-row:hover .note-del { opacity: 1; }
-    .list-empty { text-align: center; color: var(--faint); font-family: var(--hand); font-size: 18px; padding: 52px 0; }
+
+    .note-bell {
+      position: absolute; right: 10px; top: 50%;
+      transform: translateY(-50%);
+      background: var(--rust-bg); border: 1.5px solid transparent; border-radius: 50%;
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--rust); opacity: 0;
+      transition: opacity .12s, border-color .12s, background .12s;
+    }
+    .note-bell.has-ping { opacity: 1; border-color: var(--rust); }
+    .note-row:hover .note-bell { opacity: 1; }
+    .note-bell:hover { background: rgba(200,90,42,.16); }
+    .list-empty { text-align: center; color: var(--faint); font-family: var(--ui); font-size: 14px; padding: 52px 0; }
 
     /* ── ═══════════════════════════════════ */
     /* ── VIEW ─────────────────────────────── */
@@ -326,7 +423,7 @@
     .view-body {
       flex: 1; overflow-y: auto;
       padding: 16px 24px 28px;
-      font-family: var(--hand); font-size: 20px; font-weight: 400;
+      font-family: var(--user-font, var(--hand)); font-size: var(--user-size, 24px); font-weight: 400;
       line-height: 1.75; color: var(--ink); white-space: pre-wrap;
       background-image: repeating-linear-gradient(
         transparent, transparent 34px,
@@ -397,6 +494,49 @@
     .ping-after-btn.active { background: var(--rust-bg); border-color: var(--rust); color: var(--rust); }
     .ping-after-btn:hover:not(.active) { border-color: var(--line2); }
 
+    /* ── SETTINGS ─────────────────────────── */
+    .settings-body { flex: 1; overflow-y: auto; padding: 20px 18px; display: flex; flex-direction: column; gap: 24px; }
+    .settings-section { display: flex; flex-direction: column; gap: 10px; }
+    .settings-label { font-size: 11px; font-weight: 500; color: var(--faint); letter-spacing: .08em; text-transform: uppercase; }
+    .settings-options {
+      display: flex; flex-wrap: nowrap; gap: 8px;
+      overflow-x: auto; padding-bottom: 4px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .settings-options::-webkit-scrollbar { display: none; }
+    .settings-options .set-opt { flex-shrink: 0; }
+    .set-opt {
+      padding: 9px 16px; border-radius: 12px; border: 1.5px solid var(--line);
+      background: var(--surface); color: var(--ink2); font-size: 14px;
+      cursor: pointer; transition: all .15s;
+    }
+    .set-opt:hover { border-color: var(--line2); background: var(--paper2); }
+    .set-opt.active { border-color: var(--rust); background: var(--rust-bg); color: var(--rust); font-weight: 500; }
+    .set-opt-wide { width: 100%; text-align: left; }
+    .set-opt-danger { color: var(--red) !important; border-color: var(--red) !important; }
+    .set-opt-danger:hover { background: var(--red-bg) !important; }
+    .settings-storage { font-size: 12px; color: var(--faint); margin-top: 8px; }
+
+    /* Thèmes */
+    :root[data-theme="dark"] {
+      --paper: #1a1814; --paper2: #201e1a; --surface: #252320;
+      --ink: #f0ece4; --ink2: #c8c4bc; --faint: #706c66; --faint2: #908c86;
+      --line: #2e2c28; --line2: #3a3830;
+    }
+    :root[data-theme="sepia"] {
+      --paper: #f5f0e8; --paper2: #ede8dc; --surface: #faf6ee;
+      --ink: #2c2416; --ink2: #4a3c28; --faint: #9a8c78; --faint2: #7a6c58;
+      --line: #ddd4c4; --line2: #ccc0ac;
+    }
+
+    .settings-preview-wrap { margin-top: 4px; }
+    .settings-preview-label { font-size: 11px; color: var(--faint); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 10px; }
+    .settings-preview {
+      background: var(--surface); border-radius: 14px; padding: 18px;
+      border: 1px solid var(--line); color: var(--ink); line-height: 1.6;
+    }
+
     /* ── MENU DRAWER ──────────────────────── */
     #menu-overlay {
       position: absolute; inset: 0;
@@ -408,13 +548,13 @@
     #menu-overlay.open { opacity: 1; pointer-events: all; }
 
     #menu-drawer {
-      position: absolute; top: 0; right: 0; bottom: 0; width: 74%;
+      position: absolute; top: 0; left: 0; bottom: 0; width: 74%;
       background: var(--paper); z-index: 51;
       display: flex; flex-direction: column;
-      box-shadow: -16px 0 60px rgba(0,0,0,.1);
-      transform: translateX(100%);
+      box-shadow: 16px 0 60px rgba(0,0,0,.1);
+      transform: translateX(-100%);
       transition: transform .26s cubic-bezier(.22,.68,0,1.12);
-      border-left: 1px solid var(--line);
+      border-right: 1px solid var(--line);
     }
     #menu-drawer.open { transform: translateX(0); }
 
@@ -422,7 +562,7 @@
       padding: 22px 20px 14px;
       display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
     }
-    .menu-logo { font-family: var(--hand); font-size: 20px; font-weight: 600; color: var(--rust); }
+    .menu-logo { font-family: 'Kalam', cursive; font-size: 26px; font-weight: 400; color: var(--rust); }
 
     .menu-badges { padding: 0 20px 16px; display: flex; gap: 8px; flex-shrink: 0; }
     .menu-badge {
@@ -436,7 +576,7 @@
     .menu-btn {
       width: 100%; background: none; border: none; border-radius: var(--r-sm);
       padding: 13px 12px; text-align: left; cursor: pointer;
-      font-family: var(--hand); font-size: 18px; color: var(--ink2);
+      font-family: var(--ui); font-size: 15px; color: var(--ink2);
       transition: background .1s; display: block;
     }
     .menu-btn:hover { background: var(--paper2); }
@@ -464,6 +604,15 @@
       flex: 1; background: var(--red); color: #fff; border: none;
       border-radius: 8px; padding: 8px; font-size: 12.5px; cursor: pointer; font-family: var(--ui);
     }
+
+    .menu-transfer-btn {
+      display: flex; align-items: center; gap: 10px; width: 100%;
+      background: var(--rust-bg); border: 1px solid rgba(200,90,42,.2); border-radius: var(--r-sm);
+      padding: 13px 14px; text-align: left; cursor: pointer;
+      font-size: 14px; color: var(--rust); font-family: var(--ui); font-weight: 500;
+      transition: background .1s, border-color .1s;
+    }
+    .menu-transfer-btn:hover { background: rgba(200,90,42,.14); border-color: var(--rust); }
 
     /* ── INSTALL BANNER ───────────────────── */
     #install-banner {
@@ -522,7 +671,6 @@
   <!-- ══ HOME ══════════════════════════════ -->
   <div class="screen" id="home">
     <div class="home-header">
-      <span class="home-logo">mémo</span>
       <button class="btn-icon" id="btn-menu" aria-label="Menu">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round">
           <line x1="3" y1="6" x2="21" y2="6"/>
@@ -555,10 +703,19 @@
     </div>
     <textarea id="note-area" placeholder="Commence à écrire…" autocomplete="off" spellcheck="true"></textarea>
     <div style="height:68px;flex-shrink:0"></div>
+
   </div>
 
-  <!-- Voice bar -->
+  <!-- Voice bar (dans shell, pas dans write) -->
   <div class="voice-bar hidden" id="voice-bar">
+    <!-- Bell button -->
+    <button class="btn-write-bell" id="btn-write-bell" aria-label="Rappel">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <polyline points="12 6 12 12 16 14"/>
+      </svg>
+      Ping
+    </button>
     <button class="btn-voice" id="btn-voice-raw">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
@@ -568,13 +725,48 @@
       </svg>
       Dicter
     </button>
-    <button class="btn-voice btn-voice-ai" id="btn-voice-ai">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="3"/>
-        <path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/>
-      </svg>
-      Dicter + IA
-    </button>
+  </div>
+
+  <!-- Bell panel (dans shell, au-dessus du clavier) -->
+  <div id="bell-panel">
+    <div class="bell-panel-title">Délai</div>
+    <div class="bell-presets" id="bell-presets"></div>
+    <div class="bell-custom">
+      <input type="number" id="bell-custom-val" min="1" max="999" placeholder="ex. 3">
+      <select id="bell-custom-unit">
+        <option value="min">min</option>
+        <option value="h">heures</option>
+        <option value="d">jours</option>
+        <option value="w">semaines</option>
+      </select>
+      <button class="bell-custom-ok" id="bell-custom-ok">OK</button>
+    </div>
+    <div class="bell-div"></div>
+    <div class="bell-mode-title">Action</div>
+    <div class="bell-modes">
+      <button class="bell-mode active" data-mode="notif" id="bm-notif">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        Notif seule
+      </button>
+      <button class="bell-mode" data-mode="notif-del" id="bm-notif-del">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          <line x1="4" y1="4" x2="20" y2="20"/>
+        </svg>
+        Notif + supprimer
+      </button>
+      <button class="bell-mode" data-mode="del" id="bm-del">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6"/>
+        </svg>
+        Supprimer seul
+      </button>
+    </div>
   </div>
 
   <!-- ══ LIST ═══════════════════════════════ -->
@@ -624,37 +816,115 @@
     <div class="view-meta"><div class="view-date" id="view-date"></div></div>
     <div class="view-body" id="view-body"></div>
     <div class="ping-card" id="ping-card">
-      <div class="ping-header">
-        <span class="ping-lbl">Rappel</span>
-        <span class="ping-val" id="ping-val">—</span>
-      </div>
-      <div class="ping-presets" id="ping-presets"></div>
-      <div class="ping-custom">
+      <div class="bell-panel-title">Délai</div>
+      <div class="bell-presets" id="ping-presets"></div>
+      <div class="bell-custom">
         <input type="number" id="ping-custom-val" min="1" max="999" placeholder="ex. 3">
         <select id="ping-custom-unit">
           <option value="min">min</option>
           <option value="h">heures</option>
           <option value="d">jours</option>
           <option value="w">semaines</option>
-          <option value="mo">mois</option>
         </select>
-        <button class="btn-ping-ok" id="btn-ping-ok">OK</button>
+        <button class="bell-custom-ok" id="ping-custom-ok">OK</button>
       </div>
-      <div class="ping-after">
-        <button class="ping-after-btn" data-after="warn" id="pa-warn">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-            <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+      <div class="bell-div"></div>
+      <div class="bell-mode-title">Action</div>
+      <div class="bell-modes">
+        <button class="bell-mode" id="pm-notif" data-after="notif">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
           </svg>
-          Notif avant suppression
+          Notif seule
         </button>
-        <button class="ping-after-btn" data-after="delete" id="pa-delete">
+        <button class="bell-mode" id="pm-notif-del" data-after="warn">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            <line x1="4" y1="4" x2="20" y2="20"/>
+          </svg>
+          Notif + supprimer
+        </button>
+        <button class="bell-mode" id="pm-del" data-after="delete">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="3 6 5 6 21 6"/>
-            <path d="M19 6l-1 14H6L5 6"/>
+            <path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6"/>
           </svg>
-          Supprimer après
+          Supprimer seul
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SETTINGS ════════════════════════════ -->
+  <div id="settings" class="screen hidden">
+    <div class="top-bar">
+      <button class="btn-icon" id="btn-back-settings" aria-label="Retour">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <span class="bar-title">Paramètres</span>
+    </div>
+    <div class="settings-body">
+      <div class="settings-section">
+        <div class="settings-label">Police d'écriture</div>
+        <div class="settings-options" id="set-font">
+          <button class="set-opt" data-val="'Instrument Sans', sans-serif" style="font-family:'Instrument Sans',sans-serif">Normal</button>
+          <button class="set-opt" data-val="'Caveat', cursive" style="font-family:'Caveat',cursive;font-size:17px">Manuscrit</button>
+          <button class="set-opt" data-val="'Kalam', cursive" style="font-family:'Kalam',cursive">Naturel</button>
+          <button class="set-opt" data-val="'Patrick Hand', cursive" style="font-family:'Patrick Hand',cursive">Doux</button>
+          <button class="set-opt" data-val="'JetBrains Mono', monospace" style="font-family:'JetBrains Mono',monospace;font-size:12px">Mono</button>
+        </div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-label">Taille d'écriture</div>
+        <div class="settings-options" id="set-size">
+          <button class="set-opt" data-val="16">Petite</button>
+          <button class="set-opt" data-val="20">Normale</button>
+          <button class="set-opt" data-val="24">Grande</button>
+          <button class="set-opt" data-val="28">Très grande</button>
+        </div>
+      </div>
+      <div class="settings-preview-wrap">
+        <div class="settings-preview-label">Aperçu</div>
+        <div class="settings-preview" id="set-preview">Le vif renard brun saute par-dessus le chien paresseux.</div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-label">Interligne</div>
+        <div class="settings-options" id="set-line">
+          <button class="set-opt" data-val="1.3">Serré</button>
+          <button class="set-opt" data-val="1.6">Normal</button>
+          <button class="set-opt" data-val="2.0">Aéré</button>
+          <button class="set-opt" data-val="2.5">Très aéré</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-label">Thème</div>
+        <div class="settings-options" id="set-theme">
+          <button class="set-opt" data-val="light">Clair</button>
+          <button class="set-opt" data-val="dark">Sombre</button>
+          <button class="set-opt" data-val="sepia">Sépia</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-label">Action rappel par défaut</div>
+        <div class="settings-options" id="set-ping-action">
+          <button class="set-opt" data-val="notif">Notif seule</button>
+          <button class="set-opt" data-val="notif-del">Notif + supprimer</button>
+          <button class="set-opt" data-val="delete">Supprimer seul</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-label">Données</div>
+        <div class="settings-options" style="flex-direction:column">
+          <button class="set-opt set-opt-wide" id="set-export-all">Exporter tous les mémos (.txt)</button>
+          <button class="set-opt set-opt-wide set-opt-danger" id="set-clear-all">Effacer tous les mémos</button>
+        </div>
+        <div class="settings-storage" id="set-storage"></div>
       </div>
     </div>
   </div>
@@ -678,40 +948,16 @@
       <button class="menu-btn" id="mn-home">Accueil</button>
       <button class="menu-btn" id="mn-new">Nouveau mémo</button>
       <button class="menu-btn" id="mn-list">Tous les mémos</button>
+      <button class="menu-btn" id="mn-settings">Paramètres</button>
     </div>
     <div class="menu-div"></div>
     <div class="menu-actions">
-      <button class="menu-action" id="mn-install">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2v13M8 11l4 4 4-4"/>
-          <rect x="3" y="17" width="18" height="4" rx="2"/>
+      <button class="menu-transfer-btn" id="mn-transfer">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 20h9"/>
+          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
         </svg>
-        Installer l'application
-      </button>
-      <button class="menu-action" id="mn-export">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="7 10 12 15 17 10"/>
-          <line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>
-        Exporter en .txt
-      </button>
-      <div id="clear-zone">
-        <button class="menu-action danger" id="mn-clear">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="3 6 5 6 21 6"/>
-            <path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2"/>
-          </svg>
-          Supprimer toutes les données
-        </button>
-      </div>
-      <button class="menu-action danger" id="mn-uninstall">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>
-          <line x1="10" y1="11" x2="10" y2="17"/>
-          <line x1="14" y1="11" x2="14" y2="17"/>
-        </svg>
-        Désinstaller
+        Transférer en note
       </button>
     </div>
   </div>
@@ -787,7 +1033,7 @@ function toast(msg) {
   toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2400);
 }
 
-const SCREENS = { home: 'home', write: 'write', list: 'list', view: 'view' };
+const SCREENS = { home: 'home', write: 'write', list: 'list', view: 'view', settings: 'settings' };
 const BACK_SVG = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`;
 document.querySelectorAll('.btn-back').forEach(b => b.innerHTML = BACK_SVG);
 
@@ -823,6 +1069,9 @@ function openWrite() {
   ta.value = '';
   document.getElementById('char-count').textContent = '0';
   document.getElementById('btn-save').disabled = true;
+  pendingPingMs = null; pendingPingMode = 'notif';
+  document.getElementById('btn-write-bell').classList.remove('active');
+  document.getElementById('bell-panel').classList.remove('open');
   show('write');
   setTimeout(() => ta.focus(), 80);
 }
@@ -833,15 +1082,92 @@ document.getElementById('note-area').addEventListener('input', function() {
 });
 
 let pendingPingMs = null;
+let pendingPingMode = 'notif'; // 'notif' | 'notif-del' | 'del'
+
+/* Bell panel logic */
+const BELL_PRESETS = [
+  { label: '5 min', ms: 300000 },
+  { label: '30 min', ms: 1800000 },
+  { label: '1 h', ms: 3600000 },
+  { label: '6 h', ms: 21600000 },
+  { label: '1 j', ms: 86400000 },
+  { label: '1 sem', ms: 604800000 },
+];
+
+function renderBellPresets() {
+  document.getElementById('bell-presets').innerHTML = BELL_PRESETS.map(p =>
+    `<button class="bell-preset${pendingPingMs===p.ms?' active':''}" data-ms="${p.ms}">${p.label}</button>`
+  ).join('');
+  document.querySelectorAll('.bell-preset').forEach(b => {
+    b.onclick = () => {
+      pendingPingMs = pendingPingMs === +b.dataset.ms ? null : +b.dataset.ms;
+      document.getElementById('btn-write-bell').classList.toggle('active', !!pendingPingMs);
+      renderBellPresets();
+    };
+  });
+}
+
+function renderBellModes() {
+  ['notif','notif-del','del'].forEach(m => {
+    document.getElementById('bm-' + m).classList.toggle('active', pendingPingMode === m);
+  });
+}
+
+document.getElementById('btn-write-bell').onclick = (e) => {
+  e.stopPropagation();
+  const panel = document.getElementById('bell-panel');
+  const open = panel.classList.toggle('open');
+  if (open) { renderBellPresets(); renderBellModes(); }
+};
+
+['notif','notif-del','del'].forEach(m => {
+  document.getElementById('bm-' + m).onclick = () => {
+    pendingPingMode = m; renderBellModes();
+  };
+});
+
+document.getElementById('bell-custom-ok').onclick = () => {
+  const val = +document.getElementById('bell-custom-val').value;
+  const unit = document.getElementById('bell-custom-unit').value;
+  if (!val || val <= 0) return;
+  pendingPingMs = val * (UNIT_MS[unit] || 60000);
+  document.getElementById('btn-write-bell').classList.add('active');
+  document.getElementById('bell-custom-val').value = '';
+  renderBellPresets();
+};
+
+document.getElementById('ping-custom-ok').onclick = () => {
+  const val = +document.getElementById('ping-custom-val').value;
+  const unit = document.getElementById('ping-custom-unit').value;
+  if (!val || val <= 0) return;
+  const ms = val * (UNIT_MS[unit] || 60000);
+  const id = +document.getElementById('btn-delete').dataset.id;
+  const note = notes.find(n => n.id === id); if (!note) return;
+  setPing(id, ms, note.pingAfter || 'notif');
+  document.getElementById('ping-custom-val').value = '';
+  renderPingCard(notes.find(n => n.id === id));
+};
+
+document.addEventListener('click', e => {
+  const panel = document.getElementById('bell-panel');
+  const bell  = document.getElementById('btn-write-bell');
+  if (!panel.contains(e.target) && e.target !== bell) panel.classList.remove('open');
+});
 
 function saveNote() {
   const text = document.getElementById('note-area').value.trim();
   if (!text) return;
   const note = { id: Date.now(), ts: Date.now(), text };
   if (pendingPingMs) {
-    note.ping = pendingPingMs; note.pingAfter = 'warn';
+    note.ping = pendingPingMs;
+    note.pingAfter = pendingPingMode === 'notif' ? 'warn'
+                   : pendingPingMode === 'notif-del' ? 'delete'
+                   : 'silent-delete';
     note.pingDeadline = Date.now() + pendingPingMs;
     pendingPingMs = null;
+    pendingPingMode = 'notif';
+    document.getElementById('btn-write-bell').classList.remove('active');
+    document.getElementById('bell-panel').classList.remove('open');
   }
   notes.unshift(note); persist(); renderHome();
   if (note.ping) { schedulePing(note); toast('Mémo enregistré — rappel dans ' + msLabel(note.ping)); }
@@ -919,16 +1245,12 @@ const STOP_SVG = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" st
 
 function setVoiceUI(mode, recording) {
   const raw = document.getElementById('btn-voice-raw');
-  const ai  = document.getElementById('btn-voice-ai');
-  raw.classList.remove('recording'); ai.classList.remove('recording');
-  raw.disabled = false; ai.disabled = false;
+  raw.classList.remove('recording');
+  raw.disabled = false;
   if (recording && mode === 'raw') {
-    raw.innerHTML = STOP_SVG + ' Arrêter'; raw.classList.add('recording'); ai.disabled = true;
-  } else if (recording && mode === 'ai') {
-    ai.innerHTML = STOP_SVG + ' Arrêter'; ai.classList.add('recording'); raw.disabled = true;
+    raw.innerHTML = STOP_SVG + ' Arrêter'; raw.classList.add('recording');
   } else {
     raw.innerHTML = MIC_SVG + ' Dicter';
-    ai.innerHTML  = AI_SVG  + ' Dicter + IA';
   }
 }
 
@@ -956,7 +1278,56 @@ async function callAI(transcript) {
 }
 
 document.getElementById('btn-voice-raw').onclick = () => startVoice('raw');
-document.getElementById('btn-voice-ai').onclick  = () => startVoice('ai');
+
+/* Quick ping popup depuis la liste */
+let quickPingPopup = null;
+function openQuickPing(noteId, bellBtn) {
+  if (quickPingPopup) { quickPingPopup.remove(); quickPingPopup = null; return; }
+  const note = notes.find(n => n.id === noteId); if (!note) return;
+  const pop = document.createElement('div');
+  pop.style.cssText = `
+    position:absolute; z-index:200;
+    background:var(--surface); border:1px solid var(--line2);
+    border-radius:14px; padding:10px 8px; box-shadow:0 8px 32px rgba(0,0,0,.12);
+    display:flex; gap:6px; flex-wrap:wrap; max-width:220px;
+  `;
+  const presets = [
+    { label:'5 min', ms:300000 },
+    { label:'30 min', ms:1800000 },
+    { label:'1 h', ms:3600000 },
+    { label:'1 j', ms:86400000 },
+  ];
+  presets.forEach(p => {
+    const b = document.createElement('button');
+    b.textContent = p.label;
+    b.style.cssText = `
+      background:${note.ping===p.ms?'var(--rust)':'var(--paper2)'};
+      color:${note.ping===p.ms?'#fff':'var(--ink2)'};
+      border:1px solid ${note.ping===p.ms?'var(--rust)':'var(--line)'};
+      border-radius:20px; padding:6px 12px;
+      font-family:var(--ui); font-size:14px; cursor:pointer;
+    `;
+    b.onclick = (e) => {
+      e.stopPropagation();
+      setPing(noteId, p.ms, note.pingAfter || 'warn');
+      bellBtn.classList.add('has-ping');
+      pop.remove(); quickPingPopup = null;
+    };
+    pop.appendChild(b);
+  });
+  /* positionner à l'intérieur du shell, au-dessus du bouton cloche */
+  const shell = document.getElementById('shell');
+  const shellRect = shell.getBoundingClientRect();
+  const rect = bellBtn.getBoundingClientRect();
+  const topInShell = rect.bottom - shellRect.top + 6;
+  const rightInShell = shellRect.right - rect.right;
+  pop.style.top  = topInShell + 'px';
+  pop.style.right = rightInShell + 'px';
+  shell.appendChild(pop);
+  quickPingPopup = pop;
+  const close = (e) => { if (!pop.contains(e.target) && e.target !== bellBtn) { pop.remove(); quickPingPopup = null; document.removeEventListener('click', close); } };
+  setTimeout(() => document.addEventListener('click', close), 0);
+}
 
 function openList() { renderList(notes); show('list'); }
 
@@ -974,9 +1345,15 @@ function renderList(list = notes) {
   el.innerHTML = list.map(n => {
     const ex = n.text.length > 80 ? n.text.slice(0,80).trimEnd() + '…' : n.text;
     return `<div class="note-row" data-id="${n.id}">
-      <button class="note-card" data-id="${n.id}">
+      <button class="note-card" data-id="${n.id}" style="padding-right:90px">
         <div class="note-card-date">${fmtDate(n.ts)}</div>
         <div class="note-card-text">${esc(ex)}</div>
+      </button>
+      <button class="note-bell${n.ping ? ' has-ping' : ''}" data-bell="${n.id}" aria-label="Rappel">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
       </button>
       <button class="note-del" data-del="${n.id}" aria-label="Supprimer">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -988,6 +1365,10 @@ function renderList(list = notes) {
   }).join('');
   el.querySelectorAll('.note-card').forEach(c => c.onclick = () => openView(+c.dataset.id, 'list'));
   el.querySelectorAll('.note-del').forEach(b => b.onclick = e => { e.stopPropagation(); deleteNote(+b.dataset.del); });
+  el.querySelectorAll('.note-bell').forEach(b => b.onclick = e => {
+    e.stopPropagation();
+    openQuickPing(+b.dataset.bell, b);
+  });
 }
 
 let searchTimer;
@@ -1025,32 +1406,21 @@ function openView(id, from) {
 }
 
 function renderPingCard(note) {
-  const ping = note.ping || null, after = note.pingAfter || 'warn';
-  document.getElementById('ping-val').textContent = ping ? msLabel(ping) : '—';
+  const ping = note.ping || null, after = note.pingAfter || 'notif';
   document.getElementById('ping-presets').innerHTML = PRESETS.map(p =>
-    `<button class="ping-preset${ping===p.ms?' active':''}" data-ms="${p.ms}">${p.label}</button>`
+    `<button class="bell-preset${ping===p.ms?' active':''}" data-ms="${p.ms}">${p.label}</button>`
   ).join('');
-  document.querySelectorAll('.ping-preset').forEach(b => b.onclick = () => {
-    setPing(note.id, +b.dataset.ms, after);
+  document.querySelectorAll('#ping-presets .bell-preset').forEach(b => b.onclick = () => {
+    setPing(note.id, +b.dataset.ms, note.pingAfter || 'notif');
     renderPingCard(notes.find(n => n.id === note.id));
   });
-  document.getElementById('pa-warn').classList.toggle('active', after === 'warn');
-  document.getElementById('pa-delete').classList.toggle('active', after === 'delete');
-  document.getElementById('pa-warn').onclick   = () => { setPingAfter(note.id, 'warn');   renderPingCard(notes.find(n=>n.id===note.id)); };
-  document.getElementById('pa-delete').onclick = () => { setPingAfter(note.id, 'delete'); renderPingCard(notes.find(n=>n.id===note.id)); };
+  ['pm-notif','pm-notif-del','pm-del'].forEach(id => {
+    const btn = document.getElementById(id);
+    btn.classList.toggle('active', btn.dataset.after === after);
+    btn.onclick = () => { setPingAfter(note.id, btn.dataset.after); renderPingCard(notes.find(n=>n.id===note.id)); };
+  });
 }
 
-document.getElementById('btn-ping-ok').onclick = () => {
-  const val = +document.getElementById('ping-custom-val').value;
-  const unit = document.getElementById('ping-custom-unit').value;
-  if (!val || val <= 0) return;
-  const ms = val * (UNIT_MS[unit] || 60000);
-  const id = +document.getElementById('btn-delete').dataset.id;
-  const note = notes.find(n => n.id === id); if (!note) return;
-  setPing(id, ms, note.pingAfter || 'warn');
-  renderPingCard(notes.find(n => n.id === id));
-  document.getElementById('ping-custom-val').value = '';
-};
 
 function setPing(id, ms, after) {
   const note = notes.find(n => n.id === id); if (!note) return;
@@ -1074,15 +1444,17 @@ function schedulePing(note) {
 function firePing(note) {
   const n = notes.find(x => x.id === note.id); if (!n) return;
   const body = n.text.slice(0, 60) + (n.text.length > 60 ? '…' : '');
-  if (n.pingAfter === 'delete') {
+  if (n.pingAfter === 'silent-delete') {
+    deleteNote(n.id);
+  } else if (n.pingAfter === 'delete') {
     if ('Notification' in window && Notification.permission === 'granted')
       new Notification('Mémo supprimé', { body, icon: 'icons/icon-192.png' });
     deleteNote(n.id);
   } else {
     if ('Notification' in window && Notification.permission === 'granted')
-      new Notification('Rappel mémo', { body: 'Sera supprimé dans 5 min — ' + body, icon: 'icons/icon-192.png' });
-    n.pingAfter = 'delete'; n.ping = 300000; n.pingDeadline = Date.now() + 300000;
-    persist(); schedulePing(n);
+      new Notification('Rappel mémo', { body, icon: 'icons/icon-192.png' });
+    n.ping = null; n.pingDeadline = null;
+    persist();
   }
 }
 
@@ -1109,66 +1481,20 @@ function setMenu(open) {
 document.getElementById('btn-menu').onclick        = () => setMenu(true);
 document.getElementById('btn-close-menu').onclick  = () => setMenu(false);
 document.getElementById('menu-overlay').onclick    = () => setMenu(false);
-document.getElementById('mn-home').onclick  = () => { setMenu(false); show('home'); };
-document.getElementById('mn-new').onclick   = () => { setMenu(false); openWrite(); };
-document.getElementById('mn-list').onclick  = () => { setMenu(false); openList(); };
+document.getElementById('mn-home').onclick     = () => { setMenu(false); show('home'); };
+document.getElementById('mn-new').onclick      = () => { setMenu(false); openWrite(); };
+document.getElementById('mn-list').onclick     = () => { setMenu(false); openList(); };
+document.getElementById('mn-settings').onclick = () => { setMenu(false); openSettings(); };
+document.getElementById('btn-back-settings').onclick = () => show('home');
 
-document.getElementById('mn-export').onclick = () => {
+document.getElementById('mn-transfer').onclick = () => {
   setMenu(false);
-  if (!notes.length) { toast('Aucun mémo à exporter'); return; }
+  if (!notes.length) { toast('Aucun mémo à transférer'); return; }
   const content = notes.map(n => `[${fmtDate(n.ts)}]\n${n.text}`).join('\n\n---\n\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([content], { type: 'text/plain' }));
   a.download = `memos-${new Date().toISOString().slice(0,10)}.txt`;
-  a.click(); toast('Mémos exportés');
-};
-
-document.getElementById('mn-clear').onclick = function handleClear() {
-  if (confirmingClear) return;
-  confirmingClear = true;
-  const zone = document.getElementById('clear-zone');
-  zone.innerHTML = `<div class="confirm-clear">
-    <div class="confirm-msg">Effacer tous les mémos et données ?</div>
-    <div class="confirm-row">
-      <button class="btn-cancel" id="btn-cancel-clear">Annuler</button>
-      <button class="btn-confirm-del" id="btn-confirm-clear">Confirmer</button>
-    </div>
-  </div>`;
-  document.getElementById('btn-cancel-clear').onclick = () => {
-    confirmingClear = false; resetClearZone(handleClear);
-  };
-  document.getElementById('btn-confirm-clear').onclick = () => {
-    localStorage.removeItem(NOTES_KEY);
-    notes = []; persist(); renderHome();
-    setMenu(false); confirmingClear = false;
-    toast('Toutes les données supprimées');
-    resetClearZone(handleClear);
-  };
-};
-
-function resetClearZone(handler) {
-  document.getElementById('clear-zone').innerHTML = `<button class="menu-action danger" id="mn-clear">
-    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <polyline points="3 6 5 6 21 6"/>
-      <path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2"/>
-    </svg>
-    Supprimer toutes les données
-  </button>`;
-  document.getElementById('mn-clear').onclick = handler;
-}
-
-document.getElementById('mn-uninstall').onclick = async () => {
-  localStorage.clear();
-  if ('serviceWorker' in navigator) {
-    const regs = await navigator.serviceWorker.getRegistrations();
-    await Promise.all(regs.map(r => r.unregister()));
-  }
-  if ('caches' in window) {
-    const keys = await caches.keys();
-    await Promise.all(keys.map(k => caches.delete(k)));
-  }
-  toast('Application désinstallée');
-  setTimeout(() => location.reload(), 1800);
+  a.click(); toast('Mémos transférés');
 };
 
 let deferredInstall = null;
@@ -1194,17 +1520,103 @@ async function triggerInstall() {
 }
 
 document.getElementById('btn-install').onclick      = triggerInstall;
-document.getElementById('mn-install').onclick       = () => { setMenu(false); triggerInstall(); };
 document.getElementById('btn-install-close').onclick = () => installBanner.classList.remove('show');
 
 if ('Notification' in window && Notification.permission === 'default') {
   Notification.requestPermission();
 }
 
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
+  caches.keys().then(keys => keys.forEach(k => caches.delete(k)));
+}
+
+// ── Paramètres ─────────────────────────────────────────────────────────────
+const SETTING_DEFAULTS = { font: "'Instrument Sans', sans-serif", size: '20', line: '1.6', theme: 'light', pingAction: 'notif' };
+let userSettings = { ...SETTING_DEFAULTS, ...JSON.parse(localStorage.getItem('memo_settings') || '{}') };
+
+function applySettings() {
+  const area = document.getElementById('note-area');
+  area.style.fontFamily = userSettings.font;
+  area.style.fontSize   = userSettings.size + 'px';
+  area.style.lineHeight = userSettings.line;
+  document.documentElement.style.setProperty('--user-font', userSettings.font);
+  document.documentElement.style.setProperty('--user-size', userSettings.size + 'px');
+  document.documentElement.style.setProperty('--user-line', userSettings.line);
+  document.documentElement.setAttribute('data-theme', userSettings.theme);
+}
+
+function saveSettings() {
+  localStorage.setItem('memo_settings', JSON.stringify(userSettings));
+  applySettings();
+}
+
+function openSettings() {
+  show('settings');
+  const preview = document.getElementById('set-preview');
+  preview.style.fontFamily = userSettings.font;
+  preview.style.fontSize   = userSettings.size + 'px';
+  preview.style.lineHeight = userSettings.line;
+
+  function bindOpts(groupId, key, onApply) {
+    document.querySelectorAll(`#${groupId} .set-opt`).forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.val === userSettings[key]);
+      btn.onclick = () => {
+        userSettings[key] = btn.dataset.val;
+        saveSettings();
+        if (onApply) onApply(btn.dataset.val);
+        document.querySelectorAll(`#${groupId} .set-opt`).forEach(b => b.classList.toggle('active', b === btn));
+      };
+    });
+  }
+
+  bindOpts('set-font', 'font', v => preview.style.fontFamily = v);
+  bindOpts('set-size', 'size', v => preview.style.fontSize = v + 'px');
+  bindOpts('set-line', 'line', v => preview.style.lineHeight = v);
+  bindOpts('set-theme', 'theme');
+  bindOpts('set-ping-action', 'pingAction');
+
+  const nb = notes.length;
+  const chars = notes.reduce((a, n) => a + n.text.length, 0);
+  document.getElementById('set-storage').textContent = `${nb} mémo${nb!==1?'s':''} · ${chars.toLocaleString('fr')} caractères`;
+
+  document.getElementById('set-export-all').onclick = () => {
+    const txt = notes.map(n => `[${fmtDate(n.ts)}]\n${n.text}`).join('\n\n---\n\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([txt], { type: 'text/plain' }));
+    a.download = 'memos.txt'; a.click();
+  };
+
+  document.getElementById('set-clear-all').onclick = () => {
+    if (!confirm(`Effacer les ${nb} mémo${nb!==1?'s':''} ? Cette action est irréversible.`)) return;
+    notes.length = 0; persist(); renderHome();
+    document.getElementById('set-storage').textContent = '0 mémo · 0 caractère';
+    toast('Tous les mémos effacés');
+  };
+}
+
+applySettings();
 
 notes.forEach(n => { if (n.ping && n.pingDeadline) schedulePing(n); });
 renderHome();
+
+/* ── Keyboard avoidance ─────────────────────────────────────────── */
+if (window.visualViewport) {
+  function onViewport() {
+    const vv = window.visualViewport;
+    const shell = document.getElementById('shell');
+    const shellRect = shell.getBoundingClientRect();
+    const vvBottom = vv.offsetTop + vv.height;
+    const shellBottom = shellRect.bottom;
+    const gap = Math.max(0, shellBottom - vvBottom);
+    const voiceBar = document.getElementById('voice-bar');
+    const bellPanel = document.getElementById('bell-panel');
+    voiceBar.style.bottom  = gap + 'px';
+    bellPanel.style.bottom = gap + 'px';
+  }
+  window.visualViewport.addEventListener('resize', onViewport);
+  window.visualViewport.addEventListener('scroll', onViewport);
+}
 </script>
 </body>
 </html>
